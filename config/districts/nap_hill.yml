@@ -1,0 +1,27 @@
+id: nap_hill
+name: "Nap Hill"
+description: "The wealthiest residential area, home to nobility, senior guild leaders, and retired merchants."
+
+wealth: 90
+density: 30
+infrastructure_quality: 0.3        # 0.3x failure probability (70% less likely)
+political_influence: 2.0
+media_attention_multiplier: 2.0
+local_trust: 75
+wealth_archetype: high_wealth
+
+discovery_time_hours: [4, 8]
+noble_complaint_accelerator: [1, 2]
+
+stressors:
+  social_inequality: beneficiary
+  organisational_fragmentation: moderate
+  narrative_effects: high_visibility
+
+protest_threshold: 30              # high expectations, protest at higher trust levels
+
+narrative_hooks:
+  - "Nap Hill residents demand river view protected from new bridge"
+  - "Lord Rust's carriage overturns on poorly maintained road; blames Watch"
+  - "Nap Hill residents demand action over river smell"
+  - "Merchants on Cockbill Street border petition for new Watch patrol"

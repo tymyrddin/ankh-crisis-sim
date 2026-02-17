@@ -1,0 +1,109 @@
+# Remedy types available to the player
+
+technical_restoration:
+  label: "Emergency Patch"
+  description: "Fix the immediate failure. Fast but may not prevent recurrence."
+  base_cost: 150
+  cost_modifiers:
+    infrastructure_quality: inverse  # worse quality = more expensive
+  downtime_hours: 4
+  recurrence_risk: 0.30             # 30% chance same failure within year
+  trust_effect:
+    immediate: 3
+    flavour: "Quick fix, but is it a real fix?"
+  narrative_framing: "Technical restoration"
+  side_effects: []
+
+resilience_investment:
+  label: "Structural Upgrade"
+  description: "Rebuild to higher standard. Slower, expensive, but reduces future risk."
+  base_cost: 400
+  cost_modifiers:
+    district_wealth: direct          # richer districts demand better materials
+  downtime_hours: 72
+  recurrence_risk: 0.05             # 5% — much lower
+  infrastructure_quality_boost: 0.1 # permanent improvement
+  trust_effect:
+    delayed_days: 14
+    amount: 8
+    permanent: true
+    flavour: "Investment in our future"
+  narrative_framing: "Resilience investment"
+  side_effects:
+    - stressor_decrease:
+        underinvestment: 0.03
+
+operational_workaround:
+  label: "Operational Workaround"
+  description: "No fix. Shifts risk elsewhere. Another district bears the burden."
+  base_cost: 80
+  downtime_hours: 2
+  recurrence_risk: 0.80             # problem remains
+  trust_effect:
+    immediate: 1
+    shifted_district_penalty: -5
+    flavour_positive: "Creative solution"
+    flavour_negative: "Passing the buck"
+  narrative_framing: "Workaround"
+  side_effects:
+    - risk_transfer: true
+
+public_compensation:
+  label: "Public Compensation"
+  description: "Pay for the harm. Temporary trust boost, but root cause remains."
+  base_cost: 80
+  cost_modifiers:
+    population_affected: direct
+  downtime_hours: 0
+  recurrence_risk: 1.0              # no fix at all
+  trust_effect:
+    immediate: 10
+    duration_days: 30               # fades
+    flavour_positive: "At least they care"
+    flavour_negative: "Throwing money at the problem"
+  narrative_framing: "Compensatory measures"
+  side_effects: []
+
+accountability_actions:
+  label: "Launch Inquiry / Assign Blame"
+  description: "Investigate and punish. May satisfy public anger or backfire."
+  base_cost: 30
+  downtime_hours: 0
+  recurrence_risk: 1.0              # no fix
+  trust_effect:
+    immediate: 10
+    backfire_risk: 0.25             # if scapegoat fights back
+    backfire_penalty: -8
+    flavour_positive: "Holding someone accountable"
+    flavour_negative: "Political theatre"
+  regulatory_pressure_decrease: 12
+  narrative_framing: "Accountability"
+  side_effects:
+    - political_stability_delta: -3  # divisive
+
+press_statement:
+  label: "Issue Press Statement"
+  description: "Influence narrative framing. Buys time. Can backfire if actions contradict words."
+  base_cost: 5
+  downtime_hours: 0
+  recurrence_risk: 1.0              # no fix
+  trust_effect:
+    slows_decay_multiplier: 0.5     # halves trust decay temporarily
+    duration_hours: 48
+    contradicts_penalty: -10        # if no action follows within window
+    flavour: "The Patrician has issued a statement"
+  narrative_framing: "Press statement"
+  side_effects: []
+
+do_nothing:
+  label: "Do Nothing"
+  description: "Zero cost now. Fast trust decay. Cascading failures likely."
+  base_cost: 0
+  downtime_hours: 0
+  recurrence_risk: 1.0
+  trust_effect:
+    decay_multiplier: 2.0           # trust decays twice as fast
+    flavour: "Patrician ignores crisis"
+  narrative_framing: "Inaction"
+  side_effects:
+    - cascade_risk_increase: 1.5

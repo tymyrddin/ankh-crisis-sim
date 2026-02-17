@@ -1,0 +1,76 @@
+# End conditions — multiple ways to lose, one way to survive
+
+loss_conditions:
+  election_loss:
+    label: "Election Loss"
+    description: "Trust falls below threshold; opposition wins."
+    trigger:
+      metric: public_trust
+      below: 15
+      sustained_days: 30
+    narrative: "The guilds have lost confidence. A vote of no confidence has been called. You have been replaced."
+
+  revolt:
+    label: "Revolt"
+    description: "Legitimacy collapses; districts rise up."
+    trigger:
+      metric: legitimacy
+      below: 10
+    narrative: "The streets are no longer safe. Multiple districts have declared the Patrician illegitimate. The Watch cannot hold the city."
+
+  bankruptcy:
+    label: "Bankruptcy"
+    description: "Treasury empty; creditors refuse more."
+    trigger:
+      metric: budget
+      below: 0
+      sustained_days: 14
+    narrative: "The treasury is empty. Guild loans have been exhausted. The city cannot pay its Watch, its engineers, or its debts."
+
+  complete_failure:
+    label: "Complete Infrastructure Collapse"
+    description: "City in the dark, water undrinkable, chaos."
+    trigger:
+      districts_in_crisis: 5       # 5+ districts with failed critical infrastructure
+    narrative: "The city has gone dark. Water is undrinkable. Transport has ceased. Ankh-Morpork is eating itself."
+
+  assassination:
+    label: "Assassination"
+    description: "Extreme conditions trigger removal."
+    trigger:
+      metric: political_stability
+      below: 5
+    narrative: "A quiet knock on the door. The Assassins' Guild has accepted a contract. Your story ends here."
+
+  resignation:
+    label: "Resignation"
+    description: "Player chooses to step down."
+    trigger: player_action
+    narrative: "You have chosen to step down. A wise decision, perhaps. Or a cowardly one. History will judge."
+
+neutral_end:
+  term_completion:
+    label: "Term Completion"
+    description: "Survived the full term."
+    trigger:
+      days_elapsed: 1460           # ~4 years
+    narrative: "Your term has ended. You served. Here is what happened."
+
+escape_condition:
+  early_retirement:
+    label: "Early Retirement"
+    description: "Player steps down early, passes to successor."
+    trigger: player_action
+    min_days: 365                  # must serve at least 1 year
+    narrative: "You have chosen to retire early. The city continues without you. There is unfinished business."
+
+postgame:
+  show_timeline: true
+  show_district_outcomes: true
+  show_inequality_record: true
+  show_who_paid_the_price: true
+  reflection_questions:
+    - "Which districts bore the cost of your decisions?"
+    - "Did the wealthy districts receive more attention than they deserved?"
+    - "What would you do differently?"
+    - "Who paid the price?"

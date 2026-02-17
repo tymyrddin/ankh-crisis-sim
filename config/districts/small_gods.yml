@@ -1,0 +1,26 @@
+id: small_gods
+name: "Small Gods"
+description: "A sprawling mixed-use district. Chaotic blend of workshops, terraced housing, pubs, and minor temples. Ordinary Ankh-Morpork."
+
+wealth: 40
+density: 175
+infrastructure_quality: 1.5        # 1.5x failure probability
+political_influence: 0.5
+media_attention_multiplier: 0.5    # only reported in aggregate
+local_trust: 45
+wealth_archetype: medium_wealth
+
+discovery_time_hours: [24, 48]     # no single voice, gradual complaints
+
+stressors:
+  underinvestment: chronic
+  social_inequality: moderate      # sees Nap Hill across the river
+  organisational_fragmentation: high  # hundreds of small businesses, no leader
+  just_in_time: amplifier          # thin margins, week without power = bankruptcy
+
+protest_threshold: 18
+
+narrative_hooks:
+  - "Small Gods tanners pollute river downstream of Isle of Gods; diplomatic incident"
+  - "Workshop fire spreads through three streets before inadequate pump located"
+  - "Local hero prevents robbery of pie shop; rewarded with free pies for life"

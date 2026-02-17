@@ -1,0 +1,25 @@
+id: university_precinct
+name: "University Precinct"
+description: "The area surrounding Unseen University. Wizard quarters and businesses catering to magical folk."
+
+wealth: 85
+density: 80
+infrastructure_quality: 0.4        # UU maintains its own, 0.4x failure
+political_influence: 1.5
+media_attention_multiplier: 1.5    # wizard news sells papers
+local_trust: 70
+wealth_archetype: high_wealth
+
+discovery_time_hours: [6, 12]      # wizards may not notice or care
+
+stressors:
+  vendor_monoculture: high         # businesses rely on UU custom
+  narrative_effects: high_visibility
+  organisational_fragmentation: internal  # faculty politics
+
+protest_threshold: 25
+
+narrative_hooks:
+  - "Wizard experiment causes three days of perpetual twilight over Precinct"
+  - "Local scroll shop owner demands UU pay outstanding bills"
+  - "Students pelt Watch with custard pies during annual Rite of AshkEnte"

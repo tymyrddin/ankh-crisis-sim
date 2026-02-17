@@ -1,0 +1,97 @@
+# Building type templates — define shared behaviour per archetype
+
+guild_hq:
+  label: "Guild Headquarters"
+  sensitivity: very_high
+  trust_decay_rate: rapid
+  detection_time_modifier: 0.5      # self-reporting, half district time
+  consumes: [energy, water, communications, security]
+  produces: [tax_revenue, skilled_labour, social_order, business_confidence]
+  dependency_strengths:
+    critical: [communications]
+    operational: [energy, water]
+    strategic: [watch_cooperation]
+
+tavern:
+  label: "Tavern / Inn"
+  sensitivity: medium_to_high
+  trust_decay_rate: moderate
+  detection_time_modifier: 0.8      # customers notice and talk
+  consumes: [energy, water, communications, food_supplies, protection]
+  produces: [tax_revenue, public_morale, social_cohesion, employment]
+  dependency_strengths:
+    critical: [brewery_supply, water]
+    operational: [energy, thieves_guild]
+    strategic: [transport]
+
+civic_amenity:
+  label: "Civic Amenity"
+  sensitivity: low_to_medium
+  trust_decay_rate: slow
+  detection_time_modifier: 1.5      # visited infrequently
+  consumes: [energy, water, communications]
+  produces: [cultural_asset, tourist_revenue, soft_power, public_morale]
+  dependency_strengths:
+    critical: [security]
+    operational: [communications, energy]
+    strategic: [tourist_traffic]
+
+slum_dwelling:
+  label: "Slum Dwelling"
+  sensitivity: extreme
+  trust_decay_rate: variable
+  detection_time_modifier: 2.0      # 3.0 for cockbill
+  consumes: [water]
+  produces: [labour_pool, local_trust, pride]
+  dependency_strengths:
+    critical: [water_pump]
+    operational: [community_networks]
+    strategic: [landlord_tolerance]
+
+middle_class_housing:
+  label: "Middle-class / Artisan Housing"
+  sensitivity: high
+  trust_decay_rate: moderate_to_fast
+  detection_time_modifier: 1.0      # baseline
+  consumes: [energy, water, communications, transport]
+  produces: [tax_revenue, social_stability, local_businesses]
+  dependency_strengths:
+    critical: [transport]
+    operational: [local_shops, energy]
+    strategic: [schools]
+
+civic_institution:
+  label: "Major Civic Institution"
+  sensitivity: catastrophic
+  trust_decay_rate: instantaneous
+  detection_time_modifier: 0.3      # staff present 24/7
+  consumes: [energy, water, communications, transport, staff]
+  produces: [public_order, trust_in_government, economic_enablers, legitimacy]
+  dependency_strengths:
+    critical: [communications, energy]
+    operational: [staff, records]
+    strategic: [public_trust]
+
+palace:
+  label: "The Palace / Patrician's Seat"
+  sensitivity: apocalyptic
+  trust_decay_rate: terminal
+  detection_time_modifier: 0.1      # Vetinari knows everything
+  consumes: [energy, water, communications, security, information]
+  produces: [governance, stability, strategic_direction, legitimacy]
+  dependency_strengths:
+    critical: [communications, security]
+    operational: [information, loyalty]
+    strategic: []
+
+university:
+  label: "Unseen University"
+  sensitivity: paradoxical           # low for UU, high for city
+  trust_decay_rate: fear_not_trust
+  detection_time_modifier: 2.0      # they may not tell anyone
+  consumes: [energy, water, communications, arcane_supplies, food]
+  produces: [magical_knowledge, graduates, employment, consumption_economy]
+  dependency_strengths:
+    critical: [arcane_supplies, food]
+    operational: [internal_cooperation]
+    strategic: [patrician_tolerance]

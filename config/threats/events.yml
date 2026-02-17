@@ -1,0 +1,289 @@
+# Event templates — concrete incidents that can occur
+
+# --- Degradation and Neglect ---
+- id: pump_failure
+  name: "Water pump failure"
+  category: degradation_and_neglect
+  target_building_types: [slum_dwelling, middle_class_housing]
+  domain: water
+  probability_base: 0.003
+  stressor_amplifiers:
+    underinvestment: 2.0
+  impact:
+    immediate:
+      - metric: local_trust
+        delta: -5
+        scope: district
+    secondary:
+      delay_hours: 48
+      effects:
+        - metric: public_trust
+          delta: -3
+    duration_penalty:
+      per_day_unresolved: -2
+      metric: local_trust
+  cascade:
+    dependency: water
+    propagate_to: neighbours
+  headlines:
+    - "Water pump fails in {district}"
+    - "{building} runs dry"
+  stories:
+    - "Residents of {district} have been without clean water for {duration}. {detection_narrative}"
+
+- id: power_outage
+  name: "Rolling power outage"
+  category: degradation_and_neglect
+  target_building_types: [middle_class_housing, guild_hq, civic_institution]
+  domain: energy
+  probability_base: 0.002
+  stressor_amplifiers:
+    underinvestment: 1.8
+  impact:
+    immediate:
+      - metric: local_trust
+        delta: -3
+        scope: district
+    secondary:
+      delay_hours: 24
+      effects:
+        - metric: public_trust
+          delta: -5
+        - metric: regulatory_pressure
+          delta: 3
+  cascade:
+    dependency: energy
+    propagate_to: all_dependents
+  headlines:
+    - "Power outage hits {district}"
+    - "Blackout across {district}; businesses suspend operations"
+  stories:
+    - "Unstable power supply in {district} has left {affected_count} buildings without electricity for {duration}."
+
+- id: bridge_deterioration
+  name: "Bridge structural deterioration"
+  category: degradation_and_neglect
+  target_building_types: [civic_institution]
+  target_districts: [isle_of_gods]
+  domain: transport
+  probability_base: 0.001
+  stressor_amplifiers:
+    underinvestment: 2.5
+  impact:
+    immediate:
+      - metric: local_trust
+        delta: -8
+        scope: district
+    secondary:
+      delay_hours: 72
+      effects:
+        - metric: public_trust
+          delta: -10
+        - metric: regulatory_pressure
+          delta: 8
+  cascade:
+    dependency: transport
+    propagate_to: all_dependents
+  headlines:
+    - "Isle of Gods bridge closed for safety"
+    - "Bridge cracks discovered; engineers called"
+  stories:
+    - "The only bridge connecting Isle of Gods has been closed after structural concerns. Residents are stranded."
+
+- id: clacks_degradation
+  name: "Clacks tower degradation"
+  category: degradation_and_neglect
+  target_building_types: [middle_class_housing, guild_hq]
+  domain: communications
+  probability_base: 0.002
+  stressor_amplifiers:
+    underinvestment: 1.5
+    vendor_monoculture: 1.8
+  impact:
+    immediate:
+      - metric: local_trust
+        delta: -2
+        scope: district
+    secondary:
+      delay_hours: 12
+      effects:
+        - metric: public_trust
+          delta: -4
+  cascade:
+    dependency: communications
+    propagate_to: all_dependents
+  headlines:
+    - "Clacks service disrupted in {district}"
+    - "Communication breakdown leaves {district} in the dark"
+  stories:
+    - "The clacks tower serving {district} has been unreliable for {duration}. Coordination between services is suffering."
+
+# --- Operational Error ---
+- id: misconfigured_upgrade
+  name: "Botched system upgrade"
+  category: operational_error
+  target_building_types: [civic_institution, guild_hq]
+  domain: communications
+  probability_base: 0.001
+  stressor_amplifiers:
+    organisational_fragmentation: 1.5
+    underinvestment: 1.3
+  impact:
+    immediate:
+      - metric: local_trust
+        delta: -5
+        scope: district
+      - metric: regulatory_pressure
+        delta: 5
+    secondary:
+      delay_hours: 24
+      effects:
+        - metric: public_trust
+          delta: -8
+  headlines:
+    - "System upgrade goes wrong at {building}"
+    - "Services disrupted after 'routine maintenance' at {building}"
+  stories:
+    - "A planned upgrade at {building} caused an unexpected outage. Recovery is taking longer than anticipated."
+
+# --- Supply Chain ---
+- id: brewery_failure
+  name: "Brewery supply chain collapse"
+  category: supply_chain_failure
+  target_building_types: [tavern]
+  domain: commercial
+  probability_base: 0.001
+  stressor_amplifiers:
+    just_in_time: 2.0
+    vendor_monoculture: 1.5
+  impact:
+    immediate:
+      - metric: local_trust
+        delta: -3
+        scope: district
+    secondary:
+      delay_hours: 72
+      effects:
+        - metric: public_trust
+          delta: -5
+  cascade:
+    dependency: brewery_supply
+    propagate_to: all_dependents
+  headlines:
+    - "Beer shortage hits {district}"
+    - "Brewery shutdown threatens city's beer supply"
+  stories:
+    - "The main brewery supplying {district}'s taverns has ceased production. The Mended Drum reports empty cellars."
+
+# --- Criminal Interference ---
+- id: guild_extortion
+  name: "Criminal extortion escalation"
+  category: criminal_interference
+  target_building_types: [tavern, middle_class_housing, guild_hq]
+  domain: commercial
+  probability_base: 0.001
+  stressor_amplifiers:
+    criminal_target: 2.0
+  impact:
+    immediate:
+      - metric: local_trust
+        delta: -5
+        scope: district
+      - metric: regulatory_pressure
+        delta: 5
+    secondary:
+      delay_hours: 48
+      effects:
+        - metric: political_stability
+          delta: -3
+  headlines:
+    - "Protection racket escalates in {district}"
+    - "Businesses in {district} report threatening visitors"
+  stories:
+    - "Several businesses in {district} have been forced to close after escalating demands from an unlicensed faction."
+
+# --- Ideological Disruption ---
+- id: guild_strike
+  name: "Guild strike"
+  category: ideological_disruption
+  target_building_types: [guild_hq]
+  domain: commercial
+  probability_base: 0.0008
+  stressor_amplifiers:
+    organisational_fragmentation: 1.5
+  impact:
+    immediate:
+      - metric: public_trust
+        delta: -10
+      - metric: political_stability
+        delta: -8
+      - metric: regulatory_pressure
+        delta: 10
+    secondary:
+      delay_hours: 48
+      effects:
+        - metric: legitimacy
+          delta: -3
+  headlines:
+    - "{building} announces strike action"
+    - "Guild members down tools; markets in chaos"
+  stories:
+    - "The {building} has declared a work stoppage over {stressor_narrative}. Markets are in disarray."
+
+# --- Strategic Interference ---
+- id: repeated_small_outages
+  name: "Suspicious repeated outages"
+  category: strategic_interference
+  target_building_types: [middle_class_housing, civic_institution]
+  domain: communications
+  probability_base: 0.0005
+  impact:
+    immediate:
+      - metric: local_trust
+        delta: -2
+        scope: district
+    secondary:
+      delay_hours: 168              # one week
+      effects:
+        - metric: public_trust
+          delta: -8
+        - metric: regulatory_pressure
+          delta: 10
+        - metric: political_stability
+          delta: -5
+  headlines:
+    - "Another clacks outage in {district}; third this month"
+    - "Pattern of failures raises questions"
+  stories:
+    - "Repeated small failures in {district}'s communication infrastructure have experts worried. The Watch investigation found 'no clear cause'."
+
+- id: hospital_outage
+  name: "Hospital system outage"
+  category: degradation_and_neglect
+  target_building_types: [civic_institution]
+  target_buildings: [lady_sybil_hospital]
+  domain: public_services
+  probability_base: 0.0008
+  stressor_amplifiers:
+    underinvestment: 2.0
+  impact:
+    immediate:
+      - metric: public_trust
+        delta: -15
+      - metric: regulatory_pressure
+        delta: 12
+    secondary:
+      delay_hours: 24
+      effects:
+        - metric: legitimacy
+          delta: -5
+        - metric: political_stability
+          delta: -5
+    duration_penalty:
+      per_day_unresolved: -5
+      metric: public_trust
+  headlines:
+    - "Lady Sybil Free Hospital forced to divert patients"
+    - "Hospital crisis: power failure threatens lives"
+  stories:
+    - "Lady Sybil Free Hospital has been forced to turn away patients after a critical system failure. Lives may be at risk."

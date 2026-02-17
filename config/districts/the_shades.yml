@@ -1,0 +1,27 @@
+id: the_shades
+name: "The Shades"
+description: "The oldest part of the city, a labyrinth of narrow streets. Home to the poorest of the poor."
+
+wealth: 12
+density: 300
+infrastructure_quality: 3.0        # 3.0x failure probability (inverse: very low quality)
+political_influence: 0.2
+media_attention_multiplier: 0.2
+local_trust: 15
+wealth_archetype: low_wealth
+
+discovery_time_hours: [72, 120]
+
+stressors:
+  underinvestment: extreme
+  social_inequality: victim
+  organisational_fragmentation: high
+  just_in_time: amplifier
+
+protest_threshold: 10              # fatalistic, low threshold
+
+narrative_hooks:
+  - "Fire in the Shades spreads for hours before Watch notices"
+  - "Shades residents block entrance to Cockbill Street demanding clean water"
+  - "Rumour of hidden treasure draws adventurers into the Shades; none return"
+  - "Shades community organises own night watch after Watch pulled out"

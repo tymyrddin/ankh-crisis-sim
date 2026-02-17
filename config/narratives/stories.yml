@@ -1,0 +1,81 @@
+# Layer 2: Richer stories — expandable view for players who want depth
+# Variables: {district}, {building}, {duration}, {affected_count}, {remedy},
+#            {stressor_narrative}, {detection_narrative}, {political_narrative}
+
+water:
+  - story: >
+      The {building} in {district} has been non-functional for {duration}.
+      {detection_narrative} Residents have been carrying water from neighbouring
+      districts, straining those systems in turn.
+    tone: factual
+
+  - story: >
+      Guild of Engineers blames Patrician's budget cuts for the water failure
+      in {district}. Patrician's office points to ageing infrastructure inherited
+      from previous administration. Neither acknowledges the residents still
+      without water.
+    tone: political
+
+energy:
+  - story: >
+      The power supply to {district} has been unstable for {duration}. Businesses
+      have suspended operations, and households are without heating. The
+      {stressor_narrative}.
+    tone: factual
+
+  - story: >
+      Competing narratives emerge around the {district} blackout. Activists claim
+      it proves underinvestment. The Sto Plains press frames it as Ankh-Morpork
+      incompetence. The truth, as usual, is more complicated and less interesting.
+    tone: analytical
+
+communications:
+  - story: >
+      With the clacks tower serving {district} down, services are struggling to
+      coordinate. Citizens have lost access to information, and rumours are
+      filling the void. {political_narrative}
+    tone: ominous
+
+  - story: >
+      The Watch investigation into repeated clacks failures in {district} has
+      found "no clear cause." This is either reassuring or terrifying, depending
+      on your perspective.
+    tone: wry
+
+transport:
+  - story: >
+      The bridge closure has left {district} residents stranded. Workers cannot
+      reach their jobs in the Merchant Quarter, and local businesses report a
+      sharp drop in custom. Some residents have resorted to unsafe river crossings.
+    tone: urgent
+
+public_services:
+  - story: >
+      Lady Sybil Free Hospital has been forced to turn away non-emergency patients
+      for {duration}. Staff are working double shifts. The Regulatory Committee
+      has demanded an explanation. Commander Vimes has been seen pacing the corridors.
+    tone: grave
+
+commercial:
+  - story: >
+      The beer supply chain has collapsed after the main brewery ceased production.
+      Tavern owners report empty cellars and restless customers. The Mended Drum
+      is serving "imported alternatives" at triple the price.
+    tone: alarming
+
+detection_narratives:
+  immediate: "The failure was noticed immediately."
+  delayed_citizen: "Residents reported the problem after {delay} hours of waiting."
+  delayed_media: "The Ankh-Morpork Times broke the story after {delay} hours."
+  delayed_cascade: "The failure was only discovered when it caused problems elsewhere."
+  delayed_vimes: "Commander Vimes discovered the problem during a personal visit."
+  never_reported: "No one reported the failure. It was discovered by accident."
+  pride_concealment: "Residents concealed the problem out of pride. It was {delay} hours before anyone outside the district knew."
+
+political_narratives:
+  nobles_complain: "Lord Rust has written three letters to the Patrician this week."
+  guilds_demand: "The Guild of {guild} has formally demanded action."
+  media_pressure: "The Ankh-Morpork Times is running a daily series on the crisis."
+  vimes_involved: "Commander Vimes has taken a personal interest."
+  moist_assigned: "Moist von Lipwig has been 'asked' to look into it."
+  silence: "The Palace has said nothing. The silence is deafening."

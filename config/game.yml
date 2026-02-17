@@ -1,0 +1,42 @@
+# Global simulation settings
+
+time:
+  tick_hours: 1                    # 1 tick = 1 game-hour
+  ticks_per_day: 24
+  term_length_days: 1460           # ~4 simulated years
+  starting_day: 1
+  starting_hour: 8
+
+speed:
+  default_multiplier: 1.0          # real-time
+  fast_multiplier: 10.0
+  max_multiplier: 50.0
+
+starting_values:
+  budget: 4200
+  public_trust: 68
+  regulatory_pressure: 18
+  political_stability: 75
+  legitimacy: 82
+
+budget:
+  income_per_month:
+    taxes_general: 350
+    guild_fees: 200
+    trade_tariffs: 150             # variable, affected by transport/commerce
+    university_contribution: 50    # symbolic, extremely stable
+  emergency_borrowing:
+    available: true
+    max_amount: 2000
+    political_cost: 15             # regulatory pressure increase
+
+active_districts:
+  # Comment out districts to playtest with fewer
+  - nap_hill
+  - the_shades
+  - cockbill_street
+  - isle_of_gods
+  - university_precinct
+  - merchant_quarter
+  - small_gods
+  - river_ankh

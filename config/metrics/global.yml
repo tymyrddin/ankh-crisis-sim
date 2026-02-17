@@ -1,0 +1,147 @@
+# City-wide metric definitions and behaviours
+
+public_trust:
+  description: "Population's confidence that the Patrician and guild system will maintain order"
+  min: 0
+  max: 100
+  starting: 68
+
+  decay_by_incident:
+    combined_utility_outage: -20      # severe
+    guild_strike: -25                 # critical
+    watch_failure: -12                # moderate-severe
+    single_utility_failure: -5        # mild
+    transport_failure: -8             # moderate
+    symbolic_failure: -3              # mild
+    narrative_amplification_multiplier: 2.5  # amplifies visible events
+
+  recovery_by_remedy:
+    technical_restoration:
+      rate_per_day: 3
+      max_recovery: 15               # plateaus
+    resilience_investment:
+      rate_per_week: 2
+      permanent: true
+    compensatory_measures:
+      immediate: 8
+      duration_days: 30              # then fades
+    accountability_actions:
+      immediate: 10                  # if target is correct
+      backfire: -8                   # if target is popular
+    time_alone:
+      rate_per_month: 2
+
+  special_effects:
+    vimes_effect:
+      districts: [the_shades, cockbill_street]
+      recovery_multiplier: 2.5
+      nap_hill_resentment: -3
+    moist_effect:
+      initial_drop: -7
+      success_recovery: 18
+
+budget:
+  description: "City treasury — capacity to spend on repairs, compensation, investment"
+  min: 0
+  max: 99999
+  starting: 4200
+
+  income_sources:
+    taxes:
+      base: 350
+      reliability: stable
+      trust_threshold: 30            # below this, collection becomes "difficult"
+      penalty_multiplier: 0.6
+    guild_fees:
+      base: 200
+      reliability: very_stable
+    trade_tariffs:
+      base: 150
+      reliability: unstable          # affected by transport + commerce disruption
+      disruption_penalty: 0.3        # per active transport/commerce disruption
+    university:
+      base: 50
+      reliability: extremely_stable
+
+  expenditure_base:
+    technical_restoration: 150
+    resilience_investment: 400
+    compensatory_measures: 80
+    accountability_actions: 30
+
+regulatory_pressure:
+  description: "Combined force of guilds, nobility, and Patrician demanding action"
+  min: 0
+  max: 100
+  starting: 18
+
+  increase_triggers:
+    guild_complaint: 8
+    noble_outcry: 12
+    watch_request: 5
+    media_campaign: 8
+    repeated_failures: 15            # cumulative, same district/problem 3rd time
+    succession_hint: 20
+
+  decrease_triggers:
+    accountability_actions: -12
+    successful_restoration: -8
+    guild_negotiation: -8
+    time_without_incident_per_week: -2
+    new_crisis_shift: -5             # old pressure forgotten
+
+  thresholds:
+    low: 20                          # business as usual
+    moderate: 40                     # polite inquiry
+    high: 60                         # firm requests, Watch authorised
+    critical: 80                     # direct intervention, Moist assigned
+    extreme: 95                      # emergency powers
+
+political_stability:
+  description: "Absence of coup, revolution, or civil war"
+  min: 0
+  max: 100
+  starting: 75
+
+  decrease_triggers:
+    guild_war: -30
+    noble_conspiracy: -20
+    food_water_shortage: -20
+    trust_collapse_threshold: 25     # if trust below this, stability drops per tick
+    trust_collapse_rate: -2
+    succession_trigger: -40
+
+  increase_triggers:
+    successful_crisis_management: 10
+    guild_concessions: 8
+    public_works: 4
+    time_without_crisis_per_week: 1
+
+  # Succession risk thresholds
+  succession_risk:
+    near_zero: 90
+    moderate: 60
+    high: 40
+    critical: 20
+
+legitimacy:
+  description: "Moral and historical right to rule — slower to change than trust"
+  min: 0
+  max: 100
+  starting: 82
+
+  decrease_triggers:
+    mass_protests: -5
+    guild_withdrawal: -25
+    charter_violation: -40
+    failed_coup_survivor: 5          # actually increases
+
+  increase_triggers:
+    successful_long_rule_per_year: 2
+    guild_endorsement: 10
+    military_victory: 15
+    carrot_endorsement: 50           # instant max, effectively
+
+  recovery_rate:
+    time_per_month: 0.5              # very slow
+    guild_reendorsement: 20

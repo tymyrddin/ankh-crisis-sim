@@ -1,0 +1,54 @@
+# Layer 1: Simple headlines — always visible in the news ticker
+# Variables: {district}, {building}, {duration}, {affected_count}, {remedy}
+
+water:
+  - "Water outage in {district}"
+  - "{building} runs dry"
+  - "Residents of {district} without clean water"
+  - "Water pressure dropping across {district}"
+
+energy:
+  - "Power outage hits {district}"
+  - "Blackout across {district}"
+  - "Rolling outages leave {district} in the dark"
+  - "{building} loses power"
+
+communications:
+  - "Clacks service disrupted in {district}"
+  - "Communication breakdown in {district}"
+  - "{district} cut off from city clacks network"
+
+transport:
+  - "Bridge closed in {district}"
+  - "Traffic chaos in {district}"
+  - "Transport disruption strands {district} workers"
+
+public_services:
+  - "Hospital forced to divert patients"
+  - "Watch response delayed in {district}"
+  - "Emergency services stretched thin"
+
+commercial:
+  - "Beer shortage hits {district}"
+  - "Markets disrupted in {district}"
+  - "Businesses close in {district}"
+  - "Bank run on Filigree Street"
+
+residential:
+  - "Residents of {district} demand action"
+  - "Combined outages hit {district} hard"
+  - "Living conditions deteriorate in {district}"
+
+remedy_applied:
+  technical_restoration: "{building} repaired"
+  resilience_investment: "Upgrade announced for {building}"
+  operational_workaround: "Temporary fix applied at {building}"
+  public_compensation: "Compensation offered to {district} residents"
+  accountability_actions: "Inquiry launched into {district} failure"
+  press_statement: "Patrician's office issues statement on {district}"
+  do_nothing: ""                    # silence
+
+general:
+  - "Patrician's office denies rumours of crisis"
+  - "City Watch stretched thin across multiple incidents"
+  - "Guilds demand emergency council meeting"

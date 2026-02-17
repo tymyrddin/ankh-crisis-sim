@@ -1,0 +1,23 @@
+id: river_ankh
+name: "River Ankh"
+description: "Too thick to drink, too thin to plough. Transport artery, sewer, water source, and symbolic heart."
+
+wealth: 0                          # N/A
+density: 0                         # N/A but heavily used
+infrastructure_quality: 4.0        # 4.0x — it does what it wants
+political_influence: 1.0           # affects everyone
+media_attention_multiplier: 1.2    # river stories are perennial favourites
+local_trust: 0                     # N/A — no residents
+wealth_archetype: null
+is_residential: false
+
+discovery_time_hours: [0, 0]       # immediate if visible, otherwise ignored
+
+stressors:
+  underinvestment: extreme         # dredging? pollution control? costs money
+  interdependence: high            # every district depends on it
+
+narrative_hooks:
+  - "River Ankh catches fire again; insurance companies refuse to pay"
+  - "Barge collision blocks main channel; goods pile up at docks"
+  - "Mysterious object found floating in river turns out to be stolen museum exhibit"

@@ -1,0 +1,53 @@
+"""City model — the top-level container holding all districts, global metrics, and active events."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+
+from src.models.district import District
+from src.models.event import GameEvent
+from src.models.metric import Metric
+
+
+@dataclass
+class City:
+    districts: dict[str, District] = field(default_factory=dict)
+    events: list[GameEvent] = field(default_factory=list)
+
+    # Global metrics
+    public_trust: Metric = field(default_factory=lambda: Metric("public_trust", 68.0))
+    budget: Metric = field(default_factory=lambda: Metric("budget", 4200.0, min_value=0, max_value=99999))
+    regulatory_pressure: Metric = field(default_factory=lambda: Metric("regulatory_pressure", 18.0))
+    political_stability: Metric = field(default_factory=lambda: Metric("political_stability", 75.0))
+    legitimacy: Metric = field(default_factory=lambda: Metric("legitimacy", 82.0))
+
+    # Stressor levels (city-wide, evolve over game)
+    stressors: dict[str, float] = field(default_factory=dict)
+
+    @property
+    def active_events(self) -> list[GameEvent]:
+        return [e for e in self.events if e.is_active]
+
+    @property
+    def visible_events(self) -> list[GameEvent]:
+        return [e for e in self.events if e.is_visible and e.is_active]
+
+    @property
+    def districts_in_crisis(self) -> int:
+        return sum(1 for d in self.districts.values() if d.is_in_crisis)
+
+    def get_building(self, building_id: str):
+        """Find a building across all districts."""
+        for district in self.districts.values():
+            if building_id in district.buildings:
+                return district.buildings[building_id]
+        return None
+
+    def get_district_for_building(self, building_id: str) -> District | None:
+        for district in self.districts.values():
+            if building_id in district.buildings:
+                return district
+        return None
+
+    def get_metric(self, name: str) -> Metric | None:
+        return getattr(self, name, None)

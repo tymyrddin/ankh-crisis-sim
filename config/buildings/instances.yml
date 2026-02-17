@@ -1,0 +1,239 @@
+# Concrete buildings placed on the map
+# Each references a type from _types.yml and a district
+
+# --- Nap Hill ---
+- id: rust_manor
+  name: "Lord Rust's Manor"
+  type: middle_class_housing
+  district: nap_hill
+  position: [250, 140]
+  status: operational
+  narrative_hooks:
+    - "Lord Rust demands personal audience with the Patrician over broken water main"
+
+- id: selachii_estate
+  name: "Selachii Estate"
+  type: middle_class_housing
+  district: nap_hill
+  position: [310, 120]
+  status: operational
+  narrative_hooks:
+    - "Selachii family threatens to withhold guild dues over 'intolerable' road conditions"
+
+- id: nap_hill_gardens
+  name: "Nap Hill Gardens"
+  type: civic_amenity
+  district: nap_hill
+  position: [280, 170]
+  status: operational
+
+# --- The Shades ---
+- id: shades_pump
+  name: "Shades Communal Pump"
+  type: slum_dwelling
+  district: the_shades
+  position: [550, 350]
+  status: degraded
+  narrative_hooks:
+    - "Shades pump runs at half pressure; nobody reports it"
+
+- id: ragged_flophouse
+  name: "Ragged Flophouse"
+  type: slum_dwelling
+  district: the_shades
+  position: [580, 400]
+  status: operational
+
+- id: biers
+  name: "Biers"
+  type: tavern
+  district: the_shades
+  position: [520, 380]
+  status: operational
+  narrative_hooks:
+    - "Bloody Mary mix-up at Biers causes existential dread"
+
+# --- Cockbill Street ---
+- id: cockbill_pump
+  name: "Cockbill Street Pump"
+  type: slum_dwelling
+  district: cockbill_street
+  position: [560, 440]
+  status: operational
+  detection_time_modifier_override: 3.0  # pride concealment
+  narrative_hooks:
+    - "Cockbill Street pump breaks; residents refuse to report it for a week"
+
+- id: vimes_childhood_home
+  name: "Vimes's Childhood Home"
+  type: slum_dwelling
+  district: cockbill_street
+  position: [575, 460]
+  status: operational
+  narrative_hooks:
+    - "Vimes personally pays for new roof; neighbours torn between gratitude and insult"
+
+# --- Isle of Gods ---
+- id: temple_blind_io
+  name: "Temple of Blind Io"
+  type: civic_amenity
+  district: isle_of_gods
+  position: [180, 500]
+  status: operational
+
+- id: temple_offler
+  name: "Temple of Offler"
+  type: civic_amenity
+  district: isle_of_gods
+  position: [220, 530]
+  status: operational
+  narrative_hooks:
+    - "Temple of Offler demands river cleaning after crocodile spotted"
+
+- id: isle_bridge
+  name: "Isle of Gods Bridge"
+  type: civic_institution
+  district: isle_of_gods
+  position: [160, 470]
+  status: operational
+  narrative_hooks:
+    - "Isle of Gods bridge closed; residents demand ferry service"
+
+# --- University Precinct ---
+- id: unseen_university
+  name: "Unseen University"
+  type: university
+  district: university_precinct
+  position: [350, 280]
+  status: operational
+  narrative_hooks:
+    - "Wizard experiment causes three days of perpetual twilight"
+    - "The Tower of Art is leaning"
+    - "UU requests city council fund new library wing"
+
+- id: scroll_shop
+  name: "Midnight's Scroll Emporium"
+  type: civic_amenity
+  district: university_precinct
+  position: [380, 310]
+  status: operational
+  narrative_hooks:
+    - "Local scroll shop demands UU pay outstanding bills dating back three Archchancellors"
+
+# --- Merchant Quarter ---
+- id: assassins_guild
+  name: "Assassins' Guild"
+  type: guild_hq
+  district: merchant_quarter
+  position: [450, 220]
+  status: operational
+  narrative_hooks:
+    - "Assassins' Guild goes on strike over pension dispute"
+
+- id: thieves_guild
+  name: "Thieves' Guild"
+  type: guild_hq
+  district: merchant_quarter
+  position: [480, 250]
+  status: operational
+  narrative_hooks:
+    - "Rogue faction within Thieves' Guild destabilises insurance market"
+
+- id: mended_drum
+  name: "The Mended Drum"
+  type: tavern
+  district: merchant_quarter
+  position: [460, 280]
+  status: operational
+  narrative_hooks:
+    - "Mended Drum brawl spills into street, breaks new fountain"
+
+- id: royal_bank
+  name: "Royal Bank of Ankh-Morpork"
+  type: guild_hq
+  district: merchant_quarter
+  position: [500, 230]
+  status: operational
+  narrative_hooks:
+    - "Filigree Street bank run after rumour of insolvency"
+
+# --- Small Gods ---
+- id: small_gods_pump
+  name: "Small Gods Pump House"
+  type: middle_class_housing
+  district: small_gods
+  position: [420, 500]
+  status: operational
+
+- id: tannery
+  name: "Tannery"
+  type: middle_class_housing
+  district: small_gods
+  position: [440, 530]
+  status: degraded
+  narrative_hooks:
+    - "Small Gods tanners pollute river downstream of Isle of Gods"
+
+- id: pie_shop
+  name: "Pie Shop"
+  type: tavern
+  district: small_gods
+  position: [460, 510]
+  status: operational
+  narrative_hooks:
+    - "Local hero prevents robbery of pie shop; rewarded with free pies for life"
+
+- id: small_gods_temple
+  name: "Temple of Small Gods"
+  type: civic_amenity
+  district: small_gods
+  position: [400, 520]
+  status: operational
+
+# --- Palace (special, attached to Merchant Quarter) ---
+- id: patricians_palace
+  name: "The Patrician's Palace"
+  type: palace
+  district: merchant_quarter
+  position: [430, 190]
+  status: operational
+  narrative_hooks:
+    - "A sewer tunnel collapses beneath the Palace, revealing unknown route into the heart of power"
+    - "Vetinari is 'indisposed' for a week; the city holds its breath"
+
+# --- Civic Institutions ---
+- id: pseudopolis_yard
+  name: "Pseudopolis Yard"
+  type: civic_institution
+  district: merchant_quarter
+  position: [510, 270]
+  status: operational
+  narrative_hooks:
+    - "Pseudopolis Yard's new cell block collapses, freeing dozens of petty criminals"
+
+- id: post_office
+  name: "Ankh-Morpork Post Office"
+  type: civic_institution
+  district: merchant_quarter
+  position: [530, 250]
+  status: operational
+  narrative_hooks:
+    - "Post Office glitch loses an aristocrat's invitation; he takes it out on a servant"
+
+- id: lady_sybil_hospital
+  name: "Lady Sybil Free Hospital"
+  type: civic_institution
+  district: small_gods
+  position: [390, 480]
+  status: operational
+  narrative_hooks:
+    - "Hospital diversion due to power failure"
+
+- id: dwarf_bread_museum
+  name: "Dwarf Bread Museum"
+  type: civic_amenity
+  district: merchant_quarter
+  position: [490, 200]
+  status: operational
+  narrative_hooks:
+    - "Scone of Stone stolen from museum! Dwarfish diaspora in uproar"

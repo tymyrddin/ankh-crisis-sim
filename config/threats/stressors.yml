@@ -1,0 +1,72 @@
+# Systemic stressors — latent conditions that shape how disruptions unfold
+
+underinvestment:
+  label: "Austerity and Underinvestment"
+  description: "Maintenance deferred, upgrades delayed, reserve capacity minimal."
+  starting_level: 0.6               # 0.0 (none) to 1.0 (maximum)
+  effects:
+    - increases_probability: degradation_and_neglect
+    - extends_recovery_time: 1.3
+  player_influence:
+    worsen: "Cutting budgets further"
+    improve: "Investing in resilience"
+  change_rate:
+    budget_cut_increase: 0.05
+    resilience_investment_decrease: 0.03
+
+just_in_time:
+  label: "Just-in-time Logistics"
+  description: "Food arrives daily. Parts arrive exactly when needed. No slack."
+  starting_level: 0.7
+  effects:
+    - amplifies_cascade: [transport, commercial]
+    - shortens_buffer_days: 1
+  player_influence:
+    worsen: "Ignoring, accepting fragility"
+    improve: "Investing in buffer stocks (expensive)"
+  change_rate:
+    buffer_investment_decrease: 0.02
+    neglect_increase: 0.01
+
+vendor_monoculture:
+  label: "Vendor Monoculture"
+  description: "Many critical systems rely on a single provider."
+  starting_level: 0.5
+  effects:
+    - single_point_of_failure: true
+    - multi_district_impact: true
+  player_influence:
+    worsen: "Accepting risk"
+    improve: "Diversify vendors (costly, slow) or regulate (political fight)"
+  change_rate:
+    diversification_decrease: 0.02
+    neglect_increase: 0.01
+
+social_inequality:
+  label: "Social and Spatial Inequality"
+  description: "Wealthy areas have redundant connections. Poor districts have ageing infrastructure."
+  starting_level: 0.7
+  effects:
+    - unequal_restoration: true
+    - trust_erosion_in_poor_districts: 1.5
+  player_influence:
+    worsen: "Prioritising wealthy districts consistently"
+    improve: "Investing in poor districts (politically costly)"
+  change_rate:
+    inequality_increase: 0.02        # when wealthy districts prioritised
+    inequality_decrease: 0.03        # when poor districts invested in
+
+organisational_fragmentation:
+  label: "Organisational Fragmentation"
+  description: "Responsibility split between Patrician, Guilds, Watch, and private companies."
+  starting_level: 0.5
+  effects:
+    - delays_response: 1.4
+    - amplifies_confusion: true
+    - accelerates_trust_decay: 1.2
+  player_influence:
+    worsen: "Leaving as is"
+    improve: "Centralise (political resistance) or coordinate better (time investment)"
+  change_rate:
+    coordination_decrease: 0.02
+    neglect_increase: 0.01

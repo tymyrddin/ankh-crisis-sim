@@ -1,0 +1,69 @@
+# Threat categories — grouped by effect, not attacker sophistication
+
+degradation_and_neglect:
+  label: "Degradation and Neglect"
+  description: "Systems degrade over time due to underinvestment, deferred maintenance, outdated dependencies."
+  typical_disruptions:
+    - partial_service_loss
+    - unreliable_performance
+    - cascading_minor_failures
+  key_characteristic: "Often invisible until combined with stress or crisis"
+  stressor_amplifiers:
+    underinvestment: 2.0
+    organisational_fragmentation: 1.3
+
+operational_error:
+  label: "Operational Error and Misconfiguration"
+  description: "Well-intended changes cause unintended outages or instability."
+  typical_disruptions:
+    - sudden_service_interruption
+    - delayed_recovery
+    - responsibility_confusion
+  key_characteristic: "Happens during upgrades, migrations, or emergency fixes"
+  stressor_amplifiers:
+    underinvestment: 1.5            # untrained staff
+    organisational_fragmentation: 1.5
+
+supply_chain_failure:
+  label: "Supply Chain and Vendor Failure"
+  description: "External dependencies fail, withdraw support, or introduce breaking changes."
+  typical_disruptions:
+    - loss_of_monitoring
+    - dependency_lock_in
+    - delayed_remediation
+  key_characteristic: "Limited local control, high contractual complexity"
+  stressor_amplifiers:
+    vendor_monoculture: 2.5
+    just_in_time: 1.8
+
+criminal_interference:
+  label: "Criminal Interference"
+  description: "Disruptions intended to extract money, data, or leverage."
+  typical_disruptions:
+    - service_shutdowns
+    - data_unavailability
+    - forced_workarounds
+  key_characteristic: "Timing often maximises pressure rather than damage"
+  stressor_amplifiers:
+    criminal_target: 2.0
+
+ideological_disruption:
+  label: "Ideological or Activist Disruption"
+  description: "Targeted interference to make a public statement or force policy change."
+  typical_disruptions:
+    - symbolic_outages
+    - selective_service_denial
+    - reputational_embarrassment
+  key_characteristic: "Visibility matters more than duration"
+  stressor_amplifiers:
+    organisational_fragmentation: 1.5
+
+strategic_interference:
+  label: "Strategic or State-aligned Interference"
+  description: "Actions designed to test resilience, create uncertainty, or apply pressure."
+  typical_disruptions:
+    - ambiguous_failures
+    - repeated_low_level_incidents
+    - difficult_attribution
+  key_characteristic: "Designed to exhaust trust and confidence over time"
+  stressor_amplifiers: {}           # no single amplifier; strategic timing

@@ -1,0 +1,81 @@
+"""Event model — an active incident affecting buildings and metrics."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from enum import Enum
+
+
+class EventPhase(str, Enum):
+    HIDDEN = "hidden"          # occurred but not yet detected
+    DETECTED = "detected"      # player can see it
+    RESPONDING = "responding"  # remedy applied, in progress
+    RESOLVED = "resolved"      # fixed (may recur)
+
+
+@dataclass
+class MetricEffect:
+    metric: str
+    delta: float
+    scope: str = "global"        # "global" or "district"
+    district_id: str | None = None
+
+
+@dataclass
+class DelayedEffect:
+    delay_hours: int
+    effects: list[MetricEffect]
+    applied: bool = False
+
+
+@dataclass
+class GameEvent:
+    id: str
+    template_id: str
+    name: str
+    category: str
+    domain: str
+    phase: EventPhase = EventPhase.HIDDEN
+    target_district_id: str = ""
+    target_building_id: str = ""
+    created_tick: int = 0
+    detected_tick: int | None = None
+    resolved_tick: int | None = None
+
+    # Effects
+    immediate_effects: list[MetricEffect] = field(default_factory=list)
+    delayed_effects: list[DelayedEffect] = field(default_factory=list)
+    duration_penalty_per_day: float = 0.0
+    duration_penalty_metric: str = "local_trust"
+
+    # Cascading
+    cascade_dependency: str | None = None
+    cascade_scope: str = "neighbours"  # "neighbours" or "all_dependents"
+
+    # Narrative
+    headline: str = ""
+    story: str = ""
+
+    # Remedy tracking
+    remedy_applied: str | None = None
+
+    @property
+    def is_active(self) -> bool:
+        return self.phase in (EventPhase.HIDDEN, EventPhase.DETECTED, EventPhase.RESPONDING)
+
+    @property
+    def is_visible(self) -> bool:
+        return self.phase != EventPhase.HIDDEN
+
+    def detect(self, tick: int) -> None:
+        if self.phase == EventPhase.HIDDEN:
+            self.phase = EventPhase.DETECTED
+            self.detected_tick = tick
+
+    def start_response(self, remedy: str) -> None:
+        self.phase = EventPhase.RESPONDING
+        self.remedy_applied = remedy
+
+    def resolve(self, tick: int) -> None:
+        self.phase = EventPhase.RESOLVED
+        self.resolved_tick = tick

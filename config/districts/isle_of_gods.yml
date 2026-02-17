@@ -1,0 +1,25 @@
+id: isle_of_gods
+name: "Isle of Gods"
+description: "A residential area semi-encircled by the river. Mix of modest clergy housing, small merchants, and artisan families."
+
+wealth: 55
+density: 90
+infrastructure_quality: 1.0        # baseline
+political_influence: 0.8
+media_attention_multiplier: 0.8
+local_trust: 60
+wealth_archetype: medium_wealth
+
+discovery_time_hours: [12, 24]
+
+stressors:
+  organisational_fragmentation: moderate  # competing temples
+  geographic_isolation: high              # river bend, one bridge
+  underinvestment: moderate
+
+protest_threshold: 20
+
+narrative_hooks:
+  - "Isle of Gods bridge closed for repairs; residents demand ferry service"
+  - "Temple of Offler demands river cleaning after crocodile spotted near shore"
+  - "Inter-faith potluck dinner ends in doctrinal dispute over the offending sausage"

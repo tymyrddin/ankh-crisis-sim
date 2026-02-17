@@ -1,0 +1,29 @@
+id: cockbill_street
+name: "Cockbill Street"
+description: "The poorest street in the poorest district, but with fierce local pride. Vimes was raised here."
+
+wealth: 8
+density: 350
+infrastructure_quality: 3.5        # 3.5x failure probability (inverse: very low quality)
+political_influence: 0.1
+media_attention_multiplier: 0.1    # spikes to 1.5x with Vimes
+local_trust: 20                    # in city; 80 in Vimes personally
+wealth_archetype: low_wealth
+
+discovery_time_hours: [120, 240]   # 5+ days, possibly never (pride)
+
+stressors:
+  underinvestment: extreme
+  social_inequality: victim
+  pride: concealment                # actively hides problems
+
+vimes_proxy:
+  media_spike: 1.5
+  trust_in_vimes: 80
+
+protest_threshold: 8               # won't complain out of pride
+
+narrative_hooks:
+  - "Cockbill Street pump breaks; residents refuse to report it for a week"
+  - "Vimes personally pays for new roof on childhood home; neighbours torn between gratitude and insult"
+  - "Street celebrates 'Founder's Day' with a parade of antique poverty"
