@@ -12,6 +12,7 @@ from src.gui.map_canvas import MapCanvas
 from src.gui.news_ticker import NewsTicker
 from src.gui.popups import HoverPopup, RemedyMenu
 from src.gui.postgame import PostgameScreen
+from src.gui.theme import PAPER, PAPER_DARK, load_fonts, fonts
 from src.gui.time_controls import TimeControls
 from src.models.building import Building
 
@@ -19,19 +20,25 @@ from src.models.building import Building
 class App(ctk.CTk):
     """The main Ankh-Morpork Crisis Simulator window."""
 
-    TICK_INTERVAL_MS = 100  # base interval between ticks at 1x speed
-
     def __init__(self, config_dir: str = "config", map_image: str = "static/images/ankh-morpork.png"):
         super().__init__()
         self.title("Ankh-Morpork: Lord Vetinari's Dilemma")
         self.geometry("1400x900")
 
-        ctk.set_appearance_mode("dark")
+        ctk.set_appearance_mode("light")
         ctk.set_default_color_theme("blue")
+
+        # Load steampunk fonts and paper palette
+        font_family = load_fonts()
+        self._fonts = fonts(font_family)
+        self.configure(fg_color=PAPER)
 
         # Simulation engine
         self.sim = Simulation(config_dir)
         self.sim.initialise()
+
+        # Tick interval derived from config: seconds_per_game_hour → milliseconds
+        self._tick_interval_ms = int(self.sim.cfg.speed.seconds_per_game_hour * 1000)
 
         self._game_over = False
         self._tick_job: str | None = None
@@ -44,14 +51,14 @@ class App(ctk.CTk):
         self.grid_rowconfigure(1, weight=0)
 
         # Map frame
-        map_frame = ctk.CTkFrame(self)
+        map_frame = ctk.CTkFrame(self, fg_color=PAPER_DARK, border_width=1, border_color=PAPER_DARK)
         map_frame.grid(row=0, column=0, padx=(10, 5), pady=(10, 5), sticky="nsew")
 
         self.map_canvas = MapCanvas(map_frame, map_image)
         self.map_canvas.draw_buildings(self.sim.city)
 
         # Dashboard frame
-        dashboard_frame = ctk.CTkFrame(self)
+        dashboard_frame = ctk.CTkFrame(self, fg_color=PAPER_DARK, border_width=1, border_color=PAPER_DARK)
         dashboard_frame.grid(row=0, column=1, padx=(5, 10), pady=(10, 5), sticky="nsew")
 
         self.dashboard = Dashboard(dashboard_frame)
@@ -59,12 +66,12 @@ class App(ctk.CTk):
         self.dashboard.build_districts(self.sim.city)
 
         # Bottom row: news ticker (left) + time controls (right)
-        bottom_left = ctk.CTkFrame(self)
+        bottom_left = ctk.CTkFrame(self, fg_color=PAPER_DARK, border_width=1, border_color=PAPER_DARK)
         bottom_left.grid(row=1, column=0, padx=(10, 5), pady=(5, 10), sticky="ew")
 
         self.news_ticker = NewsTicker(bottom_left)
 
-        bottom_right = ctk.CTkFrame(self)
+        bottom_right = ctk.CTkFrame(self, fg_color=PAPER_DARK, border_width=1, border_color=PAPER_DARK)
         bottom_right.grid(row=1, column=1, padx=(5, 10), pady=(5, 10), sticky="ew")
 
         self.time_controls = TimeControls(bottom_right)
@@ -95,7 +102,7 @@ class App(ctk.CTk):
     def _schedule_tick(self) -> None:
         if self._game_over:
             return
-        interval = max(10, int(self.TICK_INTERVAL_MS / self.sim.clock.speed_multiplier))
+        interval = max(10, int(self._tick_interval_ms / self.sim.clock.speed_multiplier))
         self._tick_job = self.after(interval, self._do_tick)
 
     def _do_tick(self) -> None:

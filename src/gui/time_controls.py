@@ -5,6 +5,7 @@ from __future__ import annotations
 import customtkinter as ctk
 
 from src.engine.clock import ClockState, GameClock
+from src.gui.theme import ACCENT_BROWN, INK, INK_MUTED, PAPER, PAPER_DARK, fonts
 
 
 class TimeControls:
@@ -15,46 +16,53 @@ class TimeControls:
         self.on_pause: callable | None = None
         self.on_play: callable | None = None
         self.on_speed: callable | None = None  # (multiplier: float) -> None
+        f = fonts()
 
         # Controls row
         controls = ctk.CTkFrame(parent, fg_color="transparent")
         controls.pack(fill="x", padx=10, pady=5)
 
+        btn_kwargs = dict(
+            width=70, font=f.small_bold,
+            fg_color=ACCENT_BROWN, hover_color="#a07a1a",
+            text_color=PAPER,
+        )
+
         self._pause_btn = ctk.CTkButton(
-            controls, text="Pause", width=70,
-            command=self._on_pause,
+            controls, text="Pause",
+            command=self._on_pause, **btn_kwargs,
         )
         self._pause_btn.pack(side="left", padx=3)
 
         self._play_btn = ctk.CTkButton(
-            controls, text="Play", width=70,
-            command=self._on_play,
+            controls, text="Play",
+            command=self._on_play, **btn_kwargs,
         )
         self._play_btn.pack(side="left", padx=3)
 
         self._fast_btn = ctk.CTkButton(
-            controls, text="Fast", width=70,
-            command=lambda: self._on_speed(10.0),
+            controls, text="Fast",
+            command=lambda: self._on_speed(10.0), **btn_kwargs,
         )
         self._fast_btn.pack(side="left", padx=3)
 
         self._faster_btn = ctk.CTkButton(
-            controls, text="Faster", width=70,
-            command=lambda: self._on_speed(50.0),
+            controls, text="Faster",
+            command=lambda: self._on_speed(50.0), **btn_kwargs,
         )
         self._faster_btn.pack(side="left", padx=3)
 
         # Time display
         self._time_label = ctk.CTkLabel(
             controls, text="Day 1 - 08:00",
-            font=("Arial", 14, "bold"),
+            font=f.clock, text_color=INK,
         )
         self._time_label.pack(side="right", padx=15)
 
         # Speed display
         self._speed_label = ctk.CTkLabel(
             controls, text="1.0x",
-            font=("Arial", 11), text_color="gray",
+            font=f.small, text_color=INK_MUTED,
         )
         self._speed_label.pack(side="right", padx=5)
 

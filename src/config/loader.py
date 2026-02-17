@@ -34,6 +34,7 @@ class TimeConfig:
 
 @dataclass
 class SpeedConfig:
+    seconds_per_game_hour: float = 1.0
     default_multiplier: float = 1.0
     fast_multiplier: float = 10.0
     max_multiplier: float = 50.0
@@ -220,6 +221,7 @@ def load_config(config_dir: str | Path) -> GameConfig:
     )
     speed_raw = game_raw.get("speed", {})
     cfg.speed = SpeedConfig(
+        seconds_per_game_hour=speed_raw.get("seconds_per_game_hour", 1.0),
         default_multiplier=speed_raw.get("default_multiplier", 1.0),
         fast_multiplier=speed_raw.get("fast_multiplier", 10.0),
         max_multiplier=speed_raw.get("max_multiplier", 50.0),

@@ -4,17 +4,25 @@ from __future__ import annotations
 
 import customtkinter as ctk
 
+from src.gui.theme import ACCENT_BROWN, INK, PAPER, PAPER_DARK, fonts
+
 
 class NewsTicker:
     """A scrolling text area showing headlines as they arrive."""
 
     def __init__(self, parent: ctk.CTkFrame):
         self.parent = parent
+        f = fonts()
 
-        header = ctk.CTkLabel(parent, text="NEWS", font=("Arial", 12, "bold"))
+        header = ctk.CTkLabel(
+            parent, text="NEWS", font=f.heading, text_color=ACCENT_BROWN,
+        )
         header.pack(anchor="w", padx=10, pady=(5, 2))
 
-        self._textbox = ctk.CTkTextbox(parent, height=100, state="disabled", wrap="word")
+        self._textbox = ctk.CTkTextbox(
+            parent, height=100, state="disabled", wrap="word",
+            font=f.small, text_color=INK, fg_color=PAPER,
+        )
         self._textbox.pack(fill="both", expand=True, padx=10, pady=(0, 5))
 
         self._headlines: list[tuple[str, str]] = []  # (timestamp, text)

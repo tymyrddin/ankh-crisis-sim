@@ -7,13 +7,14 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageTk
 
+from src.gui.theme import STATUS_GREEN, STATUS_RED, STATUS_YELLOW, PAPER, INK
 from src.models.building import BuildingStatus
 from src.models.city import City
 
 STATUS_COLOURS = {
-    BuildingStatus.OPERATIONAL: "#00cc00",
-    BuildingStatus.DEGRADED: "#ffcc00",
-    BuildingStatus.FAILED: "#ff3333",
+    BuildingStatus.OPERATIONAL: STATUS_GREEN,
+    BuildingStatus.DEGRADED: STATUS_YELLOW,
+    BuildingStatus.FAILED: STATUS_RED,
 }
 
 # District tint colours (muted, semi-transparent)
@@ -42,7 +43,7 @@ class MapCanvas:
             width=width,
             height=height,
             highlightthickness=0,
-            bg="#1a1a2e",
+            bg=PAPER,
         )
         self.canvas.pack(fill="both", expand=True)
 
@@ -64,12 +65,12 @@ class MapCanvas:
         if path.exists():
             img = Image.open(path).resize((self.width, self.height), Image.LANCZOS)
         else:
-            # Generate a placeholder dark map
-            img = Image.new("RGB", (self.width, self.height), "#1a1a2e")
+            # Generate a placeholder parchment map
+            img = Image.new("RGB", (self.width, self.height), PAPER)
             draw = ImageDraw.Draw(img)
             # Draw a simple river
-            draw.line([(0, 350), (self.width, 350)], fill="#2A4A6A", width=20)
-            draw.text((self.width // 2 - 80, self.height // 2), "ANKH-MORPORK", fill="#666")
+            draw.line([(0, 350), (self.width, 350)], fill="#8b7355", width=20)
+            draw.text((self.width // 2 - 80, self.height // 2), "ANKH-MORPORK", fill=INK)
 
         self._base_map_tk = ImageTk.PhotoImage(img)
         self._image_refs.append(self._base_map_tk)
@@ -94,7 +95,7 @@ class MapCanvas:
                 # Outer glow
                 glow_id = self.canvas.create_oval(
                     x - 12, y - 12, x + 12, y + 12,
-                    outline="white", width=2,
+                    outline=INK, width=2,
                     tags=("building_glow", f"b_{building.id}"),
                 )
                 self._glow_ids[building.id] = glow_id
@@ -102,7 +103,7 @@ class MapCanvas:
                 # Inner lamp
                 lamp_id = self.canvas.create_oval(
                     x - 8, y - 8, x + 8, y + 8,
-                    fill=colour, outline="#222", width=1,
+                    fill=colour, outline=INK, width=1,
                     tags=("building_lamp", f"b_{building.id}"),
                 )
                 self._lamp_ids[building.id] = lamp_id
