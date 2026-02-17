@@ -33,6 +33,7 @@ class TickResult:
     cascade_events: list[GameEvent] = field(default_factory=list)
     headlines: list[str] = field(default_factory=list)
     completed_remedies: list[str] = field(default_factory=list)
+    completed_remedy_events: list[GameEvent] = field(default_factory=list)
     end_result: EndResult | None = None
 
 
@@ -84,7 +85,7 @@ class Simulation:
                 result.headlines.append(headline)
 
         # 4. Cascade propagation
-        cascades = propagate_cascades(self.city, self.clock.tick)
+        cascades = propagate_cascades(self.city, self.clock.tick, self.cfg.time.ticks_per_day)
         for ce in cascades:
             self.city.events.append(ce)
             if ce.headline:
@@ -99,7 +100,8 @@ class Simulation:
 
         # 7. Remedy completions
         completed = process_remedy_completions(self.cfg, self.city, self.clock.tick)
-        result.completed_remedies = completed
+        result.completed_remedies = [msg for msg, _ in completed]
+        result.completed_remedy_events = [evt for _, evt in completed]
 
         # 8. Income
         apply_income(self.city, self.cfg, self.clock.tick, self.cfg.time.ticks_per_day)

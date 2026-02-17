@@ -47,8 +47,13 @@ def _find_dependent_buildings(
 def propagate_cascades(
     city: City,
     tick: int,
+    ticks_per_day: int = 24,
 ) -> list[GameEvent]:
-    """For each active event with cascade rules, potentially fail dependent buildings."""
+    """For each active event with cascade rules, potentially fail dependent buildings.
+
+    Cascades roll once per day per event (not every tick), starting from the
+    tick the event was detected. This spreads cascade failures over time.
+    """
     cascade_events = []
 
     for event in city.active_events:
@@ -56,6 +61,13 @@ def propagate_cascades(
             continue
         if not event.is_visible:
             continue  # cascades only from detected events
+
+        # Only roll cascades once per day (at the daily anniversary of detection)
+        hours_since_detected = tick - (event.detected_tick or event.created_tick)
+        if hours_since_detected == 0:
+            pass  # first tick after detection — always roll
+        elif hours_since_detected % ticks_per_day != 0:
+            continue  # not a daily boundary — skip
 
         failed_building = city.get_building(event.target_building_id)
         if not failed_building:

@@ -49,7 +49,9 @@ def _find_target_building(
 
     if not candidates:
         return None
-    return random.choice(candidates)
+    # Buildings with high recurrence_risk are more likely to be targeted again
+    weights = [1.0 + building.recurrence_risk * 9.0 for building in candidates]
+    return random.choices(candidates, weights=weights, k=1)[0]
 
 
 def generate_events(

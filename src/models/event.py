@@ -52,12 +52,16 @@ class GameEvent:
     cascade_dependency: str | None = None
     cascade_scope: str = "neighbours"  # "neighbours" or "all_dependents"
 
+    # Detection
+    discovery_time_hours: float | None = None
+
     # Narrative
     headline: str = ""
     story: str = ""
 
     # Remedy tracking
     remedy_applied: str | None = None
+    remedy_applied_tick: int | None = None
 
     @property
     def is_active(self) -> bool:
@@ -72,9 +76,10 @@ class GameEvent:
             self.phase = EventPhase.DETECTED
             self.detected_tick = tick
 
-    def start_response(self, remedy: str) -> None:
+    def start_response(self, remedy: str, tick: int) -> None:
         self.phase = EventPhase.RESPONDING
         self.remedy_applied = remedy
+        self.remedy_applied_tick = tick
 
     def resolve(self, tick: int) -> None:
         self.phase = EventPhase.RESOLVED

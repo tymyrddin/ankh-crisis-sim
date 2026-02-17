@@ -62,6 +62,9 @@ class Dashboard:
         )
         self._events_frame.pack(fill="both", expand=True, padx=10, pady=5)
 
+        # Track rendered event widgets to avoid destroy/recreate wobble
+        self._event_widgets: dict[str, tuple[ctk.CTkFrame, str]] = {}  # event_id -> (row, snapshot)
+
     def build_metrics(self, city: City) -> None:
         """Create metric display rows."""
         f = fonts()
@@ -85,6 +88,7 @@ class Dashboard:
                 row, text=fmt,
                 font=f.body_bold,
                 text_color=colour,
+                width=100, anchor="e",
             )
             value_label.pack(side="right", padx=8, pady=4)
             self._metric_labels[key] = value_label
@@ -132,23 +136,43 @@ class Dashboard:
                 label.configure(text=fmt)
 
     def update_events(self, city: City) -> None:
-        """Refresh the active events list."""
-        for widget in self._events_frame.winfo_children():
+        """Refresh the active events list — only rebuilds when events change."""
+        current_ids = set()
+        snapshots: dict[str, str] = {}
+
+        for event in city.visible_events:
+            phase_icon = {
+                "detected": "!",
+                "responding": "~",
+            }.get(event.phase.value, "?")
+            snap = f"[{phase_icon}] {event.headline or event.name}"
+            current_ids.add(event.id)
+            snapshots[event.id] = snap
+
+        # Check if anything changed
+        old_ids = set(self._event_widgets.keys())
+        changed = current_ids != old_ids or any(
+            snapshots.get(eid) != self._event_widgets[eid][1]
+            for eid in current_ids & old_ids
+        )
+        if not changed:
+            return
+
+        # Rebuild only when the list actually changed
+        for widget, _ in self._event_widgets.values():
             widget.destroy()
+        self._event_widgets.clear()
 
         f = fonts()
         for event in city.visible_events:
             row = ctk.CTkFrame(self._events_frame, fg_color="transparent")
             row.pack(fill="x", pady=2)
 
-            phase_icon = {
-                "detected": "!",
-                "responding": "~",
-            }.get(event.phase.value, "?")
-
             ctk.CTkLabel(
                 row,
-                text=f"[{phase_icon}] {event.headline or event.name}",
+                text=snapshots[event.id],
                 font=f.small, text_color=INK,
                 wraplength=250,
             ).pack(side="left", padx=5, pady=3)
+
+            self._event_widgets[event.id] = (row, snapshots[event.id])

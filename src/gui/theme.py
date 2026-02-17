@@ -24,6 +24,7 @@ BORDER = "#c4a86a"         # subtle frame borders
 STATUS_GREEN = "#2e7d32"
 STATUS_YELLOW = "#f9a825"
 STATUS_RED = "#c62828"
+STATUS_RESPONDING = "#e68a00"  # amber — remedy in progress
 
 # Metric colours (warm-shifted to suit paper)
 METRIC_COLOURS = {

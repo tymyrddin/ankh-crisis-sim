@@ -7,7 +7,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageTk
 
-from src.gui.theme import STATUS_GREEN, STATUS_RED, STATUS_YELLOW, PAPER, INK
+from src.gui.theme import STATUS_GREEN, STATUS_RED, STATUS_RESPONDING, STATUS_YELLOW, PAPER, INK
 from src.models.building import BuildingStatus
 from src.models.city import City
 
@@ -113,13 +113,18 @@ class MapCanvas:
         self.canvas.tag_bind("building_lamp", "<Leave>", self._on_leave)
         self.canvas.tag_bind("building_lamp", "<Button-1>", self._on_click)
 
-    def update_building(self, building_id: str, status: BuildingStatus, hidden: bool = False) -> None:
+    def update_building(
+        self, building_id: str, status: BuildingStatus,
+        hidden: bool = False, responding: bool = False,
+    ) -> None:
         """Update a single building's lamp colour."""
         if building_id not in self._lamp_ids:
             return
         colour = STATUS_COLOURS.get(status, "#666666")
         if hidden:
             colour = STATUS_COLOURS[BuildingStatus.OPERATIONAL]
+        elif responding:
+            colour = STATUS_RESPONDING
         self.canvas.itemconfig(self._lamp_ids[building_id], fill=colour)
 
     def _get_building_id_from_tags(self, event: tk.Event) -> str | None:

@@ -16,6 +16,7 @@ class TimeControls:
         self.on_pause: callable | None = None
         self.on_play: callable | None = None
         self.on_speed: callable | None = None  # (multiplier: float) -> None
+        self.on_exit: callable | None = None
         f = fonts()
 
         # Controls row
@@ -40,31 +41,43 @@ class TimeControls:
         )
         self._play_btn.pack(side="left", padx=3)
 
+        self._slow_btn = ctk.CTkButton(
+            controls, text="Slower",
+            command=lambda: self._on_speed(1.0), **btn_kwargs,
+        )
+        self._slow_btn.pack(side="left", padx=3)
+
         self._fast_btn = ctk.CTkButton(
-            controls, text="Fast",
+            controls, text="Faster",
             command=lambda: self._on_speed(10.0), **btn_kwargs,
         )
         self._fast_btn.pack(side="left", padx=3)
 
-        self._faster_btn = ctk.CTkButton(
-            controls, text="Faster",
-            command=lambda: self._on_speed(50.0), **btn_kwargs,
+        # Exit button
+        self._exit_btn = ctk.CTkButton(
+            controls, text="Exit",
+            command=self._on_exit,
+            width=70, font=f.small_bold,
+            fg_color="#8b2020", hover_color="#a03030",
+            text_color=PAPER,
         )
-        self._faster_btn.pack(side="left", padx=3)
+        self._exit_btn.pack(side="left", padx=(15, 3))
 
-        # Time display
+        # Time and speed row (below buttons)
+        info_row = ctk.CTkFrame(parent, fg_color="transparent")
+        info_row.pack(fill="x", padx=10, pady=(0, 5))
+
         self._time_label = ctk.CTkLabel(
-            controls, text="Day 1 - 08:00",
+            info_row, text="Day 1 - 00:00",
             font=f.clock, text_color=INK,
         )
-        self._time_label.pack(side="right", padx=15)
+        self._time_label.pack(side="left", padx=5)
 
-        # Speed display
         self._speed_label = ctk.CTkLabel(
-            controls, text="1.0x",
+            info_row, text="1.0x",
             font=f.small, text_color=INK_MUTED,
         )
-        self._speed_label.pack(side="right", padx=5)
+        self._speed_label.pack(side="left", padx=5)
 
     def update(self, clock: GameClock) -> None:
         """Refresh the time display."""
@@ -89,3 +102,7 @@ class TimeControls:
     def _on_speed(self, multiplier: float) -> None:
         if self.on_speed:
             self.on_speed(multiplier)
+
+    def _on_exit(self) -> None:
+        if self.on_exit:
+            self.on_exit()

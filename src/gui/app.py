@@ -78,6 +78,7 @@ class App(ctk.CTk):
         self.time_controls.on_pause = self._on_pause
         self.time_controls.on_play = self._on_play
         self.time_controls.on_speed = self._on_speed
+        self.time_controls.on_exit = self._on_exit
 
         # Popups
         self.hover_popup = HoverPopup(self)
@@ -128,10 +129,13 @@ class App(ctk.CTk):
             self.news_ticker.add_headline(self.sim.clock.time_string, msg)
 
         # Update building lamps for any changed buildings
-        for event in result.detected_events + result.cascade_events:
+        for event in result.detected_events + result.cascade_events + result.completed_remedy_events:
             building = self.sim.city.get_building(event.target_building_id)
             if building:
-                self.map_canvas.update_building(building.id, building.status, building.hidden_failure)
+                responding = event.phase.value == "responding"
+                self.map_canvas.update_building(
+                    building.id, building.status, building.hidden_failure, responding,
+                )
 
         # Update dashboard every tick (cheap enough)
         self.dashboard.update(self.sim.city)
@@ -166,6 +170,10 @@ class App(ctk.CTk):
             if self._tick_job:
                 self.after_cancel(self._tick_job)
             self._schedule_tick()
+
+    def _on_exit(self) -> None:
+        self.sim.pause()
+        self.destroy()
 
     # --- Building interaction ---
 
@@ -203,7 +211,10 @@ class App(ctk.CTk):
             if event:
                 building = self.sim.city.get_building(event.target_building_id)
                 if building:
-                    self.map_canvas.update_building(building.id, building.status)
+                    responding = event.phase.value == "responding"
+                    self.map_canvas.update_building(
+                        building.id, building.status, building.hidden_failure, responding,
+                    )
             self.dashboard.update(self.sim.city)
         else:
             self.news_ticker.add_headline(self.sim.clock.time_string, f"Failed: {result.message}")

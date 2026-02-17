@@ -64,7 +64,7 @@ def apply_remedy(
     city.budget.apply(-cost, tick, cause=f"{remedy.label} at {building.name if building else 'unknown'}")
 
     # Mark event as responding
-    event.start_response(remedy_id)
+    event.start_response(remedy_id, tick)
 
     # Apply immediate trust effects
     trust_raw = remedy.raw.get("trust_effect", {})
@@ -111,23 +111,26 @@ def process_remedy_completions(
     cfg: GameConfig,
     city: City,
     tick: int,
-) -> list[str]:
-    """Check for remedies that have completed their downtime."""
-    completed = []
+) -> list[tuple[str, GameEvent]]:
+    """Check for remedies that have completed their downtime.
+
+    Returns list of (message, resolved_event) tuples.
+    """
+    completed: list[tuple[str, GameEvent]] = []
     for event in city.active_events:
         if event.remedy_applied is None:
             continue
         remedy = cfg.remedies.get(event.remedy_applied)
         if not remedy:
             continue
-        if event.detected_tick is None:
+        if event.remedy_applied_tick is None:
             continue
 
-        hours_since_remedy = tick - event.detected_tick  # approximate
+        hours_since_remedy = tick - event.remedy_applied_tick
         if hours_since_remedy >= remedy.downtime_hours:
             building = city.get_building(event.target_building_id)
             _resolve_event(cfg, city, event, remedy, building, tick)
-            completed.append(f"{event.name} resolved via {remedy.label}")
+            completed.append((f"{event.name} resolved via {remedy.label}", event))
 
     return completed
 

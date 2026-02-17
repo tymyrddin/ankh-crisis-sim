@@ -67,10 +67,12 @@ def process_detection(
         if event.is_visible:
             continue  # already detected
 
-        hours_elapsed = tick - event.created_tick
-        discovery_time = _get_discovery_time(cfg, city, event)
+        # Calculate discovery time once and cache it on the event
+        if event.discovery_time_hours is None:
+            event.discovery_time_hours = _get_discovery_time(cfg, city, event)
 
-        if hours_elapsed >= discovery_time:
+        hours_elapsed = tick - event.created_tick
+        if hours_elapsed >= event.discovery_time_hours:
             event.detect(tick)
 
             # Mark the building as no longer hidden
