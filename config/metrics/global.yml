@@ -149,3 +149,52 @@ legitimacy:
   recovery_rate:
     time_per_month: 0.5              # very slow
     guild_reendorsement: 20
+
+public_health:
+  description: "Population wellbeing — physical health, disease risk, access to care and clean water"
+  min: 0
+  max: 100
+  starting: 75
+
+  decay_by_incident:
+    water_failure_prolonged: -15     # contamination and disease risk
+    food_shortage: -10               # malnutrition compounds quickly
+    healthcare_failure: -20          # people cannot get treated; leading indicator of legitimacy collapse
+    fire_spread: -8                  # injuries and displacement
+    workshop_fire: -3                # smoke, injuries, localised harm
+
+  recovery_by_remedy:
+    technical_restoration:
+      rate_per_day: 2
+      max_recovery: 10
+    resilience_investment:
+      rate_per_week: 3
+      permanent: true
+    compensatory_measures:
+      immediate: 4
+
+crime_level:
+  description: "Prevalence of unlicensed criminal activity — distinct from the Thieves' Guild quota system"
+  min: 0
+  max: 100
+  starting: 22
+  lower_is_better: true             # note: higher = worse
+
+  increase_triggers:
+    watch_post_closed: 8
+    food_shortage: 5                 # economic desperation
+    workshop_closures: 6             # unemployment compounds
+    trust_collapse: 10               # social order breaking down
+    guild_extortion: 4               # organised crime tests boundaries
+
+  decrease_triggers:
+    watch_fully_staffed: -5
+    successful_restoration: -3
+    vimes_focused: -10
+    accountability_actions: -4
+
+  thresholds:
+    low: 20                          # normal city hum; Thieves' Guild keeps order
+    moderate: 40                     # Watch stretched; unlicensed activity visible
+    high: 60                         # Thieves' Guild losing control of unlicensed actors
+    critical: 80                     # near-breakdown of social order

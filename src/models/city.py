@@ -20,6 +20,8 @@ class City:
     regulatory_pressure: Metric = field(default_factory=lambda: Metric("regulatory_pressure", 18.0))
     political_stability: Metric = field(default_factory=lambda: Metric("political_stability", 75.0))
     legitimacy: Metric = field(default_factory=lambda: Metric("legitimacy", 82.0))
+    public_health: Metric = field(default_factory=lambda: Metric("public_health", 75.0))
+    crime_level: Metric = field(default_factory=lambda: Metric("crime_level", 22.0))
 
     # Stressor levels (city-wide, evolve over game)
     stressors: dict[str, float] = field(default_factory=dict)
@@ -48,6 +50,27 @@ class City:
         for event in self.visible_events:
             result.setdefault(event.domain, []).append(event)
         return result
+
+    @property
+    def infrastructure_health_pct(self) -> float:
+        """Percentage of buildings across all districts that are operational."""
+        total = sum(len(d.buildings) for d in self.districts.values())
+        if total == 0:
+            return 100.0
+        operational = sum(d.operational_building_count for d in self.districts.values())
+        return (operational / total) * 100.0
+
+    @property
+    def watch_coverage_pct(self) -> float:
+        """Percentage of security buildings that are currently operational."""
+        security = [
+            b for d in self.districts.values()
+            for b in d.buildings.values()
+            if b.type_id == "security"
+        ]
+        if not security:
+            return 100.0
+        return sum(1 for b in security if b.is_operational) / len(security) * 100.0
 
     def get_building(self, building_id: str):
         """Find a building across all districts."""

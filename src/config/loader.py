@@ -315,6 +315,8 @@ def build_city(config_dir: str | Path) -> tuple[GameConfig, City]:
     city.regulatory_pressure = Metric("regulatory_pressure", sv.get("regulatory_pressure", 18))
     city.political_stability = Metric("political_stability", sv.get("political_stability", 75))
     city.legitimacy = Metric("legitimacy", sv.get("legitimacy", 82))
+    city.public_health = Metric("public_health", sv.get("public_health", 75))
+    city.crime_level = Metric("crime_level", sv.get("crime_level", 22))
 
     # Set city-wide stressor levels
     for sid, scfg in cfg.stressors.items():

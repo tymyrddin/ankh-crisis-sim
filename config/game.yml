@@ -19,6 +19,8 @@ starting_values:
   regulatory_pressure: 18
   political_stability: 75
   legitimacy: 82
+  public_health: 75
+  crime_level: 22
 
 budget:
   income_per_month:

@@ -63,6 +63,7 @@ class App(ctk.CTk):
 
         self.dashboard = Dashboard(dashboard_frame)
         self.dashboard.build_metrics(self.sim.city)
+        self.dashboard.build_status(self.sim.city)
         self.dashboard.build_districts(self.sim.city)
 
         # Bottom row: news ticker (left) + time controls (right)

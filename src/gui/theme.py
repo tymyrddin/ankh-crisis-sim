@@ -33,6 +33,8 @@ METRIC_COLOURS = {
     "regulatory_pressure": "#e65100",
     "political_stability": "#6a1b9a",
     "legitimacy": "#ad1457",
+    "public_health": "#00695c",       # teal — health and care
+    "crime_level": "#b71c1c",         # dark red — danger; higher = worse
 }
 
 # Trust thresholds

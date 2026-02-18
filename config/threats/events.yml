@@ -19,6 +19,8 @@
       effects:
         - metric: public_trust
           delta: -3
+        - metric: public_health
+          delta: -5                   # contamination and disease risk
     duration_penalty:
       per_day_unresolved: -1
       metric: local_trust
@@ -133,6 +135,8 @@
         delta: -15
       - metric: regulatory_pressure
         delta: 12
+      - metric: public_health
+        delta: -15                    # people cannot get treated
     secondary:
       delay_hours: 24
       effects:
@@ -140,6 +144,8 @@
           delta: -5
         - metric: political_stability
           delta: -5
+        - metric: public_health
+          delta: -5                   # ongoing deterioration without care
     duration_penalty:
       per_day_unresolved: -2.5
       metric: public_trust
@@ -163,6 +169,8 @@
       - metric: local_trust
         delta: -4
         scope: district
+      - metric: crime_level
+        delta: 8                      # unlicensed activity fills the vacuum immediately
     secondary:
       delay_hours: 48
       effects:
@@ -255,6 +263,8 @@
         scope: district
       - metric: regulatory_pressure
         delta: 6
+      - metric: public_health
+        delta: -3                     # injuries, smoke inhalation, displacement
     secondary:
       delay_hours: 24
       effects:
@@ -321,6 +331,10 @@
           delta: -8
         - metric: political_stability
           delta: -4
+        - metric: public_health
+          delta: -6                   # malnutrition; hits low-wealth districts hardest
+        - metric: crime_level
+          delta: 3                    # economic desperation drives unlicensed activity
     duration_penalty:
       per_day_unresolved: -2
       metric: local_trust
@@ -349,6 +363,8 @@
         scope: district
       - metric: regulatory_pressure
         delta: 5
+      - metric: crime_level
+        delta: 4                      # organised crime testing boundaries
     secondary:
       delay_hours: 48
       effects:
