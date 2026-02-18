@@ -31,6 +31,11 @@ class Building:
     narrative_hooks: list[str] = field(default_factory=list)
     detection_time_modifier_override: float | None = None
 
+    # Populated from building type config at load time
+    sensitivity: str = "medium"
+    consumes: list[str] = field(default_factory=list)
+    produces: list[str] = field(default_factory=list)
+
     # Runtime state
     hidden_failure: bool = False
     failure_tick: int | None = None

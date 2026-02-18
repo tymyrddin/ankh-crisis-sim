@@ -36,6 +36,19 @@ class City:
     def districts_in_crisis(self) -> int:
         return sum(1 for d in self.districts.values() if d.is_in_crisis)
 
+    @property
+    def total_failed_buildings(self) -> int:
+        """Total failed buildings across all districts."""
+        return sum(d.failed_building_count for d in self.districts.values())
+
+    @property
+    def events_by_domain(self) -> dict[str, list[GameEvent]]:
+        """Visible active events grouped by infrastructure domain."""
+        result: dict[str, list[GameEvent]] = {}
+        for event in self.visible_events:
+            result.setdefault(event.domain, []).append(event)
+        return result
+
     def get_building(self, building_id: str):
         """Find a building across all districts."""
         for district in self.districts.values():

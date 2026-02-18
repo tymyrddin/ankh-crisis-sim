@@ -51,6 +51,16 @@ class District:
         return sum(1 for b in self.buildings.values() if b.is_operational)
 
     @property
+    def failed_buildings(self) -> list[Building]:
+        """List of currently failed buildings in this district."""
+        return [b for b in self.buildings.values() if b.is_failed]
+
+    @property
+    def active_event_count(self) -> int:
+        """Number of buildings currently carrying an active event."""
+        return sum(1 for b in self.buildings.values() if b.active_event_id is not None)
+
+    @property
     def is_in_crisis(self) -> bool:
         """A district is in crisis if more than half its buildings have failed."""
         total = len(self.buildings)

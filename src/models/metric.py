@@ -35,3 +35,12 @@ class Metric:
     @property
     def is_critical(self) -> bool:
         return self.value <= self.min_value + (self.max_value - self.min_value) * 0.1
+
+    @property
+    def recent_trend(self) -> float:
+        """Average change per snapshot over the last 5 recorded snapshots.
+        Positive = improving, negative = declining, 0.0 = stable or no history."""
+        if len(self.history) < 2:
+            return 0.0
+        recent = self.history[-5:]
+        return (recent[-1].value - recent[0].value) / (len(recent) - 1)

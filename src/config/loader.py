@@ -359,7 +359,7 @@ def build_city(config_dir: str | Path) -> tuple[GameConfig, City]:
         building = _parse_building_instance(bdata)
         district_id = building.district_id
         if district_id in city.districts:
-            # Merge default dependency strengths from building type
+            # Merge defaults from building type config
             if building.type_id in cfg.building_types:
                 btype = cfg.building_types[building.type_id]
                 if not building.dependencies.critical and "critical" in btype.dependency_strengths:
@@ -368,6 +368,9 @@ def build_city(config_dir: str | Path) -> tuple[GameConfig, City]:
                     building.dependencies.operational = list(btype.dependency_strengths["operational"])
                 if not building.dependencies.strategic and "strategic" in btype.dependency_strengths:
                     building.dependencies.strategic = list(btype.dependency_strengths["strategic"])
+                building.sensitivity = btype.sensitivity
+                building.consumes = list(btype.consumes)
+                building.produces = list(btype.produces)
 
             city.districts[district_id].buildings[building.id] = building
 
