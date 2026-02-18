@@ -63,6 +63,79 @@ commercial:
       is serving "imported alternatives" at triple the price.
     tone: alarming
 
+food:
+  - story: >
+      The {building} has been unable to supply {district} for {duration}.
+      Residents report empty shelves and rising prices. Those who can afford
+      alternatives are buying them. Those who cannot are waiting.
+      {stressor_narrative}
+    tone: factual
+
+  - story: >
+      The food shortage in {district} has produced the usual competing explanations.
+      The Shambles Guild blames the Sto Plains drought. The Sto Plains traders blame
+      the bridge tolls. The bridge toll collectors blame the weather. Residents
+      are eating less while the blame circulates.
+    tone: political
+
+fire:
+  - story: >
+      A fire broke out at {building} and spread to adjacent properties before the
+      fire post in {district} could respond. {detection_narrative} By the time
+      engines arrived, three structures were involved. The inadequate pump was
+      located after the fact.
+    tone: urgent
+
+  - story: >
+      The {district} fire post has been understaffed and under-equipped for years.
+      Last night's fire was not a surprise to anyone who had looked at the maintenance
+      logs — if the logs existed, and if anyone had looked.
+      {political_narrative}
+    tone: ominous
+
+security:
+  - story: >
+      The Watch post in {district} has been closed or understaffed for {duration}.
+      During that period, the Thieves' Guild reports an increase in what they describe
+      as "spontaneous voluntary transactions." Residents describe it differently.
+      {detection_narrative}
+    tone: urgent
+
+  - story: >
+      Commander Vimes has submitted his fourteenth budget request for additional
+      Watch officers in {district}. The first thirteen were declined, deferred,
+      or lost. The current crime rate in {district} is attached as supporting evidence.
+      The Palace has acknowledged receipt of the document.
+    tone: wry
+
+workshop:
+  - story: >
+      {building} in {district} has suspended production after {duration} of
+      disruption. Employees have not been paid. The guild licensing office
+      reports the paperwork is "under review." {stressor_narrative}
+    tone: factual
+
+  - story: >
+      The workshop closures in {district} are following the familiar pattern.
+      First the power goes. Then the orders stop. Then the workers leave.
+      Then someone from Nap Hill buys the building for storage.
+    tone: analytical
+
+tech:
+  - story: >
+      Systems at {building} have been unavailable for {duration}. Three guild
+      clients, the Royal Bank, and the Patrician's correspondence office were
+      affected. The public-facing explanation is "scheduled maintenance."
+      No maintenance was scheduled.
+    tone: analytical
+
+  - story: >
+      The clacks outage that started at {building} has now affected eleven
+      dependent systems. The Watch discovered this by trying to send a message
+      and receiving nothing back. The silence, they note, is unusual. Usually
+      there is at least static.
+    tone: ominous
+
 detection_narratives:
   immediate: "The failure was noticed immediately."
   delayed_citizen: "Residents reported the problem after {delay} hours of waiting."
@@ -78,4 +151,7 @@ political_narratives:
   media_pressure: "The Ankh-Morpork Times is running a daily series on the crisis."
   vimes_involved: "Commander Vimes has taken a personal interest."
   moist_assigned: "Moist von Lipwig has been 'asked' to look into it."
+  patrician_acts: "A note arrived at the relevant office. By morning, things had changed. No one was told what the note said."
+  thieves_guild_opportunism: "The Thieves' Guild has noted the gap in Watch coverage and adjusted its operations accordingly."
+  uu_deflects: "Unseen University has declined to comment. The Archchancellor was unavailable. The Librarian was available but unhelpful."
   silence: "The Palace has said nothing. The silence is deafening."

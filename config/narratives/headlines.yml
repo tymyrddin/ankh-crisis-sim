@@ -25,14 +25,53 @@ transport:
 
 public_services:
   - "Hospital forced to divert patients"
+  - "Lady Sybil Hospital at capacity; non-emergency cases turned away"
   - "Watch response delayed in {district}"
-  - "Emergency services stretched thin"
+  - "Watch post in {district} unstaffed"
+  - "Emergency services stretched thin across multiple incidents"
+
+security:
+  - "Crime wave reported in {district}"
+  - "Watch unable to respond to calls in {district}"
+  - "Thieves' Guild activity up 40% in {district}"
+  - "{district} left unpatrolled for {duration}"
+  - "Watch stretched across too many incidents; something will be missed"
+
+food:
+  - "Brewery shutdown threatens beer supply"
+  - "Food prices rising across {district}"
+  - "Market disruption hits {district} traders"
+  - "{building} unable to supply demand"
+  - "Sto Plains supply chain disruption reaches city shelves"
+  - "Shambles closes; meat supply suspended"
+
+fire:
+  - "Fire in {district} spreads unchecked"
+  - "{building} ablaze; residents urged to evacuate"
+  - "Fire service overwhelmed in {district}"
+  - "Workshop fire threatens {district} street"
+  - "Fire post in {district} unavailable at time of call"
+
+workshop:
+  - "Workshop closures hit {district} employment"
+  - "{building} ceases production after {duration}"
+  - "Small businesses in {district} report bankruptcy"
+  - "Industrial incident at {building}; area cordoned"
+
+tech:
+  - "City IT systems disrupted after {building} failure"
+  - "Guild data inaccessible; clacks records offline"
+  - "Infrastructure management system unavailable"
+  - "Data breach reported at {building}"
+  - "Golem Trust outage affects multiple city departments simultaneously"
 
 commercial:
   - "Beer shortage hits {district}"
   - "Markets disrupted in {district}"
   - "Businesses close in {district}"
   - "Bank run on Filigree Street"
+  - "Supply chain failure leaves {district} shelves empty"
+  - "Guild dispute disrupts trade in {district}"
 
 residential:
   - "Residents of {district} demand action"
