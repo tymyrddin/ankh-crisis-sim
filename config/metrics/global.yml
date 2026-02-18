@@ -7,13 +7,17 @@ public_trust:
   starting: 68
 
   decay_by_incident:
-    combined_utility_outage: -20      # severe
-    guild_strike: -25                 # critical
-    watch_failure: -12                # moderate-severe
-    single_utility_failure: -5        # mild
-    transport_failure: -8             # moderate
-    symbolic_failure: -3              # mild
-    narrative_amplification_multiplier: 2.5  # amplifies visible events
+    combined_utility_outage: -20      # severe: two utilities failing simultaneously feels like collapse
+    guild_strike: -25                 # critical: the social contract depends on guilds regulating themselves
+    healthcare_failure: -18           # severe: "immediate trust collapse"; people die; no recovery of optics
+    watch_failure: -12                # moderate-severe: depends on district; Shades had nowhere to fall
+    fire_spread: -15                  # severe: a fire spreading uncontrolled is visible and blamed on the city
+    transport_failure: -8             # moderate: commuters notice; economic impacts compound
+    food_shortage: -10                # moderate: people can adapt briefly; but compounds fast if prolonged
+    single_utility_failure: -5        # mild: people complain; trust erodes slowly
+    communications_failure: -6        # mild-moderate: loss of comms amplifies other incidents; own decay moderate
+    symbolic_failure: -3              # mild: signals decay but doesn't threaten survival
+    narrative_amplification_multiplier: 2.5  # amplifies visible events (river on fire, brown water)
 
   recovery_by_remedy:
     technical_restoration:

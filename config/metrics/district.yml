@@ -11,6 +11,14 @@ trust_decay_by_incident:
     high_wealth: -30
     medium_wealth: -25
     low_wealth: -15              # started lower
+  power_failure_1day:
+    high_wealth: -6
+    medium_wealth: -8
+    low_wealth: -4               # candles substituted; workshops close but people adapt
+  power_failure_1week:
+    high_wealth: -25
+    medium_wealth: -20
+    low_wealth: -18              # prolonged darkness; workshops bankrupt; everyone suffers
   watch_delay:
     high_wealth: -15
     medium_wealth: -5
@@ -23,6 +31,18 @@ trust_decay_by_incident:
     high_wealth: -10
     medium_wealth: -20
     low_wealth: -25              # more dependent on informal economy
+  food_shortage:
+    high_wealth: -8
+    medium_wealth: -20
+    low_wealth: -30              # low wealth cannot buy alternatives; no margin at all
+  fire_spreading:
+    high_wealth: -12
+    medium_wealth: -18
+    low_wealth: -25              # high density means more buildings lost; no recovery margin
+  healthcare_failure:
+    high_wealth: -20
+    medium_wealth: -15
+    low_wealth: -12              # high wealth has private physicians; low wealth had little expectation
   symbolic_failure:
     high_wealth: -5
     medium_wealth: -2
