@@ -1,4 +1,4 @@
-# Simulation Contract: Ankh-Morpork: Lord Vetinari's Dilemma
+# Simulation contract Lord Vetinari's dilemmaThe c
 
 A statement of what the simulation will and will not model (sets expectations for players and guides development).
 

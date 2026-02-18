@@ -84,6 +84,174 @@ palace:
     operational: [information, loyalty]
     strategic: []
 
+water_source:
+  label: "Water Pumping Station / Supply"
+  sensitivity: very_high               # public tolerance for water loss is extremely low
+  trust_decay_rate: rapid              # shortages noticed within hours, not days
+  detection_time_modifier: 0.6        # operators spot outright failure fast; pressure drops can hide longer
+  consumes: [energy, maintenance_staff, communications]
+  produces: [water, sanitation, public_health]
+  dependency_strengths:
+    critical: [energy]                 # pumps cannot run without power
+    operational: [maintenance_staff, communications]
+    strategic: [infrastructure_budget]
+
+power_source:
+  label: "Power Generation / Substation"
+  sensitivity: catastrophic            # energy underpins every other domain; loss cascades instantly
+  trust_decay_rate: rapid              # darkness and cold are noticed within minutes
+  detection_time_modifier: 0.4        # operators and meters spot failure fast; slow degradation can hide
+  consumes: [fuel_supply, maintenance_staff, communications]
+  produces: [energy, industrial_capacity]
+  dependency_strengths:
+    critical: [fuel_supply]            # no fuel = no generation; everything downstream fails
+    operational: [maintenance_staff, communications]
+    strategic: [infrastructure_budget]
+
+clacks_tower:
+  label: "Clacks Tower / Communications Relay"
+  sensitivity: high                    # comms loss amplifies every other incident; not immediately life-threatening
+  trust_decay_rate: moderate           # noticed quickly but compounds: no comms means no coordination
+  detection_time_modifier: 0.3        # the tower goes dark; operators and users notice within minutes
+  consumes: [energy, maintenance_staff]
+  produces: [communications, emergency_coordination, information_flow]
+  dependency_strengths:
+    critical: [energy]                 # no power = no signal; clacks towers are entirely dependent on power
+    operational: [maintenance_staff]
+    strategic: [grand_trunk_agreement] # vendor monoculture risk: one company carries most traffic
+
+food_supply:
+  label: "Food Supply / Market"
+  sensitivity: high                    # just-in-time logistics means no slack; shortages are felt within a day
+  trust_decay_rate: moderate_to_fast   # prices rise visibly; residents notice empty stalls before officials do
+  detection_time_modifier: 0.8        # market stallholders and warehouse managers notice shortages fast; spoilage and contamination can hide
+  consumes: [energy, water, transport, communications]
+  produces: [food_supplies, brewery_supply, employment, tax_revenue]
+  dependency_strengths:
+    critical: [transport]              # just-in-time; cut the Sto Plains road and the shelves are bare within hours
+    operational: [energy, water]
+    strategic: [sto_plains_trade_routes]  # most of Ankh-Morpork's food comes from the Sto Plains
+
+brewery:
+  label: "Brewery"
+  sensitivity: high                    # "Low immediate harm to life, High reputational harm (Ankh-Morpork without beer?)"
+  trust_decay_rate: rapid              # a beer shortage is noticed immediately; morale decays fast
+  detection_time_modifier: 0.5        # workers monitor vats constantly; contamination can take a day to manifest
+  consumes: [energy, water, food_supplies, transport, communications]
+  produces: [brewery_supply, employment, tax_revenue]
+  dependency_strengths:
+    critical: [water, food_supplies]   # no water = can't brew; no grain or hops = nothing to brew with
+    operational: [energy, transport]
+    strategic: [sto_plains_trade_routes]  # hops and grain come from the Sto Plains
+
+transport:
+  label: "Transport Infrastructure"
+  sensitivity: high                    # transport failures have visible, immediate impact on daily life and business
+  trust_decay_rate: moderate           # disruption is felt at once but cascade into economic harm takes days
+  detection_time_modifier: 0.6        # outright closure spotted immediately; structural degradation can hide much longer
+  consumes: [energy, maintenance_staff, communications]
+  produces: [mobility, labour_flow, goods_movement, trade_access]
+  dependency_strengths:
+    critical: [structural_integrity]   # a bridge or wharf without structural integrity is a liability, not an asset
+    operational: [maintenance_staff, energy]
+    strategic: [river_navigation]      # river Ankh conditions affect bridges, wharves, and barges alike
+
+communications_office:
+  label: "Communications Company Office"
+  sensitivity: high                    # if the company can't coordinate, service quality collapses even if towers stay up
+  trust_decay_rate: moderate_to_fast   # customers notice billing failures and dropped contracts before they notice the dark tower
+  detection_time_modifier: 0.8        # an office closure is less visible than a tower going dark; effects surface gradually
+  consumes: [energy, water, communications, staff]  # depends on its own product to function
+  produces: [communications_governance, vendor_contracts, employment, tax_revenue]
+  dependency_strengths:
+    critical: [communications]         # a comms company whose own comms are down cannot coordinate anything
+    operational: [energy, staff]
+    strategic: [patrician_charter]     # operates under city charter; charter revoked = company dissolved
+
+healthcare:
+  label: "Hospital / Medical Facility"
+  sensitivity: catastrophic            # "Immediate trust collapse, regulatory spike, long-term legitimacy scars"
+  trust_decay_rate: instantaneous      # people die; the political fallout begins before the body is cold
+  detection_time_modifier: 0.3        # staff present 24/7; monitoring equipment; failures spotted immediately
+  consumes: [energy, water, communications, staff, food_supplies]
+  produces: [public_health, emergency_response, legitimacy, social_stability]
+  dependency_strengths:
+    critical: [energy, water, staff]   # loss of any one causes immediate patient harm; all three are life-critical
+    operational: [communications, food_supplies]
+    strategic: [guild_of_physicians]   # without trained and licensed staff the building is just an expensive building
+
+security:
+  label: "Watch House / Security Post"
+  sensitivity: very_high               # Watch absence is felt immediately; crime rises within hours, not days
+  trust_decay_rate: rapid              # "A Watch patrol delayed, a prominent citizen dies. The political fallout is immense."
+  detection_time_modifier: 0.4        # Watch staff notice internal failures fast; patrol gaps show up in crime reports quickly
+  consumes: [energy, communications, transport, staff]
+  produces: [public_order, security, crime_deterrence, emergency_response]
+  dependency_strengths:
+    critical: [communications, staff]  # without comms, patrols can't coordinate; without staff, there is no Watch
+    operational: [energy, transport]
+    strategic: [public_trust]          # Watch effectiveness depends on community cooperation; erode trust, erode intelligence
+
+tech_business:
+  label: "IT / OT / ICT Business"
+  sensitivity: high                    # vendor monoculture risk: one firm holds data for the Patrician, the Bank, and three guilds
+  trust_decay_rate: rapid              # clients notice service outages immediately; SLA breaches become political events
+  detection_time_modifier: 0.4        # technical staff monitor systems continuously; alerts fire before humans notice
+  consumes: [energy, communications, staff]
+  produces: [it_services, infrastructure_security, data_management, business_continuity]
+  dependency_strengths:
+    critical: [energy, communications] # tech businesses are entirely dependent on both; loss of either is total failure
+    operational: [staff]
+    strategic: [vendor_contracts]      # existence depends on client relationships; lose a major client, lose the business
+
+hackerspace:
+  label: "Hackerspace / Independent Research Collective"
+  sensitivity: medium_to_high          # loss of an informal intelligence asset is invisible until something it would have caught isn't
+  trust_decay_rate: variable           # depends entirely on whether their activities are considered helpful or inconvenient
+  detection_time_modifier: 1.5        # operates covertly; disruptions to their work surface slowly and obliquely
+  consumes: [energy, communications, food_supplies]   # runs on clacks access, surplus components, and optimism
+  produces: [threat_intelligence, security_research, vulnerability_disclosure, informal_network]
+  dependency_strengths:
+    critical: [energy, communications]
+    operational: [informal_networks]
+    strategic: [patrician_tolerance]   # the Patrician knows; tolerates because useful; relationship is not guaranteed
+
+workshop:
+  label: "Workshop / Industrial Facility"
+  sensitivity: medium                  # local failure; not city-wide, but "a week without power means bankruptcy"
+  trust_decay_rate: moderate           # employment loss builds slowly; compounds if multiple workshops fail together
+  detection_time_modifier: 1.0        # baseline; fires are obvious but structural decay and contamination hide longer
+  consumes: [energy, water, transport, food_supplies]
+  produces: [manufactured_goods, employment, tax_revenue, trade_goods]
+  dependency_strengths:
+    critical: [energy]                 # power cut = immediate closure; workshops cannot operate without it
+    operational: [water, transport]
+    strategic: [guild_licensing]       # workshops must be guild-approved to operate legally
+
+fire_service:
+  label: "Fire Station / Emergency Pump"
+  sensitivity: very_high               # fire response is a force multiplier for every other disaster; absent coverage is invisible until it isn't
+  trust_decay_rate: rapid              # slow response to a visible fire is immediately apparent to everyone watching
+  detection_time_modifier: 0.3        # station staff notice equipment failures and call-outs fast
+  consumes: [energy, water, communications, staff]
+  produces: [fire_suppression, emergency_response, public_safety]
+  dependency_strengths:
+    critical: [water, communications]  # engines need water; without comms they cannot be dispatched to the right street
+    operational: [staff, energy]
+    strategic: [infrastructure_budget] # fire equipment is expensive; deferred maintenance fails at the worst possible moment
+
+media:
+  label: "Newspaper / Print Works"
+  sensitivity: high                    # media shapes the narrative; when press is absent, rumour fills the void faster
+  trust_decay_rate: variable           # can raise or lower trust depending on what they print; silence is also a choice
+  detection_time_modifier: 0.6        # reporters notice things; their own failures (bribery, shutdown) surface gradually
+  consumes: [energy, communications, staff]
+  produces: [public_narrative, media_pressure, information_flow, trust_modifier]
+  dependency_strengths:
+    critical: [communications]         # without clacks, no news arrives and no stories can be transmitted
+    operational: [energy, staff]
+    strategic: [press_freedom]         # Patrician tolerates the press; a free press beats rumour mills; tolerance is not permanent
+
 university:
   label: "Unseen University"
   sensitivity: paradoxical           # low for UU, high for city
