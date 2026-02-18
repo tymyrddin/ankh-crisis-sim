@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from src.config.loader import build_city
+from src.config.loader import build_city, EventTemplate
 from src.engine.events import _find_target_building
 from src.engine.remedies import apply_remedy, process_remedy_completions
 from src.engine.simulation import Simulation
@@ -203,7 +203,12 @@ class TestRecurrenceRisk:
     def test_high_recurrence_risk_weighted_higher(self):
         """Buildings with recurrence_risk=1.0 should be chosen more often than 0.0."""
         cfg, city = build_city(CONFIG_DIR)
-        template = cfg.event_templates[0]
+        # Use a filter-free template so all buildings are candidates regardless of type
+        template = EventTemplate(
+            id="test_recurrence",
+            name="Test Recurrence",
+            category="degradation_and_neglect",
+        )
 
         district = next(iter(city.districts.values()))
         buildings = list(district.buildings.values())
