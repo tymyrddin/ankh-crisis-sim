@@ -29,6 +29,7 @@ The tabularised short version. For the verbose version, see [Critical infrastruc
 | Resilience investment  | Upgrade systems, add redundancy    | Reduces future risk; visible improvement | Slow, politically hard to justify; costly       |
 | Compensatory measures  | Financial/operational compensation | Quick appeasement; restores goodwill     | Does not fix system; may create moral hazard    |
 | Accountability actions | Investigations, firings, contracts | Restores trust in governance             | Divisive; may slow recovery                     |
+| Press statement        | Narrative framing, buy time        | Slows trust decay; very low cost         | No fix; backfires if not followed by action     |
 
 ## Amplifiers / systemic stressors
 
