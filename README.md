@@ -1,5 +1,7 @@
 # Ankh-Morpork: Lord Vetinari's Dilemma
 
+![Ankh-Morpork simulation](static/images/ankh-morpork.png)
+
 A crisis management simulation where you govern a city with interconnected infrastructure, competing interests, and no easy answers.
 
 Set in the fictional city of Ankh-Morpork, the simulation models how disruptions in digital and operational systems translate into real-world consequences for cities, organisations, and the people who depend on them, without relying on technical detail or domain-specific jargon.
@@ -123,12 +125,12 @@ The game ends when a loss condition triggers (trust collapse, revolt, bankruptcy
 
 The gear button opens a settings panel that lets you adjust difficulty before or during play:
 
-| Setting | Options | Effect |
-|---|---|---|
-| Game duration | Standard, Short, Extended | Term length in simulated years |
-| Event frequency | Normal, Rare, Frequent | Multiplier on incident probability |
-| Discovery speed | Normal, Fast, Slow | How quickly hidden failures surface |
-| Cascade risk | Normal, Low, High | Multiplier on failure propagation probability |
+| Setting         | Options                   | Effect                                        |
+|-----------------|---------------------------|-----------------------------------------------|
+| Game duration   | Standard, Short, Extended | Term length in simulated years                |
+| Event frequency | Normal, Rare, Frequent    | Multiplier on incident probability            |
+| Discovery speed | Normal, Fast, Slow        | How quickly hidden failures surface           |
+| Cascade risk    | Normal, Low, High         | Multiplier on failure propagation probability |
 
 All settings are applied immediately and persist for the session.
 
@@ -266,13 +268,13 @@ You may not use this software for:
 - Internal corporate training
 - Commercial product development
 
-If you want to use this project in a paid or commercial context, a commercial licence is required.
-See [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md) for details.
+A [commercial licence](COMMERCIAL-LICENSE.md) is required to use this project in paid or commercial products. All 
+proceeds from commercial licences, beyond the costs of maintaining this project, will be donated to Alzheimer's 
+organisations in memory of [Terry Pratchett](https://terrypratchett.com/).
 
-This project is actively developed and maintained to support realistic research and training.
-The licence ensures that:
+This project is actively developed and maintained. The licence ensures that:
 
-- Security research remains accessible
+- Research remains accessible
 - Defensive knowledge can spread
 - Commercial exploitation is fair and sustainable
 
