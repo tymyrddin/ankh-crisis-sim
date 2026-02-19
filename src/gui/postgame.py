@@ -1,4 +1,4 @@
-"""Post-game reflection screen — shown when the game ends."""
+"""Post-game reflection screen: shown when the game ends."""
 
 from __future__ import annotations
 

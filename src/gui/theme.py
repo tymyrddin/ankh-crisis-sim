@@ -1,4 +1,4 @@
-"""Centralized theme — paper & ink steampunk aesthetic with IM Fell English."""
+"""Centralized theme: paper & ink steampunk aesthetic with IM Fell English."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from pathlib import Path
 # Colour palette
 # ---------------------------------------------------------------------------
 
-PAPER = "#eddab9"          # main background — warm parchment
+PAPER = "#eddab9"          # main background: warm parchment
 PAPER_DARK = "#ddc8a0"     # slightly darker for card/frame backgrounds
 PAPER_LIGHT = "#f5e8d0"    # lighter variant for hover highlights
 INK = "#1a1a1a"            # primary text colour
@@ -24,7 +24,7 @@ BORDER = "#c4a86a"         # subtle frame borders
 STATUS_GREEN = "#2e7d32"
 STATUS_YELLOW = "#f9a825"
 STATUS_RED = "#c62828"
-STATUS_RESPONDING = "#e68a00"  # amber — remedy in progress
+STATUS_RESPONDING = "#e68a00"  # amber: remedy in progress
 
 # Metric colours (warm-shifted to suit paper)
 METRIC_COLOURS = {
@@ -33,8 +33,8 @@ METRIC_COLOURS = {
     "regulatory_pressure": "#e65100",
     "political_stability": "#6a1b9a",
     "legitimacy": "#ad1457",
-    "public_health": "#00695c",       # teal — health and care
-    "crime_level": "#b71c1c",         # dark red — danger; higher = worse
+    "public_health": "#00695c",       # teal: health and care
+    "crime_level": "#b71c1c",         # dark red: danger; higher = worse
 }
 
 # Trust thresholds

@@ -89,7 +89,7 @@ class TestBuildCity:
     def test_global_metrics_from_config(self):
         _, city = build_city(CONFIG_DIR)
         assert city.public_trust.value == 68
-        assert city.budget.value == 4200
+        assert city.budget.value == 15000
         assert city.regulatory_pressure.value == 18
         assert city.political_stability.value == 75
         assert city.legitimacy.value == 82

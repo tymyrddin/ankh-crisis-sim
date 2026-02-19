@@ -1,4 +1,4 @@
-"""Main application window — assembles all GUI components and connects to the simulation."""
+"""Main application window:assembles all GUI components and connects to the simulation."""
 
 from __future__ import annotations
 
@@ -10,7 +10,10 @@ from src.engine.simulation import Simulation, TickResult
 from src.gui.dashboard import Dashboard
 from src.gui.map_canvas import MapCanvas
 from src.gui.news_ticker import NewsTicker
-from src.gui.popups import HoverPopup, RemedyMenu
+from src.gui.info_popups import InfoPopup
+from src.gui.popups import ArticlePopup, HoverPopup, RemedyMenu, EventPopup
+from src.gui.intro import IntroScreen
+from src.gui.settings_popup import SettingsPopup
 from src.gui.postgame import PostgameScreen
 from src.gui.theme import PAPER, PAPER_DARK, load_fonts, fonts
 from src.gui.time_controls import TimeControls
@@ -42,6 +45,7 @@ class App(ctk.CTk):
 
         self._game_over = False
         self._tick_job: str | None = None
+        self._event_queue: list = []
 
         # --- Layout ---
         # Top row: map (left) + dashboard (right)
@@ -82,10 +86,19 @@ class App(ctk.CTk):
         self.time_controls.on_exit = self._on_exit
 
         # Popups
+        self.info_popup = InfoPopup(self)
+        self.info_popup.on_emergency_borrow = self._on_emergency_borrow
+        self.dashboard.attach_popup(self.info_popup, self.sim.city)
         self.hover_popup = HoverPopup(self)
         self.remedy_menu = RemedyMenu(self, self.sim.cfg)
         self.remedy_menu.on_remedy_selected = self._on_remedy_selected
         self.postgame_screen = PostgameScreen(self)
+        self.settings_popup = SettingsPopup(self)
+        self.dashboard.on_settings_click = lambda: self.settings_popup.show(self.sim.cfg.settings)
+        self.event_popup = EventPopup(self)
+        self.event_popup.on_close = self._on_event_popup_close
+        self.article_popup = ArticlePopup(self)
+        self.news_ticker.on_article_click = self.article_popup.show
 
         # Map interaction hooks
         self.map_canvas.on_building_hover = self._on_building_hover
@@ -98,6 +111,14 @@ class App(ctk.CTk):
             self.sim.clock.time_string,
             "The Patrician's term begins. The city watches.",
         )
+
+        # Briefing screen:shown immediately; game stays paused until dismissed
+        self.after(200, self._show_intro)
+
+    def _show_intro(self) -> None:
+        intro = IntroScreen(self)
+        intro.on_begin = lambda: None  # game stays paused; player presses play themselves
+        intro.show()
 
     # --- Tick loop ---
 
@@ -121,13 +142,15 @@ class App(ctk.CTk):
 
     def _process_tick_result(self, result: TickResult) -> None:
         """Update all GUI components from a tick result."""
-        # Headlines
-        if result.headlines:
-            self.news_ticker.add_headlines(self.sim.clock.time_string, result.headlines)
+        # Event headlines:clickable if the event has a story
+        ts = self.sim.clock.time_string
+        for event in result.detected_events + result.cascade_events:
+            if event.headline:
+                self.news_ticker.add_headline(ts, event.headline, article=event.story)
 
-        # Completed remedies
+        # Completed remedies:plain, no article
         for msg in result.completed_remedies:
-            self.news_ticker.add_headline(self.sim.clock.time_string, msg)
+            self.news_ticker.add_headline(ts, msg)
 
         # Update building lamps for any changed buildings
         for event in result.detected_events + result.cascade_events + result.completed_remedy_events:
@@ -140,8 +163,16 @@ class App(ctk.CTk):
 
         # Update dashboard every tick (cheap enough)
         self.dashboard.update(self.sim.city)
-        self.dashboard.update_events(self.sim.city)
         self.time_controls.update(self.sim.clock)
+
+        # New incidents:pause and queue popups
+        new_incidents = result.detected_events + result.cascade_events
+        if new_incidents and not self._game_over:
+            self._event_queue.extend(new_incidents)
+            self.sim.pause()
+            self.time_controls.update(self.sim.clock)
+            if not self.event_popup.is_visible():
+                self._show_next_event()
 
         # End condition
         if result.end_result and result.end_result.triggered:
@@ -157,6 +188,14 @@ class App(ctk.CTk):
             self.after_cancel(self._tick_job)
             self._tick_job = None
         self.time_controls.update(self.sim.clock)
+
+    def _show_next_event(self) -> None:
+        if self._event_queue:
+            event = self._event_queue.pop(0)
+            self.event_popup.show(event, self.sim.city, more_remaining=len(self._event_queue))
+
+    def _on_event_popup_close(self) -> None:
+        self._show_next_event()
 
     def _on_play(self) -> None:
         self.sim.resume()
@@ -201,7 +240,12 @@ class App(ctk.CTk):
              if e.target_building_id == building_id and e.is_visible),
             None,
         )
-        self.remedy_menu.show(building, event, x, y)
+        self.remedy_menu.show(building, event, self.sim.city, x, y, current_tick=self.sim.clock.tick)
+
+    def _on_emergency_borrow(self, lender_id: str) -> None:
+        result = self.sim.emergency_borrow(lender_id)
+        self.news_ticker.add_headline(self.sim.clock.time_string, result.message)
+        self.dashboard.update(self.sim.city)
 
     def _on_remedy_selected(self, event_id: str, remedy_id: str) -> None:
         result = self.sim.apply_remedy(event_id, remedy_id)

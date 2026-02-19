@@ -1,4 +1,4 @@
-"""District model — a named area of the city with local metrics and buildings."""
+"""District model: a named area of the city with local metrics and buildings."""
 
 from __future__ import annotations
 
@@ -32,6 +32,10 @@ class District:
     # Runtime state
     local_trust: Metric = field(default_factory=lambda: Metric("local_trust", 50.0))
     buildings: dict[str, Building] = field(default_factory=dict)
+
+    # Pending delayed trust boosts: (apply_at_tick, amount, cause)
+    # Populated by _resolve_event() for remedies with trust_effect.delayed_days.
+    pending_trust_boosts: list[tuple[int, float, str]] = field(default_factory=list)
 
     @property
     def failure_probability_modifier(self) -> float:

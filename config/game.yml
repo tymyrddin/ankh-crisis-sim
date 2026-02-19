@@ -14,7 +14,7 @@ speed:
   max_multiplier: 50.0
 
 starting_values:
-  budget: 4200
+  budget: 15000
   public_trust: 68
   regulatory_pressure: 18
   political_stability: 75
@@ -24,14 +24,23 @@ starting_values:
 
 budget:
   income_per_month:
-    taxes_general: 350
+    taxes_general: 500             # general taxation; reduced when public trust collapses
     guild_fees: 200
-    trade_tariffs: 150             # variable, affected by transport/commerce
+    trade_tariffs: 150             # variable, affected by transport/commerce disruption
     university_contribution: 50    # symbolic, extremely stable
+    river_trade_duties: 300        # port and wharfage duties; scales with transport + food buildings
+    clacks_revenue: 200            # Grand Trunk licensing fees; scales with operational clacks_tower buildings
   emergency_borrowing:
-    available: true
-    max_amount: 2000
-    political_cost: 15             # regulatory pressure increase
+    royal_bank:
+      label: "Royal Bank of Ankh-Morpork"
+      available: true
+      max_amount: 2000
+      regulatory_pressure_cost: 15   # domestic political exposure; the guilds notice
+    ueberwald:
+      label: "Überwald Banking Consortium"
+      available: true
+      max_amount: 3000
+      stability_cost: 8              # foreign strategic exposure; political stability erodes
 
 active_districts:
   # Comment out districts to playtest with fewer

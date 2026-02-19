@@ -1,4 +1,4 @@
-"""City model — the top-level container holding all districts, global metrics, and active events."""
+"""City model: the top-level container holding all districts, global metrics, and active events."""
 
 from __future__ import annotations
 

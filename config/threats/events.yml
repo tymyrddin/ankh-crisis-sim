@@ -1,4 +1,4 @@
-# Event templates — concrete incidents that can occur
+# Event templates:concrete incidents that can occur
 
 # --- Degradation and Neglect ---
 - id: pump_failure
@@ -41,6 +41,7 @@
   probability_base: 0.010
   stressor_amplifiers:
     underinvestment: 1.8
+    vendor_monoculture: 1.5
   impact:
     immediate:
       - metric: local_trust
@@ -55,7 +56,7 @@
           delta: 3
   cascade:
     dependency: energy
-    propagate_to: all_dependents
+    propagate_to: neighbours
   headlines:
     - "Power outage hits {district}"
     - "Blackout across {district}; businesses suspend operations"
@@ -85,7 +86,7 @@
           delta: 8
   cascade:
     dependency: transport
-    propagate_to: all_dependents
+    propagate_to: neighbours
   headlines:
     - "Isle of Gods bridge closed for safety"
     - "Bridge cracks discovered; engineers called"
@@ -113,7 +114,7 @@
           delta: -4
   cascade:
     dependency: communications
-    propagate_to: all_dependents
+    propagate_to: neighbours
   headlines:
     - "Clacks service disrupted in {district}"
     - "Communication breakdown leaves {district} in the dark"
@@ -182,7 +183,7 @@
       per_day_unresolved: -1.5
       metric: local_trust
   cascade:
-    dependency: public_safety
+    dependency: security
     propagate_to: neighbours
   headlines:
     - "Watch post in {district} closed; area unpatrolled"
@@ -213,6 +214,9 @@
     duration_penalty:
       per_day_unresolved: -2
       metric: local_trust
+  cascade:
+    dependency: public_safety
+    propagate_to: neighbours
   headlines:
     - "Fire post in {district} unavailable"
     - "{building} out of service; district unprotected"
@@ -241,6 +245,9 @@
       effects:
         - metric: public_trust
           delta: -8
+  cascade:
+    dependency: communications
+    propagate_to: neighbours      # vendor_monoculture escalates to city-wide when Grand Trunk is the only carrier
   headlines:
     - "System upgrade goes wrong at {building}"
     - "Services disrupted after 'routine maintenance' at {building}"
@@ -273,7 +280,7 @@
         - metric: political_stability
           delta: -3
   cascade:
-    dependency: fire_suppression
+    dependency: public_safety
     propagate_to: neighbours
   headlines:
     - "Workshop fire threatens {district} street"
@@ -339,7 +346,7 @@
       per_day_unresolved: -2
       metric: local_trust
   cascade:
-    dependency: food
+    dependency: food_supplies
     propagate_to: neighbours
   headlines:
     - "Food supply disrupted in {district}"
@@ -385,6 +392,8 @@
   probability_base: 0.004
   stressor_amplifiers:
     organisational_fragmentation: 1.5
+    social_inequality: 1.4          # inequality drives labour grievances
+    underinvestment: 1.2            # deferred wages and conditions compound resentment
   impact:
     immediate:
       - metric: public_trust
@@ -456,9 +465,6 @@
           delta: -5
         - metric: legitimacy
           delta: -3
-  cascade:
-    dependency: data_infrastructure
-    propagate_to: all_dependents
   headlines:
     - "Data breach reported at {building}"
     - "City systems compromised after {building} incident"

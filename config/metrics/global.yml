@@ -45,14 +45,14 @@ public_trust:
       success_recovery: 18
 
 budget:
-  description: "City treasury — capacity to spend on repairs, compensation, investment"
+  description: "City treasury:capacity to spend on repairs, compensation, investment"
   min: 0
   max: 99999
-  starting: 4200
+  starting: 15000
 
   income_sources:
     taxes:
-      base: 350
+      base: 500
       reliability: stable
       trust_threshold: 30            # below this, collection becomes "difficult"
       penalty_multiplier: 0.6
@@ -66,10 +66,27 @@ budget:
     university:
       base: 50
       reliability: extremely_stable
+    river_trade_duties:
+      base: 300
+      reliability: variable          # scales with operational transport + food buildings
+      floor: 0.2                     # 20% minimum even when trade is fully disrupted
+      description: >
+        Port duties and river wharfage levied on goods arriving via the River Ankh
+        and the Sto Plains road. Scales with functioning transport and food-supply
+        buildings. Disrupted trade routes reduce this income immediately and visibly.
+    clacks_revenue:
+      base: 200
+      reliability: variable          # scales with operational clacks_tower buildings
+      floor: 0.1                     # 10% minimum (emergency signal runners)
+      description: >
+        Grand Trunk licensing fees and civic messaging contracts.  The Patrician
+        receives a percentage of clacks revenue in exchange for the right-of-way
+        across city districts.  Revenue collapses when towers are damaged or
+        destroyed, making clacks infrastructure worth protecting.
 
   expenditure_base:
     technical_restoration: 150
-    resilience_investment: 400
+    resilience_investment: 300
     compensatory_measures: 80
     accountability_actions: 30
 
@@ -129,7 +146,7 @@ political_stability:
     critical: 20
 
 legitimacy:
-  description: "Moral and historical right to rule — slower to change than trust"
+  description: "Moral and historical right to rule:slower to change than trust"
   min: 0
   max: 100
   starting: 82
@@ -151,7 +168,7 @@ legitimacy:
     guild_reendorsement: 20
 
 public_health:
-  description: "Population wellbeing — physical health, disease risk, access to care and clean water"
+  description: "Population wellbeing:physical health, disease risk, access to care and clean water"
   min: 0
   max: 100
   starting: 75
@@ -174,7 +191,7 @@ public_health:
       immediate: 4
 
 crime_level:
-  description: "Prevalence of unlicensed criminal activity — distinct from the Thieves' Guild quota system"
+  description: "Prevalence of unlicensed criminal activity:distinct from the Thieves' Guild quota system"
   min: 0
   max: 100
   starting: 22

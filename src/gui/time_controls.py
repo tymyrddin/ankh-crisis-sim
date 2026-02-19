@@ -1,11 +1,11 @@
-"""Time controls — pause, play, speed buttons and game clock display."""
+"""Time controls: pause, play, speed buttons and game clock display."""
 
 from __future__ import annotations
 
 import customtkinter as ctk
 
 from src.engine.clock import ClockState, GameClock
-from src.gui.theme import ACCENT_BROWN, INK, INK_MUTED, PAPER, PAPER_DARK, fonts
+from src.gui.theme import ACCENT_BROWN, INK, INK_MUTED, PAPER, PAPER_DARK, STATUS_GREEN, fonts
 
 
 class TimeControls:
@@ -85,11 +85,13 @@ class TimeControls:
         self._speed_label.configure(text=f"{clock.speed_multiplier:.1f}x")
 
         if clock.state == ClockState.PAUSED:
-            self._pause_btn.configure(state="disabled")
-            self._play_btn.configure(state="normal")
+            # Paused: highlight Pause in active colour, Play returns to normal gold
+            self._pause_btn.configure(fg_color=INK, hover_color="#333333", text_color=PAPER)
+            self._play_btn.configure(fg_color=ACCENT_BROWN, hover_color="#a07a1a", text_color=PAPER)
         else:
-            self._pause_btn.configure(state="normal")
-            self._play_btn.configure(state="disabled")
+            # Playing: highlight Play in green, Pause returns to normal gold
+            self._pause_btn.configure(fg_color=ACCENT_BROWN, hover_color="#a07a1a", text_color=PAPER)
+            self._play_btn.configure(fg_color=STATUS_GREEN, hover_color="#388e3c", text_color=PAPER)
 
     def _on_pause(self) -> None:
         if self.on_pause:

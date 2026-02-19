@@ -1,4 +1,4 @@
-"""Detection system — determines when hidden failures become visible."""
+"""Detection system: determines when hidden failures become visible."""
 
 from __future__ import annotations
 
@@ -50,6 +50,7 @@ def _get_discovery_time(
             elif isinstance(hours, (int, float)):
                 base_hours = min(base_hours, hours)
 
+    base_hours *= cfg.settings.discovery_speed_multiplier
     return max(0.0, base_hours)
 
 

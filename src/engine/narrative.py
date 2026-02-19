@@ -1,4 +1,4 @@
-"""Narrative engine — generates headlines and stories from templates."""
+"""Narrative engine: generates headlines and stories from templates."""
 
 from __future__ import annotations
 

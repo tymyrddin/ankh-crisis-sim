@@ -1,4 +1,4 @@
-"""End condition evaluation — checks for loss, completion, or escape each tick."""
+"""End condition evaluation: checks for loss, completion, or escape each tick."""
 
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ def check_end_conditions(
 ) -> EndResult | None:
     """Check all end conditions. Returns the first one triggered, or None."""
     for condition in cfg.end_conditions:
-        result = _check_condition(condition, city, elapsed_days)
+        result = _check_condition(condition, city, elapsed_days, cfg)
         if result:
             return result
     return None
@@ -33,6 +33,7 @@ def _check_condition(
     condition: EndCondition,
     city: City,
     elapsed_days: int,
+    cfg: GameConfig,
 ) -> EndResult | None:
     trigger = condition.trigger
 
@@ -66,7 +67,12 @@ def _check_condition(
 
     # Days elapsed check (term completion)
     if "days_elapsed" in trigger:
-        if elapsed_days >= trigger["days_elapsed"]:
+        target_days = (
+            cfg.settings.game_duration_days
+            if cfg.settings.game_duration_days > 0
+            else trigger["days_elapsed"]
+        )
+        if elapsed_days >= target_days:
             return EndResult(
                 triggered=True,
                 condition_id=condition.id,

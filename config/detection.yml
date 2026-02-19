@@ -46,7 +46,7 @@ mechanisms:
     speed: variable
     limited_to: one_district_at_time
   spontaneous_event:
-    description: "Explosion, fire, collapse — hard to miss"
+    description: "Explosion, fire, collapse:hard to miss"
     reliability: 1.0
     speed: immediate
   strategic_intelligence:

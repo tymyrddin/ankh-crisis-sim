@@ -1,4 +1,4 @@
-"""Main simulation loop — orchestrates all engine subsystems per tick."""
+"""Main simulation loop: orchestrates all engine subsystems per tick."""
 
 from __future__ import annotations
 
@@ -16,9 +16,10 @@ from src.engine.metrics import (
     apply_duration_penalties,
     apply_immediate_effects,
     apply_income,
+    apply_passive_dynamics,
     update_global_trust_from_districts,
 )
-from src.engine.narrative import generate_headline
+from src.engine.narrative import generate_headline, generate_story
 from src.engine.remedies import RemedyResult, apply_remedy, process_remedy_completions
 from src.models.city import City
 from src.models.event import GameEvent
@@ -72,22 +73,39 @@ class Simulation:
             self.city.events.append(event)
         result.new_events = new_events
 
-        # 2. Detection — reveal hidden failures
+        # 2. Detection: reveal hidden failures
         detected = process_detection(self.cfg, self.city, self.clock.tick)
         result.detected_events = detected
 
         # 3. Apply immediate effects for newly detected events
         for event in detected:
             apply_immediate_effects(self.city, event, self.clock.tick)
-            headline = generate_headline(self.cfg, self.city, event)
-            if headline:
-                event.headline = headline
-                result.headlines.append(headline)
+            if not event.headline:
+                event.headline = generate_headline(self.cfg, self.city, event)
+            if not event.story:
+                event.story = generate_story(self.cfg, self.city, event, self.clock.tick)
+            if event.headline:
+                result.headlines.append(event.headline)
 
         # 4. Cascade propagation
-        cascades = propagate_cascades(self.city, self.clock.tick, self.cfg.time.ticks_per_day)
+        # Compute per-domain amplifiers from active stressors (e.g., just_in_time → transport/commercial)
+        domain_multipliers: dict[str, float] = {}
+        for stressor_id, sc in self.cfg.stressors.items():
+            level = self.city.stressors.get(stressor_id, 0.0)
+            for effect in sc.raw.get("effects", []):
+                for domain in effect.get("amplifies_cascade", []):
+                    domain_multipliers[domain] = domain_multipliers.get(domain, 1.0) * (1.0 + level * 0.5)
+
+        cascades = propagate_cascades(
+            self.city, self.clock.tick,
+            self.cfg.time.ticks_per_day,
+            self.cfg.settings.cascade_multiplier,
+            domain_multipliers,
+        )
         for ce in cascades:
             self.city.events.append(ce)
+            if not ce.story:
+                ce.story = generate_story(self.cfg, self.city, ce, self.clock.tick)
             if ce.headline:
                 result.headlines.append(ce.headline)
         result.cascade_events = cascades
@@ -109,7 +127,10 @@ class Simulation:
         # 9. Update global trust from district averages
         update_global_trust_from_districts(self.city, self.clock.tick)
 
-        # 10. End condition check
+        # 10. Passive metric dynamics (daily/weekly/monthly background drift)
+        apply_passive_dynamics(self.city, self.clock.tick, self.cfg.time.ticks_per_day, self.cfg)
+
+        # 11. End condition check
         result.end_result = check_end_conditions(
             self.cfg, self.city, self.clock.elapsed_days
         )
@@ -134,6 +155,43 @@ class Simulation:
         if not event:
             return RemedyResult(success=False, message=f"Event {event_id} not found or not active")
         return apply_remedy(self.cfg, self.city, event, remedy_id, self.clock.tick)
+
+    def emergency_borrow(self, lender_id: str) -> RemedyResult:
+        """Player takes an emergency loan from a named lender.
+
+        lender_id must match a key under budget.emergency_borrowing in game.yml
+        (e.g. 'royal_bank' or 'ueberwald').
+        """
+        assert self.cfg and self.city
+        lenders = self.cfg.budget_raw.get("emergency_borrowing", {})
+        lender = lenders.get(lender_id)
+        if not lender:
+            return RemedyResult(success=False, message=f"Unknown lender: {lender_id}")
+        if not lender.get("available", False):
+            return RemedyResult(success=False, message="This lender is not currently available")
+        amount = float(lender.get("max_amount", 1000))
+        label = lender.get("label", lender_id)
+        self.city.budget.apply(amount, self.clock.tick, cause=f"Emergency loan — {label}")
+
+        reg_cost = float(lender.get("regulatory_pressure_cost", 0))
+        if reg_cost:
+            self.city.regulatory_pressure.apply(reg_cost, self.clock.tick, cause=f"Emergency loan — {label}")
+
+        stability_cost = float(lender.get("stability_cost", 0))
+        if stability_cost:
+            self.city.political_stability.apply(-stability_cost, self.clock.tick, cause=f"Emergency loan — {label}")
+
+        costs = []
+        if reg_cost:
+            costs.append(f"regulatory pressure +{reg_cost:.0f}")
+        if stability_cost:
+            costs.append(f"stability −{stability_cost:.0f}")
+        cost_str = "; ".join(costs) if costs else "no immediate political cost"
+        return RemedyResult(
+            success=True,
+            message=f"Emergency loan of {amount:.0f} AM$ secured from {label} ({cost_str})",
+            cost=-amount,
+        )
 
     def get_visible_events(self) -> list[GameEvent]:
         """Get all events the player can currently see."""

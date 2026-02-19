@@ -1,4 +1,4 @@
-"""YAML config loader — reads all config files and assembles a City + game settings."""
+"""YAML config loader: reads all config files and assembles a City + game settings."""
 
 from __future__ import annotations
 
@@ -97,6 +97,15 @@ class BuildingTypeConfig:
 
 
 @dataclass
+class GameSettings:
+    """Runtime-adjustable game options. Defaults apply at game start."""
+    event_rate_multiplier: float = 0.3       # fraction of base event probability; 0.3 = 30%
+    discovery_speed_multiplier: float = 1.0  # >1 = events stay hidden longer
+    cascade_multiplier: float = 1.0          # multiplier on cascade probability rolls
+    game_duration_days: int = 730            # override days_elapsed end condition (0 = use YAML)
+
+
+@dataclass
 class EndCondition:
     id: str
     label: str
@@ -110,6 +119,7 @@ class GameConfig:
     """All loaded configuration for a game session."""
     time: TimeConfig = field(default_factory=TimeConfig)
     speed: SpeedConfig = field(default_factory=SpeedConfig)
+    settings: GameSettings = field(default_factory=GameSettings)
     active_districts: list[str] = field(default_factory=list)
     remedies: dict[str, RemedyConfig] = field(default_factory=dict)
     event_templates: list[EventTemplate] = field(default_factory=list)
@@ -123,6 +133,7 @@ class GameConfig:
     stories_raw: dict = field(default_factory=dict)
     starting_values: dict[str, float] = field(default_factory=dict)
     budget_income: dict = field(default_factory=dict)
+    budget_raw: dict = field(default_factory=dict)
 
 
 # ---------------------------------------------------------------------------
@@ -228,7 +239,9 @@ def load_config(config_dir: str | Path) -> GameConfig:
     )
     cfg.active_districts = game_raw.get("active_districts", [])
     cfg.starting_values = game_raw.get("starting_values", {})
-    cfg.budget_income = game_raw.get("budget", {}).get("income_per_month", {})
+    budget_section = game_raw.get("budget", {})
+    cfg.budget_income = budget_section.get("income_per_month", {})
+    cfg.budget_raw = budget_section
 
     # --- metrics ---
     cfg.metrics_global_raw = _load_yaml(config_dir / "metrics" / "global.yml")

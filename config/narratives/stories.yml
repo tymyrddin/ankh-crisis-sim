@@ -1,4 +1,4 @@
-# Layer 2: Richer stories — expandable view for players who want depth
+# Layer 2: Richer stories:expandable view for players who want depth
 # Variables: {district}, {building}, {duration}, {affected_count}, {remedy},
 #            {stressor_narrative}, {detection_narrative}, {political_narrative}
 
@@ -89,7 +89,7 @@ fire:
   - story: >
       The {district} fire post has been understaffed and under-equipped for years.
       Last night's fire was not a surprise to anyone who had looked at the maintenance
-      logs — if the logs existed, and if anyone had looked.
+      logs, if the logs existed, and if anyone had looked.
       {political_narrative}
     tone: ominous
 

@@ -1,4 +1,4 @@
-# Layer 1: Simple headlines — always visible in the news ticker
+# Layer 1: Simple headlines:always visible in the news ticker
 # Variables: {district}, {building}, {duration}, {affected_count}, {remedy}
 
 water:

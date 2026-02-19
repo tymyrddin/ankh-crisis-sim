@@ -1,4 +1,4 @@
-# Building type templates — define shared behaviour per archetype
+# Building type templates:define shared behaviour per archetype
 
 guild_hq:
   label: "Guild Headquarters"
@@ -45,7 +45,7 @@ slum_dwelling:
   produces: [labour_pool, local_trust, pride]
   dependency_strengths:
     critical: [water_pump]
-    operational: [community_networks]
+    operational: [community_networks, public_safety]  # densely packed wood and thatch; fire spreads in minutes
     strategic: [landlord_tolerance]
 
 middle_class_housing:
@@ -141,7 +141,7 @@ brewery:
   produces: [brewery_supply, employment, tax_revenue]
   dependency_strengths:
     critical: [water, food_supplies]   # no water = can't brew; no grain or hops = nothing to brew with
-    operational: [energy, transport]
+    operational: [energy, transport, public_safety]  # open vats, naked flames, volatile fermentation gases
     strategic: [sto_plains_trade_routes]  # hops and grain come from the Sto Plains
 
 transport:
@@ -167,6 +167,18 @@ communications_office:
     critical: [communications]         # a comms company whose own comms are down cannot coordinate anything
     operational: [energy, staff]
     strategic: [patrician_charter]     # operates under city charter; charter revoked = company dissolved
+
+apothecary:
+  label: "Apothecary / Street Healer"
+  sensitivity: medium_to_high      # district-level harm; not city-wide, but acutely felt by those who depend on it
+  trust_decay_rate: moderate        # residents notice when medicine runs out; the political reverb is local, not immediate
+  detection_time_modifier: 1.2     # small premises; failures surface when a customer arrives and finds it shut
+  consumes: [energy, water, medical_supplies]
+  produces: [public_health, local_trust]
+  dependency_strengths:
+    critical: [medical_supplies]
+    operational: [energy, water]
+    strategic: [guild_of_physicians]   # operates under Guild licence; revocation is a realistic threat
 
 healthcare:
   label: "Hospital / Medical Facility"
@@ -225,7 +237,7 @@ workshop:
   produces: [manufactured_goods, employment, tax_revenue, trade_goods]
   dependency_strengths:
     critical: [energy]                 # power cut = immediate closure; workshops cannot operate without it
-    operational: [water, transport]
+    operational: [water, transport, public_safety]  # fire-prone; no fire coverage = accelerated catastrophic loss
     strategic: [guild_licensing]       # workshops must be guild-approved to operate legally
 
 fire_service:
@@ -251,6 +263,18 @@ media:
     critical: [communications]         # without clacks, no news arrives and no stories can be transmitted
     operational: [energy, staff]
     strategic: [press_freedom]         # Patrician tolerates the press; a free press beats rumour mills; tolerance is not permanent
+
+intelligence_service:
+  label: "Intelligence Service"
+  sensitivity: extreme             # when it fails, things that should have been prevented quietly aren't
+  trust_decay_rate: delayed        # nobody knows it has failed; consequences manifest later, obliquely
+  detection_time_modifier: 3.0    # operates in deep cover; failures surface very late and at one remove
+  consumes: [energy, communications, financial_reserves, loyal_staff]
+  produces: [threat_intelligence, political_stability, regime_continuity, foreign_intelligence, internal_security]
+  dependency_strengths:
+    critical: [communications, loyal_staff]   # blind without comms; compromised without loyalty
+    operational: [energy, financial_reserves]
+    strategic: [patrician_mandate]            # exists because the Patrician permits it; that is not guaranteed
 
 university:
   label: "Unseen University"

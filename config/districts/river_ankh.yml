@@ -4,10 +4,10 @@ description: "Too thick to drink, too thin to plough. Transport artery, sewer, w
 
 wealth: 0                          # N/A
 density: 0                         # N/A but heavily used
-infrastructure_quality: 4.0        # 4.0x — it does what it wants
+infrastructure_quality: 4.0        # 4.0x:it does what it wants
 political_influence: 1.0           # affects everyone
 media_attention_multiplier: 1.2    # river stories are perennial favourites
-local_trust: 0                     # N/A — no residents
+local_trust: 0                     # N/A:no residents
 wealth_archetype: null
 is_residential: false
 

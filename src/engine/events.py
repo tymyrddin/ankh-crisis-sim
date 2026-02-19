@@ -1,4 +1,4 @@
-"""Event generation — rolls against probabilities weighted by stressors and neglect."""
+"""Event generation: rolls against probabilities weighted by stressors and neglect."""
 
 from __future__ import annotations
 
@@ -11,10 +11,24 @@ from src.models.city import City
 from src.models.event import DelayedEffect, EventPhase, GameEvent, MetricEffect
 
 
+# District stressor labels → local probability multiplier
+# e.g. just_in_time: amplifier raises event probability for transport/commercial events
+_DISTRICT_STRESSOR_LABEL_MODS: dict[str, float] = {
+    "amplifier": 1.5,
+    "extreme":   2.0,
+    "chronic":   1.5,
+    "high":      1.3,
+    "moderate":  1.1,
+    "victim":    1.2,
+    "beneficiary": 0.8,
+}
+
+
 def _calculate_probability(
     template: EventTemplate,
     city: City,
     district_failure_mod: float,
+    district_stressors: dict | None = None,
 ) -> float:
     """Calculate adjusted event probability based on stressors and district quality."""
     prob = template.probability_base * district_failure_mod
@@ -23,6 +37,12 @@ def _calculate_probability(
         level = city.stressors.get(stressor_id, 0.0)
         if isinstance(level, (int, float)):
             prob *= 1.0 + (level * (multiplier - 1.0))
+
+        # District-local stressor label: further amplifies events in sensitive districts
+        if district_stressors:
+            label = district_stressors.get(stressor_id)
+            if isinstance(label, str):
+                prob *= _DISTRICT_STRESSOR_LABEL_MODS.get(label, 1.0)
 
     return min(prob, 0.5)  # cap at 50% per tick
 
@@ -71,7 +91,10 @@ def generate_events(
 
         for district_id in eligible:
             district = city.districts[district_id]
-            prob = _calculate_probability(template, city, district.failure_probability_modifier)
+            prob = _calculate_probability(
+                template, city, district.failure_probability_modifier, district.stressors
+            )
+            prob *= cfg.settings.event_rate_multiplier
 
             if random.random() >= prob:
                 continue

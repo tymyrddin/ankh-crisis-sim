@@ -1,4 +1,4 @@
-"""Game clock — manages simulated time with pause and speed control."""
+"""Game clock: manages simulated time with pause and speed control."""
 
 from __future__ import annotations
 

@@ -1,18 +1,68 @@
-"""Dashboard panel — global metrics, city status, district summary, and active events."""
+"""Dashboard panel: global metrics, city status, district summary, and active events."""
 
 from __future__ import annotations
 
 import customtkinter as ctk
 
 from src.gui.theme import (
-    INK, INK_MUTED, METRIC_COLOURS, PAPER, PAPER_DARK,
-    TRUST_BAD, TRUST_GOOD, TRUST_WARN, ACCENT_BROWN, fonts,
+    INK, INK_MUTED, PAPER, PAPER_DARK,
+    STATUS_YELLOW, TRUST_BAD, TRUST_GOOD, TRUST_WARN, ACCENT_BROWN, fonts,
 )
+from src.gui.info_popups import InfoPopup
 from src.models.city import City
+
+
+def _bind_click(widget, callback) -> None:
+    """Recursively bind a left-click handler to widget and all its children."""
+    try:
+        widget.configure(cursor="hand2")
+    except Exception:
+        pass
+    widget.bind("<Button-1>", lambda e: callback(), add="+")
+    for child in widget.winfo_children():
+        _bind_click(child, callback)
 
 
 # Metrics where a higher value is worse (trend arrows and colours invert)
 _LOWER_IS_BETTER = {"regulatory_pressure", "crime_level"}
+
+# Threshold tuples: (green_at, yellow_at, orange_at)
+# For normal metrics: value >= green → green, >= yellow → yellow, >= orange → orange, else red
+# For lower-is-better: value <= green → green, <= yellow → yellow, <= orange → orange, else red
+_METRIC_THRESHOLDS: dict[str, tuple[float, float, float]] = {
+    "public_trust":        (60,   40,   20),    # config: trust collapse < 25; healthy ≥ 60
+    "budget":              (3000, 1500, 500),    # comfortable / tight / critical
+    "regulatory_pressure": (20,   40,   60),    # config: low=20, moderate=40, high=60
+    "political_stability": (70,   50,   30),    # high = stable; below 30 = very dangerous
+    "legitimacy":          (70,   50,   30),    # slow to move; below 30 is existential
+    "public_health":       (70,   50,   30),    # healthy city / stressed / failing
+    "crime_level":         (20,   40,   60),    # config: low=20, moderate=40, high=60
+}
+
+
+def _metric_colour(key: str, value: float) -> str:
+    """Return green / yellow / orange / red based on metric thresholds."""
+    thresholds = _METRIC_THRESHOLDS.get(key)
+    if not thresholds:
+        return INK
+    green_t, yellow_t, orange_t = thresholds
+    lower_is_better = key in _LOWER_IS_BETTER
+    if not lower_is_better:
+        if value >= green_t:
+            return TRUST_GOOD
+        if value >= yellow_t:
+            return STATUS_YELLOW
+        if value >= orange_t:
+            return TRUST_WARN
+        return TRUST_BAD
+    else:
+        if value <= green_t:
+            return TRUST_GOOD
+        if value <= yellow_t:
+            return STATUS_YELLOW
+        if value <= orange_t:
+            return TRUST_WARN
+        return TRUST_BAD
 
 
 def _trend_arrow(trend: float, lower_is_better: bool) -> tuple[str, str]:
@@ -45,14 +95,32 @@ class Dashboard:
         self._metric_labels: dict[str, ctk.CTkLabel] = {}
         self._trend_labels: dict[str, ctk.CTkLabel] = {}
         self._district_rows: dict[str, dict[str, ctk.CTkLabel]] = {}
-        self._event_widgets: dict[str, tuple[ctk.CTkFrame, str]] = {}
+        self._metric_rows: dict[str, ctk.CTkFrame] = {}
+        self._status_rows: dict[str, ctk.CTkFrame] = {}
+        self._district_row_frames: dict[str, ctk.CTkFrame] = {}
+        self.on_settings_click: callable | None = None
+        self.on_emergency_borrow: callable | None = None
         f = fonts()
 
-        # Title
+        # Title row with settings gear
+        title_row = ctk.CTkFrame(parent, fg_color="transparent")
+        title_row.pack(fill="x", pady=(10, 0))
+
         ctk.CTkLabel(
-            parent, text="ANKH-MORPORK",
+            title_row, text="ANKH-MORPORK",
             font=f.title, text_color=INK,
-        ).pack(pady=(10, 5))
+        ).pack(side="left", padx=(0, 0), expand=True)
+
+        ctk.CTkButton(
+            title_row, text="⚙",
+            command=self._settings_clicked,
+            width=32, height=32,
+            font=(f.family, 16),
+            fg_color="transparent",
+            hover_color=PAPER_DARK,
+            text_color=INK_MUTED,
+            border_width=0,
+        ).pack(side="right", padx=(0, 8))
 
         ctk.CTkLabel(
             parent, text="Lord Vetinari's Dilemma",
@@ -85,19 +153,9 @@ class Dashboard:
         ).pack(anchor="w", padx=15, pady=(8, 2))
 
         self._districts_frame = ctk.CTkScrollableFrame(
-            parent, height=200, fg_color=PAPER, label_text="",
+            parent, fg_color=PAPER, label_text="",
         )
-        self._districts_frame.pack(fill="x", padx=10, pady=5)
-
-        # --- Active Events ---
-        ctk.CTkLabel(
-            parent, text="ACTIVE EVENTS", font=f.heading, text_color=ACCENT_BROWN,
-        ).pack(anchor="w", padx=15, pady=(8, 2))
-
-        self._events_frame = ctk.CTkScrollableFrame(
-            parent, height=150, fg_color=PAPER, label_text="",
-        )
-        self._events_frame.pack(fill="both", expand=True, padx=10, pady=5)
+        self._districts_frame.pack(fill="both", expand=True, padx=10, pady=5)
 
     # ------------------------------------------------------------------
     # Build (called once on game start)
@@ -119,6 +177,7 @@ class Dashboard:
         for label, key, metric in metrics:
             row = ctk.CTkFrame(self._metrics_frame, fg_color="transparent")
             row.pack(fill="x", pady=1)
+            self._metric_rows[key] = row
 
             ctk.CTkLabel(
                 row, text=label, font=f.body, text_color=INK,
@@ -135,7 +194,7 @@ class Dashboard:
             value_label = ctk.CTkLabel(
                 row, text=fmt,
                 font=f.body_bold,
-                text_color=METRIC_COLOURS.get(key, INK),
+                text_color=_metric_colour(key, metric.value),
                 width=110, anchor="e",
             )
             value_label.pack(side="right", padx=4, pady=3)
@@ -145,9 +204,10 @@ class Dashboard:
         """Create city status indicator rows."""
         f = fonts()
 
-        def _status_row(label: str, value_text: str, colour: str) -> ctk.CTkLabel:
+        def _status_row(key: str, label: str, value_text: str, colour: str) -> ctk.CTkLabel:
             row = ctk.CTkFrame(self._status_frame, fg_color="transparent")
             row.pack(fill="x", pady=1)
+            self._status_rows[key] = row
             ctk.CTkLabel(row, text=label, font=f.small, text_color=INK).pack(
                 side="left", padx=8, pady=2,
             )
@@ -160,21 +220,21 @@ class Dashboard:
 
         infra_pct = city.infrastructure_health_pct
         self._infra_label = _status_row(
-            "Infrastructure",
+            "infrastructure", "Infrastructure",
             f"{infra_pct:.0f}%",
             _status_colour(infra_pct),
         )
 
         incident_count = len(city.visible_events)
         self._incidents_label = _status_row(
-            "Active Incidents",
+            "incidents", "Active Incidents",
             str(incident_count),
             TRUST_BAD if incident_count > 3 else (TRUST_WARN if incident_count > 0 else TRUST_GOOD),
         )
 
         watch_pct = city.watch_coverage_pct
         self._watch_label = _status_row(
-            "Watch Coverage",
+            "watch_coverage", "Watch Coverage",
             f"{watch_pct:.0f}%",
             _status_colour(watch_pct),
         )
@@ -187,6 +247,7 @@ class Dashboard:
                 continue
             row = ctk.CTkFrame(self._districts_frame, fg_color="transparent")
             row.pack(fill="x", pady=2)
+            self._district_row_frames[district.id] = row
 
             ctk.CTkLabel(
                 row, text=district.name,
@@ -213,6 +274,19 @@ class Dashboard:
                 "events": events_lbl,
             }
 
+    def _settings_clicked(self) -> None:
+        if self.on_settings_click:
+            self.on_settings_click()
+
+    def attach_popup(self, popup: InfoPopup, city: City) -> None:
+        """Bind info popups to all metric, status, and district rows."""
+        for key, frame in self._metric_rows.items():
+            _bind_click(frame, lambda k=key: popup.show_metric(city, k))
+        for key, frame in self._status_rows.items():
+            _bind_click(frame, lambda k=key: popup.show_status(city, k))
+        for district_id, frame in self._district_row_frames.items():
+            _bind_click(frame, lambda d=district_id: popup.show_district(city, d))
+
     # ------------------------------------------------------------------
     # Update (called every tick)
     # ------------------------------------------------------------------
@@ -232,7 +306,10 @@ class Dashboard:
         for key, metric in metrics_map.items():
             lbl = self._metric_labels.get(key)
             if lbl:
-                lbl.configure(text=self._fmt(key, metric.value))
+                lbl.configure(
+                    text=self._fmt(key, metric.value),
+                    text_color=_metric_colour(key, metric.value),
+                )
 
             tlbl = self._trend_labels.get(key)
             if tlbl:
@@ -285,46 +362,6 @@ class Dashboard:
                 )
             else:
                 row_labels["events"].configure(text="")
-
-    def update_events(self, city: City) -> None:
-        """Refresh the active events list — only rebuilds when events change."""
-        current_ids = set()
-        snapshots: dict[str, str] = {}
-
-        for event in city.visible_events:
-            phase_icon = {
-                "detected": "!",
-                "responding": "~",
-            }.get(event.phase.value, "?")
-            snap = f"[{phase_icon}] {event.headline or event.name}"
-            current_ids.add(event.id)
-            snapshots[event.id] = snap
-
-        old_ids = set(self._event_widgets.keys())
-        changed = current_ids != old_ids or any(
-            snapshots.get(eid) != self._event_widgets[eid][1]
-            for eid in current_ids & old_ids
-        )
-        if not changed:
-            return
-
-        for widget, _ in self._event_widgets.values():
-            widget.destroy()
-        self._event_widgets.clear()
-
-        f = fonts()
-        for event in city.visible_events:
-            row = ctk.CTkFrame(self._events_frame, fg_color="transparent")
-            row.pack(fill="x", pady=2)
-
-            ctk.CTkLabel(
-                row,
-                text=snapshots[event.id],
-                font=f.small, text_color=INK,
-                wraplength=250,
-            ).pack(side="left", padx=5, pady=3)
-
-            self._event_widgets[event.id] = (row, snapshots[event.id])
 
     # ------------------------------------------------------------------
     # Helpers

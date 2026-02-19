@@ -1,4 +1,4 @@
-"""Tests for the remedy system — application, timing, completion, and recurrence."""
+"""Tests for the remedy system: application, timing, completion, and recurrence."""
 
 from pathlib import Path
 
@@ -120,6 +120,9 @@ class TestRemedyCompletion:
     def test_completion_uses_applied_tick_not_detected_tick(self):
         """The core bug fix: downtime counts from remedy application, not detection."""
         cfg, city = build_city(CONFIG_DIR)
+        # Zero stressors that extend downtime so the base 4h is deterministic
+        city.stressors["underinvestment"] = 0.0
+        city.stressors["organisational_fragmentation"] = 0.0
         district = next(iter(city.districts.values()))
         building = next(iter(district.buildings.values()))
         building.fail(tick=1, event_id="test_evt_1")
@@ -133,12 +136,12 @@ class TestRemedyCompletion:
         assert event.phase == EventPhase.RESPONDING
         assert event.remedy_applied_tick == 20
 
-        # At tick 23 (3 hours later) — should NOT be resolved yet
+        # At tick 23 (3 hours later): should NOT be resolved yet
         completed = process_remedy_completions(cfg, city, tick=23)
         assert len(completed) == 0
         assert event.phase == EventPhase.RESPONDING
 
-        # At tick 24 (4 hours later) — should resolve now
+        # At tick 24 (4 hours later): should resolve now
         completed = process_remedy_completions(cfg, city, tick=24)
         assert len(completed) == 1
         assert event.phase == EventPhase.RESOLVED
@@ -146,6 +149,8 @@ class TestRemedyCompletion:
     def test_completion_returns_event(self):
         """process_remedy_completions returns (message, event) tuples."""
         cfg, city = build_city(CONFIG_DIR)
+        city.stressors["underinvestment"] = 0.0
+        city.stressors["organisational_fragmentation"] = 0.0
         district = next(iter(city.districts.values()))
         building = next(iter(district.buildings.values()))
         building.fail(tick=1, event_id="test_evt_1")
@@ -163,6 +168,8 @@ class TestRemedyCompletion:
 
     def test_building_restored_after_completion(self):
         cfg, city = build_city(CONFIG_DIR)
+        city.stressors["underinvestment"] = 0.0
+        city.stressors["organisational_fragmentation"] = 0.0
         district = next(iter(city.districts.values()))
         building = next(iter(district.buildings.values()))
         building.fail(tick=1, event_id="test_evt_1")
@@ -179,6 +186,8 @@ class TestRemedyCompletion:
     def test_structural_upgrade_takes_longer(self):
         """Structural upgrade (72h downtime) should not resolve before 72 ticks."""
         cfg, city = build_city(CONFIG_DIR)
+        city.stressors["underinvestment"] = 0.0
+        city.stressors["organisational_fragmentation"] = 0.0
         district = next(iter(city.districts.values()))
         building = next(iter(district.buildings.values()))
         building.fail(tick=1, event_id="test_evt_1")
@@ -188,12 +197,12 @@ class TestRemedyCompletion:
 
         apply_remedy(cfg, city, event, "resilience_investment", tick=10)
 
-        # At tick 50 (40h later) — should NOT be done
+        # At tick 50 (40h later): should NOT be done
         completed = process_remedy_completions(cfg, city, tick=50)
         assert len(completed) == 0
         assert event.phase == EventPhase.RESPONDING
 
-        # At tick 82 (72h later) — should resolve
+        # At tick 82 (72h later): should resolve
         completed = process_remedy_completions(cfg, city, tick=82)
         assert len(completed) == 1
         assert event.phase == EventPhase.RESOLVED

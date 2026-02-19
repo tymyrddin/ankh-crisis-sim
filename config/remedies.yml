@@ -17,12 +17,12 @@ technical_restoration:
 resilience_investment:
   label: "Structural Upgrade"
   description: "Rebuild to higher standard. Slower, expensive, but reduces future risk."
-  base_cost: 400
+  base_cost: 300
   cost_modifiers:
     district_wealth: direct          # richer districts demand better materials
   downtime_hours: 72
-  recurrence_risk: 0.05             # 5% — much lower
-  infrastructure_quality_boost: 0.1 # permanent improvement
+  recurrence_risk: 0.05             # 5%:much lower
+  infrastructure_quality_boost: 0.3 # permanent improvement: cuts excess above 1.0 by 30% per upgrade
   trust_effect:
     delayed_days: 14
     amount: 8

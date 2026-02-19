@@ -1,4 +1,4 @@
-"""Event model — an active incident affecting buildings and metrics."""
+"""Event model: an active incident affecting buildings and metrics."""
 
 from __future__ import annotations
 
@@ -62,6 +62,12 @@ class GameEvent:
     # Remedy tracking
     remedy_applied: str | None = None
     remedy_applied_tick: int | None = None
+    # Stressor-adjusted downtime committed at remedy application time (hours).
+    # Used by process_remedy_completions and displayed to the player.
+    effective_downtime_hours: float | None = None
+
+    # do_nothing raises cascade probability on this event
+    cascade_risk_boost: float = 1.0
 
     @property
     def is_active(self) -> bool:

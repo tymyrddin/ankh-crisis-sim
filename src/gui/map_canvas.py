@@ -1,4 +1,4 @@
-"""Map canvas — base map image with district tint overlays and building lamps."""
+"""Map canvas: base map image with district tint overlays and building lamps."""
 
 from __future__ import annotations
 

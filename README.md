@@ -75,7 +75,7 @@ Using a fictional city allows participants to:
 * Speak openly about failure, pressure, and trade-offs
 * Recognise familiar patterns without defensive reactions
 
-The city’s exaggerated complexity and personality make interdependencies visible and memorable, while keeping discussions grounded in reality.
+The city's exaggerated complexity and personality make interdependencies visible and memorable, while keeping discussions grounded in reality.
 
 ## Installation
 
@@ -94,7 +94,7 @@ source .venv/bin/activate
 pip install -e ".[dev]"
 ```
 
-Dependencies are minimal: `customtkinter`, `Pillow`, `pyyaml`, and `pydantic`.
+Dependencies are minimal: `customtkinter`, `Pillow`, and `pyyaml`.
 
 ## Usage
 
@@ -103,18 +103,34 @@ Dependencies are minimal: `customtkinter`, `Pillow`, `pyyaml`, and `pydantic`.
 python -m src.main
 
 # Run the test suite
-python -m pytest tests/ -v
+pytest tests/ -v
 ```
 
-On launch you see the city map with building indicators (green/yellow/red), a metrics dashboard, a news ticker, and time controls. The simulation starts paused.
+On launch you see a brief introduction screen. Pressing **Start** enters the main game: a city map with building indicators (green/yellow/red), a metrics dashboard, a news ticker, and time controls. The simulation starts paused.
 
-- **Play/Pause/Fast/Faster**: control the flow of simulated time
+- **Play / Pause**: control the flow of simulated time; the active button is highlighted (green = playing, dark = paused)
+- **Slower / Faster**: change simulation speed (1× or 10×)
 - **Hover** over a building lamp to see its name, district, and status
 - **Click** a building with an active event to choose a remedy
+- **Click a headline** in the news ticker to read the full story
 - **Watch the news ticker** for headlines as events unfold
 - **Monitor the dashboard** for trust, budget, regulatory pressure, political stability, and legitimacy
+- **⚙ (gear icon)** in the dashboard title bar opens game settings
 
 The game ends when a loss condition triggers (trust collapse, revolt, bankruptcy, infrastructure failure, assassination) or when you survive your full term. There is no victory screen, only "You served your term. Here is what happened."
+
+## Game settings
+
+The gear button opens a settings panel that lets you adjust difficulty before or during play:
+
+| Setting | Options | Effect |
+|---|---|---|
+| Game duration | Standard, Short, Extended | Term length in simulated years |
+| Event frequency | Normal, Rare, Frequent | Multiplier on incident probability |
+| Discovery speed | Normal, Fast, Slow | How quickly hidden failures surface |
+| Cascade risk | Normal, Low, High | Multiplier on failure propagation probability |
+
+All settings are applied immediately and persist for the session.
 
 ## Configuring and customising
 
@@ -136,6 +152,8 @@ media_attention_multiplier: 0.2
 local_trust: 15
 discovery_time_hours: [72, 120]
 ```
+
+`infrastructure_quality` is a **failure probability modifier**: 1.0 = baseline, 3.0 = three times as likely to fail, 0.3 = 30% as likely.
 
 To playtest with fewer districts, comment them out in `config/game.yml`:
 
@@ -162,6 +180,8 @@ Building types are defined in `config/buildings/_types.yml` (shared behaviour: w
 ```
 
 Add a building by appending to `instances.yml`. Add a new type by adding a key to `_types.yml`.
+
+Current building types: `guild_hq`, `tavern`, `civic_amenity`, `slum_dwelling`, `middle_class_housing`, `civic_institution`, `palace`, `water_source`, `power_source`, `clacks_tower`, `food_supply`, `brewery`, `transport`, `communications_office`, `apothecary`, `healthcare`, `security`, `intelligence_service`, `tech_business`, `hackerspace`, `workshop`, `fire_service`, `media`, `university`.
 
 ### Threats and events
 
@@ -218,7 +238,8 @@ Loss conditions, term completion, and post-game reflection questions are in `con
 
 * Python 3.12
 * CustomTkinter + Pillow (GUI)
-* PyYAML + Pydantic (config loading and validation)
+* PyYAML (config loading)
+* Python dataclasses (typed models, no Pydantic required)
 * Engine fully decoupled from GUI and testable without a display
 
 ## Status
@@ -245,10 +266,10 @@ You may not use this software for:
 - Internal corporate training
 - Commercial product development
 
-If you want to use this project in a paid or commercial context, a commercial licence is required.  
+If you want to use this project in a paid or commercial context, a commercial licence is required.
 See [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md) for details.
 
-This project is actively developed and maintained to support realistic security research and training.  
+This project is actively developed and maintained to support realistic research and training.
 The licence ensures that:
 
 - Security research remains accessible
@@ -256,4 +277,3 @@ The licence ensures that:
 - Commercial exploitation is fair and sustainable
 
 If you are unsure whether your use case is commercial, ask. [Ambiguity is solvable](https://tymyrddin.dev/contact/); silence is not.
-
