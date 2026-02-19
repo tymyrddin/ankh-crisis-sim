@@ -1,6 +1,6 @@
 # Ankh-Morpork: Lord Vetinari's Dilemma
 
-![Ankh-Morpork simulation](static/images/ankh-morpork.png)
+![Ankh-Morpork simulation](static/images/ankh-morpork-sim.png)
 
 A crisis management simulation where you govern a city with interconnected infrastructure, competing interests, and no easy answers.
 
