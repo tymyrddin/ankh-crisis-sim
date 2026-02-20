@@ -250,32 +250,30 @@ Under active development. The simulation engine, YAML config system, and GUI are
 
 ## License and usage
 
-This project is licensed under the [Polyform Noncommercial Licence](LICENSE).
+This project is licensed under the [Polyform Noncommercial Licence](LICENCE).
 
 You are welcome to use this software for:
 
-- Learning and experimentation
-- Academic or independent research
-- Defensive security research
-- Developing and validating proof-of-concepts
-- Incident response exercises
-- Non-commercial red/blue team simulations
+- Learning and personal experimentation
+- Academic research, coursework, and dissertations
+- Classroom and curriculum use by educators
+- Non-commercial workshops, civic exercises, and community events
+- Game design research and serious games scholarship
+
+Additional permissions for academic and educational research are set out in [RESEARCH-EXCEPTION.md](RESEARCH-EXCEPTION.md).
 
 You may not use this software for:
 
-- Paid workshops or training
-- Consultancy or advisory services
-- Internal corporate training
-- Commercial product development
+- Paid workshops or training courses
+- Commercial product development or integration
+- Any context where money changes hands
 
-A [commercial licence](COMMERCIAL-LICENSE.md) is required to use this project in paid or commercial products. All 
-proceeds from commercial licences, beyond the costs of maintaining this project, will be donated to Alzheimer's 
-organisations in memory of [Terry Pratchett](https://terrypratchett.com/).
+A [commercial licence](COMMERCIAL-LICENCE.md) is required to use this project in paid or commercial contexts. All proceeds from commercial licences, beyond the costs of maintaining this project, will be donated to Alzheimer's organisations in memory of [Terry Pratchett](https://terrypratchett.com/).
 
 This project is actively developed and maintained. The licence ensures that:
 
-- Research remains accessible
-- Defensive knowledge can spread
-- Commercial exploitation is fair and sustainable
+- The simulation remains freely accessible for education and research
+- Commercial use contributes to something worthwhile
+- Exploitation without contribution is not an option
 
 If you are unsure whether your use case is commercial, ask. [Ambiguity is solvable](https://tymyrddin.dev/contact/); silence is not.

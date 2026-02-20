@@ -1,22 +1,21 @@
-# Commercial License
+# Commercial Licence
 
-This software is available under a commercial license for organisations or individuals who wish to use it for commercial purposes.
+This software is available under a commercial licence for organisations or individuals who wish to use it for commercial purposes.
 
-## When a commercial license is required
+## When a commercial licence is required
 
-A commercial license is required if you intend to use this software for any of the following:
+A commercial licence is required if you intend to use this software for any of the following:
 
 - Paid training, workshops, or educational courses
-- Security consultancy or advisory services
-- Internal corporate training or exercises
+- Institutional training or exercises delivered for a fee
 - Product demonstrations or proof-of-concept development for clients
 - Integration into proprietary or paid tools or platforms
 
-If money changes hands and this software is involved, you need a commercial license.
+If money changes hands and this software is involved, you need a commercial licence.
 
-## What a commercial license provides
+## What a commercial licence provides
 
-A commercial license grants you:
+A commercial licence grants you:
 
 - Permission to use the software in paid and commercial contexts
 - The right to modify and extend the software internally
@@ -25,15 +24,18 @@ A commercial license grants you:
 
 ## What it does not grant
 
-Unless explicitly agreed in writing, a commercial license does not grant:
+Unless explicitly agreed in writing, a commercial licence does not grant:
 
 - The right to redistribute the software publicly
 - The right to relicense the software
 - Ownership of the intellectual property
 
-## Obtaining a commercial license
+## Where the money goes
+
+All proceeds from commercial licences, beyond the costs of maintaining this project, will be donated to Alzheimer's organisations in memory of [Terry Pratchett](https://terrypratchett.com/).
+
+## Obtaining a commercial licence
 
 To discuss licensing terms, pricing, or scope, [contact us](https://tymyrddin.dev/contact/).
 
 Licensing is intentionally lightweight and workshop-friendly. If you are acting in good faith, this process will not be painful.
-
