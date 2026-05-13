@@ -56,29 +56,6 @@ public_services:
       has demanded an explanation. Commander Vimes has been seen pacing the corridors.
     tone: grave
 
-commercial:
-  - story: >
-      The beer supply chain has collapsed after the main brewery ceased production.
-      Tavern owners report empty cellars and restless customers. The Mended Drum
-      is serving "imported alternatives" at triple the price.
-    tone: alarming
-
-food:
-  - story: >
-      The {building} has been unable to supply {district} for {duration}.
-      Residents report empty shelves and rising prices. Those who can afford
-      alternatives are buying them. Those who cannot are waiting.
-      {stressor_narrative}
-    tone: factual
-
-  - story: >
-      The food shortage in {district} has produced the usual competing explanations.
-      The Shambles Guild blames the Sto Plains drought. The Sto Plains traders blame
-      the bridge tolls. The bridge toll collectors blame the weather. Residents
-      are eating less while the blame circulates.
-    tone: political
-
-fire:
   - story: >
       A fire broke out at {building} and spread to adjacent properties before the
       fire post in {district} could respond. {detection_narrative} By the time
@@ -93,7 +70,6 @@ fire:
       {political_narrative}
     tone: ominous
 
-security:
   - story: >
       The Watch post in {district} has been closed or understaffed for {duration}.
       During that period, the Thieves' Guild reports an increase in what they describe
@@ -108,7 +84,27 @@ security:
       The Palace has acknowledged receipt of the document.
     tone: wry
 
-workshop:
+commercial:
+  - story: >
+      The beer supply chain has collapsed after the main brewery ceased production.
+      Tavern owners report empty cellars and restless customers. The Mended Drum
+      is serving "imported alternatives" at triple the price.
+    tone: alarming
+
+  - story: >
+      The {building} has been unable to supply {district} for {duration}.
+      Residents report empty shelves and rising prices. Those who can afford
+      alternatives are buying them. Those who cannot are waiting.
+      {stressor_narrative}
+    tone: factual
+
+  - story: >
+      The food shortage in {district} has produced the usual competing explanations.
+      The Shambles Guild blames the Sto Plains drought. The Sto Plains traders blame
+      the bridge tolls. The bridge toll collectors blame the weather. Residents
+      are eating less while the blame circulates.
+    tone: political
+
   - story: >
       {building} in {district} has suspended production after {duration} of
       disruption. Employees have not been paid. The guild licensing office
@@ -121,7 +117,6 @@ workshop:
       Then someone from Nap Hill buys the building for storage.
     tone: analytical
 
-tech:
   - story: >
       Systems at {building} have been unavailable for {duration}. Three guild
       clients, the Royal Bank, and the Patrician's correspondence office were

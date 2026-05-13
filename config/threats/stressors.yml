@@ -70,3 +70,19 @@ organisational_fragmentation:
   change_rate:
     coordination_decrease: 0.02
     neglect_increase: 0.01
+
+narrative_effects:
+  label: "Narrative Effects"
+  description: "Visibility, symbolism, and duration shape political pressure. Press statements, scandals, and contradictions accumulate."
+  # Raw counter; not bounded by 1.0. Shape via tanh for display and for multipliers.
+  starting_level: 0.0
+  effects:
+    - shape: tanh                    # display/multiplier function applied to raw counter
+    - trust_decay_amplifier: 0.15    # shaped value * this is added to scandal damage
+  player_influence:
+    worsen: "Leaning on press statements without follow-through; ignored scandals"
+    improve: "Quiet, proportionate action; resolving events instead of framing them"
+  increments:
+    press_statement: 0.05
+    contradicts: 0.10
+    scandal: 0.02

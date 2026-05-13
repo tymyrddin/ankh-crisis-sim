@@ -7,6 +7,7 @@ import tkinter as tk
 import customtkinter as ctk
 
 from src.config.loader import GameConfig
+from src.engine.remedies import get_available_remedies
 from src.gui.theme import (
     ACCENT_BROWN, INK, INK_MUTED, PAPER, PAPER_DARK,
     STATUS_GREEN, STATUS_RED, STATUS_YELLOW, STATUS_RESPONDING, fonts,
@@ -972,9 +973,13 @@ class RemedyMenu:
                     font=f.small_bold, text_color=STATUS_RESPONDING,
                 ).pack(anchor="w", padx=20, pady=(0, 8))
             else:
-                # Remedy action cards
+                # Remedy action cards. Filter by event domain: the threatmodel
+                # lists only certain recovery pathways per domain; meta-options
+                # (press_statement, operational_workaround, do_nothing) stay
+                # universal.
                 _section_heading(scroll, f, "Available responses")
-                for remedy_id, remedy in self.cfg.remedies.items():
+                for remedy in get_available_remedies(self.cfg, event):
+                    remedy_id = remedy.id
                     card = ctk.CTkFrame(scroll, fg_color=PAPER_DARK, corner_radius=6)
                     card.pack(fill="x", padx=20, pady=4)
 

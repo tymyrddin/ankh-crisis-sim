@@ -160,7 +160,7 @@
   name: "Watch post understaffing"
   category: degradation_and_neglect
   target_building_types: [security]
-  domain: security
+  domain: public_services
   probability_base: 0.008
   stressor_amplifiers:
     underinvestment: 1.8
@@ -195,7 +195,7 @@
   name: "Fire post out of service"
   category: degradation_and_neglect
   target_building_types: [fire_service]
-  domain: fire
+  domain: public_services
   probability_base: 0.006
   stressor_amplifiers:
     underinvestment: 2.2
@@ -258,7 +258,7 @@
   name: "Workshop industrial fire"
   category: operational_error
   target_building_types: [workshop]
-  domain: fire
+  domain: public_services
   probability_base: 0.006
   stressor_amplifiers:
     underinvestment: 1.8
@@ -321,7 +321,7 @@
   name: "Food supply disruption"
   category: supply_chain_failure
   target_building_types: [food_supply]
-  domain: food
+  domain: commercial
   probability_base: 0.008
   stressor_amplifiers:
     just_in_time: 2.0
@@ -444,7 +444,7 @@
   name: "Technical system compromise"
   category: strategic_interference
   target_building_types: [tech_business, hackerspace]
-  domain: tech
+  domain: commercial
   probability_base: 0.003
   stressor_amplifiers:
     vendor_monoculture: 2.5
@@ -500,3 +500,107 @@
     - "Press interference alleged at {building}"
   stories:
     - "The {building} has ceased publication without explanation. Rumours circulate. No official statement has been issued. The absence of news is, itself, the news. {political_narrative}"
+
+- id: tenement_subsidence
+  name: "Tenement subsidence"
+  category: degradation_and_neglect
+  target_building_types: [slum_dwelling]
+  target_districts: [the_shades, cockbill_street]
+  domain: water
+  residential_impact: true
+  probability_base: 0.004
+  stressor_amplifiers:
+    underinvestment: 2.5
+    social_inequality: 1.5
+  impact:
+    immediate:
+      - metric: local_trust
+        delta: -8
+        scope: district
+      - metric: regulatory_pressure
+        delta: 6
+    secondary:
+      delay_hours: 48
+      effects:
+        - metric: public_trust
+          delta: -4
+        - metric: public_health
+          delta: -3
+    duration_penalty:
+      per_day_unresolved: -1.5
+      metric: local_trust
+  headlines:
+    - "Tenement walls crack in {district}; families evacuated"
+    - "Subsidence at {building} forces residents into the street"
+    - "{district} residents homeless after building condemned"
+  stories:
+    - "The {building} has been declared unsafe for habitation. {affected_count} families have nowhere to go. {detection_narrative} The Patrician's office has been asked who pays for the rehousing. The Patrician's office has been asked again."
+    - "Decades of deferred maintenance have caught up with {building}. {stressor_narrative}. Residents had reported cracks for months. The reports were filed."
+
+- id: heating_failure_cold_spell
+  name: "Heating failure during cold spell"
+  category: degradation_and_neglect
+  target_building_types: [slum_dwelling, middle_class_housing]
+  domain: energy
+  residential_impact: true
+  probability_base: 0.005
+  stressor_amplifiers:
+    underinvestment: 2.0
+    just_in_time: 1.5
+  impact:
+    immediate:
+      - metric: local_trust
+        delta: -5
+        scope: district
+      - metric: public_health
+        delta: -4
+    secondary:
+      delay_hours: 24
+      effects:
+        - metric: public_trust
+          delta: -3
+        - metric: political_stability
+          delta: -2
+    duration_penalty:
+      per_day_unresolved: -2.0
+      metric: local_trust
+  headlines:
+    - "Heating fails in {district} as temperature drops"
+    - "{building} residents huddle in the cold"
+    - "Cold-weather emergency declared for {district}"
+  stories:
+    - "The heating supply to {building} has been out for {duration}. Residents have wrapped themselves in everything they own. The elderly are at risk. {political_narrative}"
+    - "{district} has been without heat in mid-winter. {detection_narrative} The Guild of Plumbers and Steamfitters has issued a statement saying the failure was 'predictable.' This is not a comfort."
+
+- id: civic_amenity_neglect
+  name: "Civic amenity neglect"
+  category: degradation_and_neglect
+  target_building_types: [civic_amenity]
+  domain: public_services
+  residential_impact: true
+  probability_base: 0.003
+  stressor_amplifiers:
+    underinvestment: 2.0
+    social_inequality: 1.3
+  impact:
+    immediate:
+      - metric: local_trust
+        delta: -4
+        scope: district
+    secondary:
+      delay_hours: 72
+      effects:
+        - metric: public_trust
+          delta: -2
+        - metric: legitimacy
+          delta: -2
+    duration_penalty:
+      per_day_unresolved: -1.0
+      metric: local_trust
+  headlines:
+    - "{building} closed indefinitely; residents protest"
+    - "Civic amenity in {district} falls into disrepair"
+    - "Public facility at {building} declared unusable"
+  stories:
+    - "The {building} has been unusable for {duration}. {detection_narrative} Residents who relied on it now travel to other districts, or do without. {stressor_narrative}."
+    - "Routine maintenance at {building} was deferred. Then the deferral was deferred. The building has now deferred itself out of use."

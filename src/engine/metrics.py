@@ -2,9 +2,44 @@
 
 from __future__ import annotations
 
+import math
+
 from src.config.loader import GameConfig
 from src.models.city import City
 from src.models.event import EventPhase, GameEvent, MetricEffect
+
+
+def narrative_effects_shaped(raw: float, shape: str = "tanh") -> float:
+    """Map the raw narrative-effects counter to a 0-1 display/multiplier value.
+
+    The raw counter accumulates linearly without decay. The shaped view is what
+    mechanics and the GUI consume so the early steps register as visible and
+    late steps saturate rather than running away.
+    """
+    if raw <= 0:
+        return 0.0
+    if shape == "tanh":
+        return math.tanh(raw)
+    # Linear clamp fallback
+    return min(1.0, raw)
+
+
+def increment_narrative_effects(city: City, cfg: GameConfig, key: str) -> None:
+    """Increase the narrative_effects raw counter by the configured increment.
+
+    `key` matches one of the keys under `increments:` in `narrative_effects`
+    in stressors.yml (e.g. 'press_statement', 'contradicts', 'scandal').
+    No-op if narrative_effects is not configured.
+    """
+    sc = cfg.stressors.get("narrative_effects")
+    if not sc:
+        return
+    increments = sc.raw.get("increments", {})
+    delta = float(increments.get(key, 0.0))
+    if delta <= 0:
+        return
+    current = city.stressors.get("narrative_effects", 0.0)
+    city.stressors["narrative_effects"] = current + delta
 
 
 def apply_immediate_effects(

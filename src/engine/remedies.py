@@ -6,6 +6,7 @@ import random
 from dataclasses import dataclass
 
 from src.config.loader import GameConfig, RemedyConfig
+from src.engine.metrics import increment_narrative_effects
 from src.models.city import City
 from src.models.event import DelayedEffect, EventPhase, GameEvent, MetricEffect
 
@@ -18,9 +19,33 @@ class RemedyResult:
     headline: str = ""
 
 
-def get_available_remedies(cfg: GameConfig) -> list[RemedyConfig]:
-    """Return all remedy types the player can choose from."""
-    return list(cfg.remedies.values())
+def get_available_remedies(
+    cfg: GameConfig,
+    event: GameEvent | None = None,
+) -> list[RemedyConfig]:
+    """Return remedies the player can choose from for the given event.
+
+    The threatmodel restricts each of the four named recovery pathways to
+    specific domains via a `valid_domains` list in `config/remedies.yml`.
+    Meta-options (press_statement, operational_workaround, do_nothing) carry
+    no `valid_domains` entry and are always available.
+
+    Calling with no event preserves the old "all remedies" behaviour for
+    contexts that just need the catalogue.
+    """
+    all_remedies = list(cfg.remedies.values())
+    if event is None or not event.domain:
+        return all_remedies
+
+    filtered: list[RemedyConfig] = []
+    for remedy in all_remedies:
+        valid_domains = remedy.raw.get("valid_domains")
+        if not valid_domains:
+            filtered.append(remedy)
+            continue
+        if event.domain in valid_domains:
+            filtered.append(remedy)
+    return filtered
 
 
 def apply_remedy(
@@ -155,10 +180,17 @@ def apply_remedy(
                     effective_downtime *= 1.0 + (float(dr) - 1.0) * level
     event.effective_downtime_hours = effective_downtime
 
+    # Narrative-effects accumulation: any remedy whose trust_effect declares
+    # contradicts_penalty is a "window" remedy (press_statement and any future
+    # equivalent) and increments the narrative counter on application.
+    if trust_raw.get("contradicts_penalty") is not None:
+        increment_narrative_effects(city, cfg, "press_statement")
+
     # Schedule resolution after downtime.
-    # press_statement: stays in RESPONDING for duration_hours (window mechanic — see
-    # process_remedy_completions). All other zero-downtime remedies resolve immediately.
-    if remedy.downtime_hours == 0 and remedy_id != "press_statement":
+    # Window remedies (any remedy with contradicts_penalty) stay in RESPONDING
+    # for duration_hours; see process_remedy_completions. All other zero-downtime
+    # remedies resolve immediately.
+    if remedy.downtime_hours == 0 and trust_raw.get("contradicts_penalty") is None:
         _resolve_event(cfg, city, event, remedy, building, tick)
     # else: resolution (or expiry) handled by process_remedy_completions
 
@@ -200,25 +232,30 @@ def process_remedy_completions(
 
         hours_since_remedy = tick - event.remedy_applied_tick
 
-        # --- Press statement window expiry ---
-        # press_statement has downtime_hours=0 but stays RESPONDING for duration_hours.
-        # When the window closes without a real remedy following, apply the contradicts_penalty
-        # and revert the event to DETECTED so the player must deal with it properly.
-        if event.remedy_applied == "press_statement":
-            trust_raw = remedy.raw.get("trust_effect", {})
+        # --- Narrative-window remedy expiry (press_statement and equivalents) ---
+        # A remedy whose trust_effect declares a `contradicts_penalty` is a
+        # "window" remedy: downtime_hours=0 but it stays in RESPONDING for
+        # duration_hours. When the window closes without a real remedy
+        # following, apply the contradicts_penalty and revert the event to
+        # DETECTED so the player has to deal with it properly. Data-driven so
+        # future window-style remedies need no code change.
+        trust_raw = remedy.raw.get("trust_effect", {})
+        if trust_raw.get("contradicts_penalty") is not None:
             window = trust_raw.get("duration_hours", 48)
             if hours_since_remedy >= window:
                 penalty = trust_raw.get("contradicts_penalty", 0)
                 district = city.districts.get(event.target_district_id)
                 if penalty and district:
                     district.local_trust.apply(
-                        float(penalty), tick, cause="Press statement contradicted by inaction"
+                        float(penalty), tick, cause=f"{remedy.label} contradicted by inaction"
                     )
-                # Revert to DETECTED — problem remains, press statement exhausted
+                # Narrative effects: contradicts penalty raises the counter
+                increment_narrative_effects(city, cfg, "contradicts")
+                # Revert to DETECTED so the problem remains
                 event.phase = EventPhase.DETECTED
                 event.remedy_applied = None
                 event.remedy_applied_tick = None
-                completed.append((f"{event.name}: no action followed press statement", event))
+                completed.append((f"{event.name}: no action followed {remedy.label.lower()}", event))
             continue  # never treated as a normal downtime completion
 
         # Effective downtime was committed and cached at remedy application time.

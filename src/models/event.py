@@ -69,6 +69,11 @@ class GameEvent:
     # do_nothing raises cascade probability on this event
     cascade_risk_boost: float = 1.0
 
+    # Threatmodel impact tags. Residential events live under a utility domain
+    # (water/energy/etc.) but flag themselves so the GUI and narrative engine
+    # can highlight harm to residents.
+    residential_impact: bool = False
+
     @property
     def is_active(self) -> bool:
         return self.phase in (EventPhase.HIDDEN, EventPhase.DETECTED, EventPhase.RESPONDING)

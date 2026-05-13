@@ -18,12 +18,18 @@ def generate_headline(
     if event.headline:
         return event.headline
 
+    # Residential-impact events draw from the residential pool when present,
+    # then fall through to the domain pool, then general.
+    pools = []
+    if event.residential_impact:
+        pools.extend(cfg.headlines_raw.get("residential", []))
     domain = event.domain or "general"
-    templates = cfg.headlines_raw.get(domain, cfg.headlines_raw.get("general", []))
-    if not templates:
+    pools.extend(cfg.headlines_raw.get(domain, []))
+    pools.extend(cfg.headlines_raw.get("general", []))
+    if not pools:
         return event.name
 
-    template = random.choice(templates)
+    template = random.choice(pools)
 
     district = city.districts.get(event.target_district_id)
     building = city.get_building(event.target_building_id)

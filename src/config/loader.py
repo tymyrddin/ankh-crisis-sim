@@ -74,6 +74,7 @@ class EventTemplate:
     duration_penalty_metric: str = "local_trust"
     cascade_dependency: str | None = None
     cascade_scope: str = "neighbours"
+    residential_impact: bool = False
 
 
 @dataclass
@@ -165,6 +166,7 @@ def _parse_event_template(raw: dict) -> EventTemplate:
         stressor_amplifiers=raw.get("stressor_amplifiers", {}),
         headlines=raw.get("headlines", []),
         stories=raw.get("stories", []),
+        residential_impact=raw.get("residential_impact", False),
         raw=raw,
     )
 

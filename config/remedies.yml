@@ -8,6 +8,8 @@ technical_restoration:
     infrastructure_quality: inverse  # worse quality = more expensive
   downtime_hours: 4
   recurrence_risk: 0.30             # 30% chance same failure within year
+  # Per-threatmodel recovery pathway; available for every domain.
+  valid_domains: [energy, water, communications, transport, public_services, commercial, residential]
   trust_effect:
     immediate: 3
     flavour: "Quick fix, but is it a real fix?"
@@ -23,6 +25,8 @@ resilience_investment:
   downtime_hours: 72
   recurrence_risk: 0.05             # 5%:much lower
   infrastructure_quality_boost: 0.3 # permanent improvement: cuts excess above 1.0 by 30% per upgrade
+  # Per-threatmodel recovery pathway; available for every domain.
+  valid_domains: [energy, water, communications, transport, public_services, commercial, residential]
   trust_effect:
     delayed_days: 14
     amount: 8
@@ -56,6 +60,10 @@ public_compensation:
     population_affected: direct
   downtime_hours: 0
   recurrence_risk: 1.0              # no fix at all
+  # Per-threatmodel: Compensatory measures are offered for Energy, Water,
+  # Public Services, Commercial, and Residential events. Not Communications
+  # or Transport (the threatmodel does not list it for those domains).
+  valid_domains: [energy, water, public_services, commercial, residential]
   trust_effect:
     immediate: 10
     duration_days: 30               # fades
@@ -70,6 +78,8 @@ accountability_actions:
   base_cost: 30
   downtime_hours: 0
   recurrence_risk: 1.0              # no fix
+  # Per-threatmodel: Accountability is listed only for Energy, Water and Public Services.
+  valid_domains: [energy, water, public_services]
   trust_effect:
     immediate: 10
     backfire_risk: 0.25             # if scapegoat fights back

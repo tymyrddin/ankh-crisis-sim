@@ -155,6 +155,7 @@ def generate_events(
                 cascade_dependency=template.cascade_dependency,
                 cascade_scope=template.cascade_scope,
                 headline=headline,
+                residential_impact=template.residential_impact,
             )
 
             # Apply the failure to the building
