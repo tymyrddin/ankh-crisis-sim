@@ -288,11 +288,33 @@ def apply_passive_dynamics(
                     scandal_org_frag_mult = 1.0 + (float(atd) - 1.0) * org_frag_level
                     break
 
+    # Narrative-effects amplifier: shaped narrative_effects counter adds an
+    # extra trust-decay multiplier on top of org_fragmentation.
+    narrative_mult = 1.0
+    if cfg:
+        ne_sc = cfg.stressors.get("narrative_effects")
+        if ne_sc:
+            raw = city.stressors.get("narrative_effects", 0.0)
+            shape = "tanh"
+            amp = 0.0
+            for eff in ne_sc.raw.get("effects", []):
+                if "shape" in eff:
+                    shape = eff["shape"]
+                if "trust_decay_amplifier" in eff:
+                    amp = float(eff["trust_decay_amplifier"])
+            narrative_mult = 1.0 + narrative_effects_shaped(raw, shape) * amp
+
     for event in neglected:
         district = city.districts.get(event.target_district_id)
         if district:
-            scandal_damage = -1.5 * district.media_attention_multiplier * scandal_org_frag_mult
+            scandal_damage = (
+                -1.5 * district.media_attention_multiplier
+                * scandal_org_frag_mult * narrative_mult
+            )
             district.local_trust.apply(scandal_damage, tick, cause=f"{event.name} (scandal)")
+            # Each ignored scandal adds a small narrative-effects increment
+            if cfg:
+                increment_narrative_effects(city, cfg, "scandal")
 
     # ------------------------------------------------------------------
     # 7. Pending trust boosts: deferred gains from resilience_investment
@@ -306,28 +328,33 @@ def apply_passive_dynamics(
             for _, amt, cause in due:
                 district.local_trust.apply(amt, tick, cause=cause)
 
-    # Press statement window: event is RESPONDING but only a statement was issued.
-    # Scandal fires at half strength — citizens see the statement but no concrete action.
-    # (slows_decay_multiplier: 0.5 from press_statement trust_effect)
-    press_decay_mult = 0.5
+    # Narrative-window remedy active: scandal damage is reduced by the remedy's
+    # slows_decay_multiplier. Data-driven so press_statement and any future
+    # window remedy with the same field both work without code changes.
     if cfg:
-        ps_cfg = cfg.remedies.get("press_statement")
-        if ps_cfg:
-            press_decay_mult = ps_cfg.raw.get("trust_effect", {}).get("slows_decay_multiplier", 0.5)
-
-    for event in city.visible_events:
-        if event.phase != EventPhase.RESPONDING:
-            continue
-        if event.remedy_applied != "press_statement":
-            continue
-        if event.detected_tick is None:
-            continue
-        if tick - event.detected_tick < ticks_per_day:
-            continue
-        district = city.districts.get(event.target_district_id)
-        if district:
-            scandal_damage = -1.5 * district.media_attention_multiplier * scandal_org_frag_mult * press_decay_mult
-            district.local_trust.apply(scandal_damage, tick, cause=f"{event.name} (muted scandal)")
+        for event in city.visible_events:
+            if event.phase != EventPhase.RESPONDING:
+                continue
+            if event.remedy_applied is None:
+                continue
+            remedy = cfg.remedies.get(event.remedy_applied)
+            if not remedy:
+                continue
+            trust_raw = remedy.raw.get("trust_effect", {})
+            slows = trust_raw.get("slows_decay_multiplier")
+            if slows is None:
+                continue
+            if event.detected_tick is None:
+                continue
+            if tick - event.detected_tick < ticks_per_day:
+                continue
+            district = city.districts.get(event.target_district_id)
+            if district:
+                scandal_damage = (
+                    -1.5 * district.media_attention_multiplier
+                    * scandal_org_frag_mult * narrative_mult * float(slows)
+                )
+                district.local_trust.apply(scandal_damage, tick, cause=f"{event.name} (muted scandal)")
 
     # ------------------------------------------------------------------
     # 6. Stressor drift: systemic conditions worsen through neglect

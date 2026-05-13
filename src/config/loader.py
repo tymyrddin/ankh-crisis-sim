@@ -113,6 +113,7 @@ class EndCondition:
     description: str = ""
     narrative: str = ""
     trigger: dict = field(default_factory=dict)
+    min_days: int = 0
 
 
 @dataclass
@@ -311,6 +312,7 @@ def load_config(config_dir: str | Path) -> GameConfig:
                     description=edata.get("description", ""),
                     narrative=edata.get("narrative", ""),
                     trigger=edata.get("trigger", {}),
+                    min_days=int(edata.get("min_days", 0)),
                 ))
 
     return cfg

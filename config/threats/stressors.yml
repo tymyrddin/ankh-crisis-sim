@@ -5,7 +5,7 @@ underinvestment:
   description: "Maintenance deferred, upgrades delayed, reserve capacity minimal."
   starting_level: 0.6               # 0.0 (none) to 1.0 (maximum)
   effects:
-    - increases_probability: degradation_and_neglect
+    # Event probability amplification is configured per-event via stressor_amplifiers.
     - extends_recovery_time: 1.3
   player_influence:
     worsen: "Cutting budgets further"
@@ -46,9 +46,10 @@ social_inequality:
   label: "Social and Spatial Inequality"
   description: "Wealthy areas have redundant connections. Poor districts have ageing infrastructure."
   starting_level: 0.7
-  effects:
-    - unequal_restoration: true
-    - trust_erosion_in_poor_districts: 1.5
+  # The actual inequality mechanic lives in metrics.py:_inequality_modifier
+  # (per-district `social_inequality` label drives a trust-damage multiplier).
+  # No engine-side effect keys; player influence is via remedy choice.
+  effects: []
   player_influence:
     worsen: "Prioritising wealthy districts consistently"
     improve: "Investing in poor districts (politically costly)"
@@ -62,7 +63,6 @@ organisational_fragmentation:
   starting_level: 0.5
   effects:
     - delays_response: 1.4
-    - amplifies_confusion: true
     - accelerates_trust_decay: 1.2
   player_influence:
     worsen: "Leaving as is"

@@ -74,6 +74,44 @@ def _find_target_building(
     return random.choices(candidates, weights=weights, k=1)[0]
 
 
+def _just_in_time_buffer_reduction(cfg: GameConfig, city: City) -> int:
+    """Hours to subtract from delayed-effect timing under high just_in_time pressure.
+
+    `just_in_time.shortens_buffer_days` declares how many days of buffer evaporate
+    at full stressor level. Linearly scaled by the current stressor value.
+    """
+    sc = cfg.stressors.get("just_in_time")
+    if not sc:
+        return 0
+    level = city.stressors.get("just_in_time", 0.0)
+    if level <= 0:
+        return 0
+    days = 0
+    for eff in sc.raw.get("effects", []):
+        if "shortens_buffer_days" in eff:
+            days = int(eff["shortens_buffer_days"])
+            break
+    return int(days * 24 * level)
+
+
+def _vendor_monoculture_duplicates(cfg: GameConfig, city: City, template: EventTemplate) -> bool:
+    """Should this event template duplicate to a second district?
+
+    `vendor_monoculture.multi_district_impact` flags that supply_chain_failure
+    events under a monoculture vendor can hit multiple districts simultaneously.
+    Probability scales with the stressor level.
+    """
+    if template.category != "supply_chain_failure":
+        return False
+    sc = cfg.stressors.get("vendor_monoculture")
+    if not sc:
+        return False
+    if not any("multi_district_impact" in eff for eff in sc.raw.get("effects", [])):
+        return False
+    level = city.stressors.get("vendor_monoculture", 0.0)
+    return random.random() < level * 0.5  # max 50% chance at full stressor
+
+
 def generate_events(
     cfg: GameConfig,
     city: City,
@@ -81,6 +119,8 @@ def generate_events(
 ) -> list[GameEvent]:
     """Roll for each event template against each eligible district. Returns new events."""
     new_events = []
+
+    buffer_reduction_hours = _just_in_time_buffer_reduction(cfg, city)
 
     for template in cfg.event_templates:
         # Determine eligible districts
@@ -117,11 +157,12 @@ def generate_events(
                     district_id=district_id if eff.scope == "district" else eff.district_id,
                 ))
 
-            # Copy delayed effects
+            # Copy delayed effects; just_in_time shortens the buffer days.
             delayed = []
             for de in template.delayed_effects:
+                adjusted_delay = max(0, de.delay_hours - buffer_reduction_hours)
                 delayed.append(DelayedEffect(
-                    delay_hours=de.delay_hours,
+                    delay_hours=adjusted_delay,
                     effects=[MetricEffect(
                         metric=e.metric,
                         delta=e.delta,
@@ -163,5 +204,52 @@ def generate_events(
             building.hidden_failure = True
 
             new_events.append(event)
+
+            # vendor_monoculture multi-district impact: supply-chain failures
+            # under a monoculture vendor can spread to a second district.
+            if _vendor_monoculture_duplicates(cfg, city, template):
+                other_district_ids = [
+                    d for d in eligible
+                    if d != district_id and city.districts[d].buildings
+                ]
+                if other_district_ids:
+                    other_id = random.choice(other_district_ids)
+                    other_building = _find_target_building(template, city, other_id)
+                    if other_building:
+                        dup_id = f"{template.id}_{uuid.uuid4().hex[:8]}"
+                        dup_event = GameEvent(
+                            id=dup_id,
+                            template_id=template.id,
+                            name=f"{template.name} (vendor knock-on)",
+                            category=template.category,
+                            domain=template.domain,
+                            phase=EventPhase.HIDDEN,
+                            target_district_id=other_id,
+                            target_building_id=other_building.id,
+                            created_tick=tick,
+                            immediate_effects=[
+                                MetricEffect(
+                                    metric=e.metric, delta=e.delta, scope=e.scope,
+                                    district_id=other_id if e.scope == "district" else e.district_id,
+                                ) for e in template.immediate_effects
+                            ],
+                            delayed_effects=[
+                                DelayedEffect(
+                                    delay_hours=max(0, de.delay_hours - buffer_reduction_hours),
+                                    effects=[MetricEffect(
+                                        metric=e.metric, delta=e.delta, scope=e.scope,
+                                        district_id=e.district_id,
+                                    ) for e in de.effects],
+                                ) for de in template.delayed_effects
+                            ],
+                            duration_penalty_per_day=template.duration_penalty_per_day,
+                            duration_penalty_metric=template.duration_penalty_metric,
+                            cascade_dependency=template.cascade_dependency,
+                            cascade_scope=template.cascade_scope,
+                            residential_impact=template.residential_impact,
+                        )
+                        other_building.fail(tick, dup_id)
+                        other_building.hidden_failure = True
+                        new_events.append(dup_event)
 
     return new_events

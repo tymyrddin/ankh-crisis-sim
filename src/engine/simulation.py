@@ -193,6 +193,40 @@ class Simulation:
             cost=-amount,
         )
 
+    def resign(self) -> EndResult:
+        """Player resigns. Looks up the `resignation` condition in config and returns it."""
+        assert self.cfg
+        for cond in self.cfg.end_conditions:
+            if cond.id == "resignation":
+                return EndResult(
+                    triggered=True,
+                    condition_id=cond.id,
+                    label=cond.label,
+                    narrative=cond.narrative,
+                )
+        return EndResult(triggered=False)
+
+    def retire(self) -> EndResult:
+        """Player retires early. Honours `min_days` if declared on the condition."""
+        assert self.cfg and self.city
+        for cond in self.cfg.end_conditions:
+            if cond.id != "early_retirement":
+                continue
+            if cond.min_days and self.clock.elapsed_days < cond.min_days:
+                return EndResult(
+                    triggered=False,
+                    condition_id=cond.id,
+                    label=cond.label,
+                    narrative=f"Retirement requires at least {cond.min_days} days served.",
+                )
+            return EndResult(
+                triggered=True,
+                condition_id=cond.id,
+                label=cond.label,
+                narrative=cond.narrative,
+            )
+        return EndResult(triggered=False)
+
     def get_visible_events(self) -> list[GameEvent]:
         """Get all events the player can currently see."""
         return self.city.visible_events if self.city else []
