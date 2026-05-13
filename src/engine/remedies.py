@@ -43,8 +43,15 @@ def get_available_remedies(
         if not valid_domains:
             filtered.append(remedy)
             continue
-        if event.domain in valid_domains:
-            filtered.append(remedy)
+        if event.domain not in valid_domains:
+            continue
+        # Residential-impact events must additionally satisfy the residential
+        # row in the threatmodel: only pathways that list "residential" in
+        # valid_domains are offered. The intersection of (event.domain) and
+        # ("residential") is what the threatmodel actually constrains.
+        if event.residential_impact and "residential" not in valid_domains:
+            continue
+        filtered.append(remedy)
     return filtered
 
 

@@ -87,3 +87,10 @@ class City:
 
     def get_metric(self, name: str) -> Metric | None:
         return getattr(self, name, None)
+
+    @property
+    def narrative_effects_display(self) -> float:
+        """Shaped 0-1 view of the linear narrative_effects counter (tanh)."""
+        from src.engine.metrics import narrative_effects_shaped
+        raw = self.stressors.get("narrative_effects", 0.0)
+        return narrative_effects_shaped(raw, "tanh")

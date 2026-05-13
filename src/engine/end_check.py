@@ -38,7 +38,10 @@ def _check_condition(
     trigger = condition.trigger
 
     if not isinstance(trigger, dict):
-        return None  # player_action triggers are handled elsewhere
+        # player_action triggers (resignation, early_retirement) are entered
+        # through Simulation.resign() / Simulation.retire(), not via the passive
+        # tick loop. Skip them here.
+        return None
 
     # Metric threshold check
     if "metric" in trigger:
