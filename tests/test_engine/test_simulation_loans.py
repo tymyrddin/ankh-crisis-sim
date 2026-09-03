@@ -1,8 +1,3 @@
-"""Tests for Simulation.emergency_borrow: lender lookup, budget credit, and political costs.
-
-Covers the path in src/engine/simulation.py:159-194 which was uncovered before this file.
-"""
-
 from __future__ import annotations
 
 from pathlib import Path
@@ -64,7 +59,6 @@ class TestEmergencyBorrowErrors:
 
     def test_unavailable_lender_returns_failure(self):
         sim = _fresh_sim()
-        # Force the royal_bank entry to unavailable
         sim.cfg.budget_raw["emergency_borrowing"]["royal_bank"]["available"] = False
         budget_before = sim.city.budget.value
 

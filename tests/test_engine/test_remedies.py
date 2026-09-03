@@ -1,19 +1,14 @@
-"""Tests for the remedy system: application, timing, completion, and recurrence."""
-
 from pathlib import Path
 
 from src.config.loader import build_city, EventTemplate
 from src.engine.events import _find_target_building
 from src.engine.remedies import apply_remedy, process_remedy_completions
-from src.engine.simulation import Simulation
-from src.models.building import Building, BuildingStatus
 from src.models.event import EventPhase, GameEvent
 
 CONFIG_DIR = Path(__file__).parent.parent.parent / "config"
 
 
 def _make_event(building_id: str, district_id: str, tick: int = 1) -> GameEvent:
-    """Create a minimal detected event for testing."""
     return GameEvent(
         id="test_evt_1",
         template_id="pump_failure",
@@ -93,15 +88,52 @@ class TestApplyRemedy:
         event = _make_event(building.id, district.id)
         city.events.append(event)
 
-        # Drain budget
-        city.budget.apply(-city.budget.value, tick=1, cause="drain")
+        city.budget.apply(city.budget.min_value - city.budget.value, tick=1, cause="drain")
 
         result = apply_remedy(cfg, city, event, "resilience_investment", tick=10)
         assert not result.success
         assert "Insufficient" in result.message
 
+    def test_spending_can_run_budget_below_zero(self):
+        cfg, city = build_city(CONFIG_DIR)
+        assert city.budget.min_value < 0
+        district = next(iter(city.districts.values()))
+        building = next(iter(district.buildings.values()))
+        building.fail(tick=1, event_id="test_evt_1")
+
+        event = _make_event(building.id, district.id)
+        city.events.append(event)
+
+        # Leave less than the remedy costs, but within the credit floor
+        city.budget.apply(-city.budget.value, tick=1, cause="drain")
+        city.budget.apply(10, tick=1, cause="pocket change")
+
+        result = apply_remedy(cfg, city, event, "technical_restoration", tick=10)
+        assert result.success
+        assert city.budget.value < 0
+        assert city.budget.value >= city.budget.min_value
+
+
+class TestCostModifiers:
+    def _cost_in(self, district_id: str) -> float:
+        cfg, city = build_city(CONFIG_DIR)
+        district = city.districts[district_id]
+        building = next(iter(district.buildings.values()))
+        building.fail(tick=1, event_id="test_evt_1")
+        event = _make_event(building.id, district.id)
+        city.events.append(event)
+        result = apply_remedy(cfg, city, event, "technical_restoration", tick=10)
+        assert result.success
+        return result.cost
+
+    def test_worse_infrastructure_costs_more_to_patch(self):
+        cfg, _ = build_city(CONFIG_DIR)
+        base = cfg.remedies["technical_restoration"].base_cost
+        shades = self._cost_in("the_shades")       # infrastructure_quality 3.0
+        nap_hill = self._cost_in("nap_hill")       # infrastructure_quality 0.3
+        assert shades > base > nap_hill
+
     def test_zero_downtime_resolves_immediately(self):
-        """Public compensation (downtime=0) should resolve the event immediately."""
         cfg, city = build_city(CONFIG_DIR)
         district = next(iter(city.districts.values()))
         building = next(iter(district.buildings.values()))
@@ -118,7 +150,6 @@ class TestApplyRemedy:
 
 class TestRemedyCompletion:
     def test_completion_uses_applied_tick_not_detected_tick(self):
-        """The core bug fix: downtime counts from remedy application, not detection."""
         cfg, city = build_city(CONFIG_DIR)
         # Zero stressors that extend downtime so the base 4h is deterministic
         city.stressors["underinvestment"] = 0.0
@@ -131,23 +162,19 @@ class TestRemedyCompletion:
         event.detected_tick = 5
         city.events.append(event)
 
-        # Apply emergency patch (downtime=4) at tick 20
         apply_remedy(cfg, city, event, "technical_restoration", tick=20)
         assert event.phase == EventPhase.RESPONDING
         assert event.remedy_applied_tick == 20
 
-        # At tick 23 (3 hours later): should NOT be resolved yet
         completed = process_remedy_completions(cfg, city, tick=23)
         assert len(completed) == 0
         assert event.phase == EventPhase.RESPONDING
 
-        # At tick 24 (4 hours later): should resolve now
         completed = process_remedy_completions(cfg, city, tick=24)
         assert len(completed) == 1
         assert event.phase == EventPhase.RESOLVED
 
     def test_completion_returns_event(self):
-        """process_remedy_completions returns (message, event) tuples."""
         cfg, city = build_city(CONFIG_DIR)
         city.stressors["underinvestment"] = 0.0
         city.stressors["organisational_fragmentation"] = 0.0
@@ -184,7 +211,6 @@ class TestRemedyCompletion:
         assert building.active_event_id is None
 
     def test_structural_upgrade_takes_longer(self):
-        """Structural upgrade (72h downtime) should not resolve before 72 ticks."""
         cfg, city = build_city(CONFIG_DIR)
         city.stressors["underinvestment"] = 0.0
         city.stressors["organisational_fragmentation"] = 0.0
@@ -197,12 +223,10 @@ class TestRemedyCompletion:
 
         apply_remedy(cfg, city, event, "resilience_investment", tick=10)
 
-        # At tick 50 (40h later): should NOT be done
         completed = process_remedy_completions(cfg, city, tick=50)
         assert len(completed) == 0
         assert event.phase == EventPhase.RESPONDING
 
-        # At tick 82 (72h later): should resolve
         completed = process_remedy_completions(cfg, city, tick=82)
         assert len(completed) == 1
         assert event.phase == EventPhase.RESOLVED
@@ -210,7 +234,6 @@ class TestRemedyCompletion:
 
 class TestRecurrenceRisk:
     def test_high_recurrence_risk_weighted_higher(self):
-        """Buildings with recurrence_risk=1.0 should be chosen more often than 0.0."""
         cfg, city = build_city(CONFIG_DIR)
         # Use a filter-free template so all buildings are candidates regardless of type
         template = EventTemplate(
@@ -225,7 +248,6 @@ class TestRecurrenceRisk:
         if len(buildings) < 2:
             return  # need at least 2 buildings for this test
 
-        # Set up: one building with high risk, rest with zero
         high_risk_building = buildings[0]
         high_risk_building.recurrence_risk = 1.0
         high_risk_building.active_event_id = None
@@ -234,7 +256,6 @@ class TestRecurrenceRisk:
             b.recurrence_risk = 0.0
             b.active_event_id = None
 
-        # Run many selections and count
         import random
         random.seed(42)
 
@@ -245,7 +266,6 @@ class TestRecurrenceRisk:
             if chosen and chosen.id == high_risk_building.id:
                 hits += 1
 
-        # With weight 10.0 vs 1.0 for others, high_risk should be picked much more often
         expected_ratio = 10.0 / (10.0 + len(buildings) - 1)
         actual_ratio = hits / trials
         assert actual_ratio > expected_ratio * 0.5, (

@@ -1,5 +1,3 @@
-"""Building model: a concrete structure on the map with status and dependencies."""
-
 from __future__ import annotations
 
 from dataclasses import dataclass, field

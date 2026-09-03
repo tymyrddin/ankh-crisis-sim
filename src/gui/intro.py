@@ -1,6 +1,6 @@
-"""Introductory briefing screen: shown once at game start before the clock runs."""
-
 from __future__ import annotations
+
+from collections.abc import Callable
 
 import customtkinter as ctk
 
@@ -10,10 +10,7 @@ from src.gui.theme import (
 )
 
 
-# ---------------------------------------------------------------------------
-# Tutorial content: written in the voice of the Patrician's Office
-# ---------------------------------------------------------------------------
-
+# in the voice of the Patrician's Office
 _SECTIONS: list[tuple[str, str]] = [
     (
         "The City",
@@ -87,12 +84,10 @@ _SECTIONS: list[tuple[str, str]] = [
 
 
 class IntroScreen:
-    """Modal briefing shown once at game start. Dismissed to begin play."""
-
     def __init__(self, root: ctk.CTk):
         self.root = root
         self._overlay: ctk.CTkToplevel | None = None
-        self.on_begin: callable | None = None  # called when player dismisses
+        self.on_begin: Callable[[], None] | None = None
 
     def show(self) -> None:
         if self._overlay:
@@ -115,7 +110,6 @@ class IntroScreen:
         win.protocol("WM_DELETE_WINDOW", self._begin)
         self._overlay = win
 
-        # --- Masthead ---
         masthead = ctk.CTkFrame(win, fg_color=PAPER_DARK)
         masthead.pack(fill="x")
 
@@ -131,7 +125,6 @@ class IntroScreen:
             font=f.small_bold, text_color=ACCENT_BROWN,
         ).pack(side="right", padx=24, pady=14)
 
-        # Subheading
         ctk.CTkLabel(
             win,
             text="For the attention of the incoming Patrician. Not to be distributed.",
@@ -140,12 +133,10 @@ class IntroScreen:
 
         ctk.CTkFrame(win, fg_color=ACCENT_BROWN, height=2).pack(fill="x", padx=24, pady=(0, 8))
 
-        # --- Scrollable content ---
         scroll = ctk.CTkScrollableFrame(win, fg_color=PAPER, label_text="")
         scroll.pack(fill="both", expand=True, padx=0, pady=0)
 
         for title, body in _SECTIONS:
-            # Section heading
             ctk.CTkLabel(
                 scroll, text=title.upper(),
                 font=f.small_bold, text_color=ACCENT_BROWN,
@@ -157,7 +148,6 @@ class IntroScreen:
                 wraplength=590, justify="left",
             ).pack(anchor="w", padx=24, pady=(0, 4))
 
-        # Colour legend strip
         legend = ctk.CTkFrame(scroll, fg_color=PAPER_DARK, corner_radius=6)
         legend.pack(fill="x", padx=24, pady=(20, 8))
 
@@ -166,17 +156,15 @@ class IntroScreen:
             font=f.small_bold, text_color=ACCENT_BROWN,
         ).pack(anchor="w", padx=16, pady=(10, 6))
 
-        _legend_row(legend, f, STATUS_GREEN,     "Operational: no action required")
-        _legend_row(legend, f, STATUS_YELLOW,    "Degraded: monitor; may worsen")
-        _legend_row(legend, f, STATUS_RED,       "Failed: incident in progress")
-        _legend_row(legend, f, STATUS_RESPONDING,"Responding: remedy applied, awaiting resolution")
+        _legend_row(legend, f, STATUS_GREEN, "Operational: no action required")
+        _legend_row(legend, f, STATUS_YELLOW, "Degraded: monitor; may worsen")
+        _legend_row(legend, f, STATUS_RED, "Failed: incident in progress")
+        _legend_row(legend, f, STATUS_RESPONDING, "Responding: remedy applied, awaiting resolution")
 
         ctk.CTkFrame(legend, fg_color="transparent", height=8).pack()
 
-        # Bottom padding in scroll
         ctk.CTkFrame(scroll, fg_color="transparent", height=12).pack()
 
-        # --- Begin button ---
         ctk.CTkButton(
             win,
             text="Assume Office",

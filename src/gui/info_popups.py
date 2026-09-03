@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 import customtkinter as ctk
 
 from src.gui.theme import (
@@ -11,10 +13,6 @@ from src.gui.theme import (
 from src.models.city import City
 from src.models.district import District
 
-
-# ---------------------------------------------------------------------------
-# Static content: metric and status explanations
-# ---------------------------------------------------------------------------
 
 _METRIC_INFO: dict[str, dict] = {
     "public_trust": {
@@ -311,18 +309,13 @@ _STATUS_INFO: dict[str, dict] = {
 }
 
 
-# ---------------------------------------------------------------------------
-# Popup renderer
-# ---------------------------------------------------------------------------
-
 class InfoPopup:
-    """A single reusable info popup window. Close and re-open for each item."""
+    """One window, torn down and rebuilt on every show."""
 
     def __init__(self, root: ctk.CTk):
         self.root = root
         self._window: ctk.CTkToplevel | None = None
-        # Optional callback for emergency borrow actions: called with lender_id str
-        self.on_emergency_borrow: callable | None = None
+        self.on_emergency_borrow: Callable[[str], None] | None = None
 
     def show_metric(self, city: City, key: str) -> None:
         info = _METRIC_INFO.get(key)
@@ -387,7 +380,6 @@ class InfoPopup:
         drivers = _district_drivers(district)
         actions = _district_actions(district)
 
-        # Build a status line
         status_parts = [f"Trust {trust:.0f}"]
         if failed:
             status_parts.append(f"{len(failed)} building{'s' if len(failed) > 1 else ''} down")
@@ -398,8 +390,6 @@ class InfoPopup:
         self._show(district.name, value_str, colour, description, drivers, actions,
                    extra_rows=_district_extra(district, failed))
 
-    # ------------------------------------------------------------------
-
     def _show(
         self,
         title: str,
@@ -409,7 +399,7 @@ class InfoPopup:
         drivers: list[str],
         actions: list[str],
         extra_rows: list[tuple[str, str]] | None = None,
-        action_buttons: list[tuple[str, str, callable]] | None = None,
+        action_buttons: list[tuple[str, str, Callable[[], None]]] | None = None,
     ) -> None:
         if self._window:
             self._window.destroy()
@@ -424,7 +414,6 @@ class InfoPopup:
         self._window = win
         win.protocol("WM_DELETE_WINDOW", self._close)
 
-        # Header
         header = ctk.CTkFrame(win, fg_color=PAPER_DARK)
         header.pack(fill="x", padx=0, pady=0)
 
@@ -438,18 +427,15 @@ class InfoPopup:
             font=f.body_bold, text_color=value_colour,
         ).pack(side="right", padx=20, pady=12)
 
-        # Scrollable content
         scroll = ctk.CTkScrollableFrame(win, fg_color=PAPER, label_text="")
         scroll.pack(fill="both", expand=True, padx=0, pady=0)
 
-        # Description
         ctk.CTkLabel(
             scroll, text=description,
             font=f.body, text_color=INK,
             wraplength=540, justify="left",
         ).pack(anchor="w", padx=20, pady=(16, 8))
 
-        # Extra district rows (failed buildings etc.)
         if extra_rows:
             extra_frame = ctk.CTkFrame(scroll, fg_color=PAPER_DARK, corner_radius=6)
             extra_frame.pack(fill="x", padx=20, pady=(0, 8))
@@ -459,13 +445,9 @@ class InfoPopup:
                 ctk.CTkLabel(row, text=label, font=f.small, text_color=INK_MUTED).pack(side="left")
                 ctk.CTkLabel(row, text=val, font=f.small_bold, text_color=INK).pack(side="right")
 
-        # What drives this
         _section(scroll, f, "What drives this", drivers, bullet="◆")
-
-        # Possible actions
         _section(scroll, f, "Possible actions", actions, bullet="→")
 
-        # Suggested action buttons (e.g. emergency borrowing options)
         if action_buttons:
             ctk.CTkLabel(
                 scroll, text="SUGGESTED ACTIONS",
@@ -487,7 +469,6 @@ class InfoPopup:
                     fg_color=ACCENT_BROWN, hover_color="#a07a1a", text_color=PAPER,
                 ).pack(fill="x", padx=12, pady=(0, 10))
 
-        # Close
         ctk.CTkButton(
             win, text="Close",
             command=self._close,
@@ -500,10 +481,6 @@ class InfoPopup:
             self._window.destroy()
             self._window = None
 
-
-# ---------------------------------------------------------------------------
-# District content helpers
-# ---------------------------------------------------------------------------
 
 _DISTRICT_DESCRIPTIONS: dict[str, str] = {
     "nap_hill": (
@@ -608,7 +585,7 @@ _DISTRICT_ACTIONS: dict[str, list[str]] = {
         "this is the trap: it stays neglected because no one important complains",
     ],
     "river_ankh": [
-        "Fires and floods are immediately visible: response must match the visibility",
+        "Fires and floods are immediately visible: the response needs to match the visibility",
         "Gradual contamination is the real risk: invest in water monitoring before the Shades notice",
         "Wharves and transport infrastructure here affect supply chains city-wide; "
         "a port closure compounds within days",
@@ -624,14 +601,14 @@ def _district_description(district: District) -> str:
 
 def _district_drivers(district: District) -> list[str]:
     return [
-        f"Wealth archetype: {district.wealth_archetype.replace('_', ' ')} "
-        f"— affects shock absorption, recovery rate, and remedy effectiveness",
-        f"Infrastructure quality modifier: {district.infrastructure_quality:.1f}x "
-        f"— {'below average, higher failure rate' if district.infrastructure_quality > 1.0 else 'above average, lower failure rate'}",
-        f"Political influence: {district.political_influence:.1f}x "
-        f"— {'failures here amplify regulatory pressure significantly' if district.political_influence >= 1.5 else 'failures here generate limited regulatory pressure'}",
-        f"Discovery time: {district.discovery_time_hours[0]:.0f}–{district.discovery_time_hours[1]:.0f} hours base "
-        f"— building type modifiers and stressors apply on top",
+        f"Wealth archetype {district.wealth_archetype.replace('_', ' ')}: "
+        "affects shock absorption, recovery rate, and remedy effectiveness",
+        f"Infrastructure quality modifier {district.infrastructure_quality:.1f}x: "
+        f"{'below average, higher failure rate' if district.infrastructure_quality > 1.0 else 'above average, lower failure rate'}",
+        f"Political influence {district.political_influence:.1f}x: "
+        f"{'failures here amplify regulatory pressure significantly' if district.political_influence >= 1.5 else 'failures here generate limited regulatory pressure'}",
+        f"Discovery time {district.discovery_time_hours[0]:.0f}–{district.discovery_time_hours[1]:.0f} hours base: "
+        "building type modifiers and stressors apply on top",
     ]
 
 
@@ -656,10 +633,6 @@ def _district_extra(district: District, failed) -> list[tuple[str, str]]:
     rows.append(("Local trust", f"{district.local_trust.value:.0f} / 100"))
     return rows
 
-
-# ---------------------------------------------------------------------------
-# UI helpers
-# ---------------------------------------------------------------------------
 
 def _section(parent, f, heading: str, items: list[str], bullet: str = "•") -> None:
     ctk.CTkLabel(

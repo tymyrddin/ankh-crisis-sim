@@ -1,20 +1,16 @@
-"""Post-game reflection screen: shown when the game ends."""
-
 from __future__ import annotations
 
 import customtkinter as ctk
 
 from src.engine.end_check import EndResult
 from src.gui.theme import (
-    ACCENT_BROWN, INK, INK_MUTED, PAPER, PAPER_DARK,
+    ACCENT_BROWN, INK, PAPER, PAPER_DARK,
     TRUST_BAD, TRUST_GOOD, TRUST_WARN, fonts,
 )
 from src.models.city import City
 
 
 class PostgameScreen:
-    """Overlay shown when an end condition triggers."""
-
     def __init__(self, root: ctk.CTk):
         self.root = root
         self._overlay: ctk.CTkToplevel | None = None
@@ -31,14 +27,12 @@ class PostgameScreen:
         self._overlay.grab_set()
         self._overlay.configure(fg_color=PAPER)
 
-        # Header
         ctk.CTkLabel(
             self._overlay,
             text=end_result.label,
             font=(f.family, 28, "bold"), text_color=INK,
         ).pack(pady=(30, 10))
 
-        # Narrative
         ctk.CTkLabel(
             self._overlay,
             text=end_result.narrative,
@@ -46,7 +40,6 @@ class PostgameScreen:
             wraplength=600,
         ).pack(padx=30, pady=10)
 
-        # Final metrics
         metrics_frame = ctk.CTkFrame(self._overlay, fg_color=PAPER_DARK)
         metrics_frame.pack(padx=30, pady=15, fill="x")
 
@@ -69,7 +62,6 @@ class PostgameScreen:
             ctk.CTkLabel(row, text=label, font=f.body, text_color=INK).pack(side="left")
             ctk.CTkLabel(row, text=value, font=f.body_bold, text_color=INK).pack(side="right")
 
-        # District outcomes
         district_frame = ctk.CTkScrollableFrame(
             self._overlay, height=120, fg_color=PAPER, label_text="",
         )
@@ -93,7 +85,6 @@ class PostgameScreen:
                 font=f.small_bold, text_color=colour,
             ).pack(side="right")
 
-        # Close button
         ctk.CTkButton(
             self._overlay, text="Reflect and Close",
             command=self._close, width=200,

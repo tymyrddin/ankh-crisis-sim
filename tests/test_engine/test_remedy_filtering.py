@@ -1,11 +1,3 @@
-"""Tests for per-domain remedy filtering.
-
-Verifies that get_available_remedies filters by event domain when an event is
-provided. The four named recovery pathways respect their `valid_domains`; the
-three meta-options (press_statement, operational_workaround, do_nothing) stay
-universal.
-"""
-
 from __future__ import annotations
 
 from pathlib import Path
@@ -75,7 +67,6 @@ class TestFiltering:
         }
 
     def test_universals_never_filtered_out(self):
-        """Across every threatmodel domain, the three meta-options are always there."""
         cfg, _ = build_city(CONFIG_DIR)
         for domain in ["energy", "water", "communications", "transport",
                        "public_services", "commercial", "residential"]:
@@ -85,9 +76,6 @@ class TestFiltering:
 
 class TestResidentialIntersect:
     def test_residential_water_event_excludes_accountability(self):
-        """A water event with residential_impact=True is constrained by both
-        the water domain and the residential row. Water alone allows
-        accountability_actions; residential does not."""
         cfg, _ = build_city(CONFIG_DIR)
         event = GameEvent(
             id="x", template_id="x", name="x", category="x",

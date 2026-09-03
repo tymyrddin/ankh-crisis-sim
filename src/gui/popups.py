@@ -6,6 +6,8 @@ import tkinter as tk
 
 import customtkinter as ctk
 
+from collections.abc import Callable
+
 from src.config.loader import GameConfig
 from src.engine.remedies import get_available_remedies
 from src.gui.theme import (
@@ -16,10 +18,6 @@ from src.models.building import Building, BuildingStatus
 from src.models.city import City
 from src.models.event import EventPhase, GameEvent
 
-
-# ---------------------------------------------------------------------------
-# Building type descriptions
-# ---------------------------------------------------------------------------
 
 _TYPE_DESCRIPTIONS: dict[str, str] = {
     "guild_hq": (
@@ -135,65 +133,62 @@ _TYPE_DESCRIPTIONS: dict[str, str] = {
     "intelligence_service": (
         "An institution that does not officially exist, performing functions that are not "
         "officially performed. Its operational failure is invisible by design, which is to say, "
-        "you will not know it has failed until something that should have been quietly prevented "
+        "you will not know it has failed until something that was supposed to be quietly prevented "
         "is not. At which point, deniability becomes the primary product."
     ),
     "apothecary": (
         "A small dispensary, herbalist, or informal healer serving the immediate district. "
-        "Not a hospital — there are no wards, no transfers, no Guild oversight worth mentioning. "
+        "Not a hospital: there are no wards, no transfers, no Guild oversight worth mentioning. "
         "When it closes, the people who depended on it have nowhere else nearby to go. "
         "In the Shades, this is the only medical care that exists."
     ),
 }
 
 
-# ---------------------------------------------------------------------------
-# Building-category remedy label overrides (purely display — no mechanic changes)
-# ---------------------------------------------------------------------------
-
+# Display-only remedy labels per building category. No mechanic changes.
 _CATEGORY_MAP: dict[str, str] = {
-    "water_source":         "infrastructure",
-    "power_source":         "infrastructure",
-    "clacks_tower":         "communications",
+    "water_source": "infrastructure",
+    "power_source": "infrastructure",
+    "clacks_tower": "communications",
     "communications_office":"communications",
-    "healthcare":           "healthcare",
-    "security":             "security",
-    "fire_service":         "fire_service",
-    "food_supply":          "food",
-    "brewery":              "food",
-    "transport":            "transport",
-    "media":                "media",
-    "civic_institution":    "civic",
-    "civic_amenity":        "civic",
-    "palace":               "civic",
-    "university":           "education",
-    "guild_hq":             "guild",
-    "tech_business":        "trade",
-    "hackerspace":          "trade",
-    "workshop":             "trade",
-    "slum_dwelling":        "housing",
+    "healthcare": "healthcare",
+    "security": "security",
+    "fire_service": "fire_service",
+    "food_supply": "food",
+    "brewery": "food",
+    "transport": "transport",
+    "media": "media",
+    "civic_institution": "civic",
+    "civic_amenity": "civic",
+    "palace": "civic",
+    "university": "education",
+    "guild_hq": "guild",
+    "tech_business": "trade",
+    "hackerspace": "trade",
+    "workshop": "trade",
+    "slum_dwelling": "housing",
     "middle_class_housing": "housing",
-    "tavern":               "hospitality",
+    "tavern": "hospitality",
     "intelligence_service": "intelligence",
-    "apothecary":           "apothecary",
+    "apothecary": "apothecary",
 }
 
-# (label, description) overrides keyed by category → remedy_id
+# (label, description) keyed by category, then remedy id.
 _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
     "infrastructure": {
-        "technical_restoration":  (
+        "technical_restoration": (
             "Emergency Repair",
             "Patch the immediate fault. Fast, but the underlying condition remains.",
         ),
-        "resilience_investment":  (
+        "resilience_investment": (
             "Infrastructure Overhaul",
             "Rebuild to a higher standard. Slow and expensive, but permanently reduces risk.",
         ),
         "operational_workaround": (
             "Temporary Bypass",
-            "Reroute supply. Shifts pressure to adjacent systems — a short-term fix with long-term consequences.",
+            "Reroute supply. Shifts pressure to adjacent systems: a short-term fix with long-term consequences.",
         ),
-        "public_compensation":    (
+        "public_compensation": (
             "Public Notice & Compensation",
             "Issue warnings and financial relief to affected households. Buys goodwill, not repairs.",
         ),
@@ -201,21 +196,21 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Commission Technical Inquiry",
             "Assign responsibility and investigate. May satisfy public anger or produce a convenient scapegoat.",
         ),
-        "press_statement":        (
+        "press_statement": (
             "Issue Official Statement",
             "Manage the narrative. Buys time; backfires if no substantive action follows.",
         ),
-        "do_nothing":             (
+        "do_nothing": (
             "Defer Maintenance",
             "Ignore the problem. Trust erodes, cascades accumulate.",
         ),
     },
     "communications": {
-        "technical_restoration":  (
+        "technical_restoration": (
             "Restore Signal",
             "Get the network back up. Fast fix; recurrence likely without underlying repair.",
         ),
-        "resilience_investment":  (
+        "resilience_investment": (
             "Network Upgrade",
             "Rebuild relay infrastructure to full specification. Slow, costly, lasting.",
         ),
@@ -223,7 +218,7 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Reroute Traffic",
             "Divert through alternate relays. Maintains service here; degrades capacity elsewhere.",
         ),
-        "public_compensation":    (
+        "public_compensation": (
             "Refund Subscribers",
             "Compensate affected users and commercial clients. Trust patch, no technical fix.",
         ),
@@ -231,21 +226,21 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Suspend Tower Operator",
             "Assign blame publicly. May satisfy guild pressure or trigger a costly dispute.",
         ),
-        "press_statement":        (
+        "press_statement": (
             "Issue Network Bulletin",
             "Inform the public of progress. Slows trust decay while action is pending.",
         ),
-        "do_nothing":             (
+        "do_nothing": (
             "No Comment",
             "Say nothing, do nothing. Rumour fills the void faster than the signal returns.",
         ),
     },
     "healthcare": {
-        "technical_restoration":  (
+        "technical_restoration": (
             "Emergency Staffing",
             "Draft in additional surgeons or healers. Addresses the immediate shortfall.",
         ),
-        "resilience_investment":  (
+        "resilience_investment": (
             "Facility Refurbishment",
             "Rebuild and re-equip the ward. Long downtime, lasting improvement.",
         ),
@@ -253,7 +248,7 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Transfer Patients",
             "Send cases to another facility. Relieves pressure here; increases it elsewhere.",
         ),
-        "public_compensation":    (
+        "public_compensation": (
             "Compensation Fund",
             "Financial relief to those who couldn't receive care. Helps trust, not health.",
         ),
@@ -261,21 +256,21 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Demand Medical Inquiry",
             "Public investigation into the failure. High visibility and considerable political risk.",
         ),
-        "press_statement":        (
+        "press_statement": (
             "Release Health Bulletin",
             "Reassure the public about care availability. Effective only while the crisis is fresh.",
         ),
-        "do_nothing":             (
+        "do_nothing": (
             "Ignore the Situation",
             "Trust collapses fastest here. The public knows when it cannot get treatment.",
         ),
     },
     "security": {
-        "technical_restoration":  (
+        "technical_restoration": (
             "Deploy Reserve Officers",
             "Bring Watch reserves to cover the gap. Restores basic coverage quickly.",
         ),
-        "resilience_investment":  (
+        "resilience_investment": (
             "Barracks & Equipment Overhaul",
             "Upgrade facilities and armoury. Slow, expensive, lasting.",
         ),
@@ -283,7 +278,7 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Reassign from Neighbouring Post",
             "Thin coverage elsewhere to shore up here. A tactical shuffle with strategic cost.",
         ),
-        "public_compensation":    (
+        "public_compensation": (
             "Victim Support Fund",
             "Compensate those affected by crime during the lapse. Goodwill without prevention.",
         ),
@@ -291,21 +286,21 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Discipline Commanding Officer",
             "Assign blame publicly. The Watch resents it; the public approves, briefly.",
         ),
-        "press_statement":        (
+        "press_statement": (
             "Issue Security Advisory",
             "Warn citizens and manage expectations. Buys time while cover is restored.",
         ),
-        "do_nothing":             (
+        "do_nothing": (
             "Stand Down",
             "Ignore the gap. Crime fills it within hours.",
         ),
     },
     "fire_service": {
-        "technical_restoration":  (
+        "technical_restoration": (
             "Redeploy Reserve Engines",
             "Bring emergency equipment to restore response capacity.",
         ),
-        "resilience_investment":  (
+        "resilience_investment": (
             "Station Upgrade",
             "Rebuild and re-equip to full specification. Significant downtime, significant benefit.",
         ),
@@ -313,7 +308,7 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Mutual Aid Request",
             "Draw resources from a neighbouring district. Helps here; weakens there.",
         ),
-        "public_compensation":    (
+        "public_compensation": (
             "Affected Residents Fund",
             "Support those who suffered losses during the coverage gap.",
         ),
@@ -321,21 +316,21 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Investigate Fire Service Command",
             "Assign responsibility for the lapse. Politically useful, operationally disruptive.",
         ),
-        "press_statement":        (
+        "press_statement": (
             "Issue Emergency Notice",
             "Inform residents of reduced coverage. Manages expectations, reduces panic.",
         ),
-        "do_nothing":             (
+        "do_nothing": (
             "Hope There's No Fire",
             "The city is largely flammable. This option carries obvious risks.",
         ),
     },
     "food": {
-        "technical_restoration":  (
+        "technical_restoration": (
             "Emergency Resupply",
             "Source replacement stock at cost. Quick fix, higher price.",
         ),
-        "resilience_investment":  (
+        "resilience_investment": (
             "Supply Chain Upgrade",
             "Build reserves and redundancy into logistics. Expensive, lasting.",
         ),
@@ -343,7 +338,7 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Source Alternatives",
             "Switch to secondary suppliers. Disrupts existing contracts; maintains supply.",
         ),
-        "public_compensation":    (
+        "public_compensation": (
             "Distribute Emergency Rations",
             "Provide subsidised food to the affected district. Buys political goodwill.",
         ),
@@ -351,21 +346,21 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Blame the Merchants",
             "Commission an inquiry into price manipulation or supply failure. Popular with the poor.",
         ),
-        "press_statement":        (
+        "press_statement": (
             "Issue Market Reassurance",
             "Calm public anxiety about shortages. Effective only if supply actually returns soon.",
         ),
-        "do_nothing":             (
+        "do_nothing": (
             "Let the Market Decide",
             "Prices spike, tempers rise, and the Watch works overtime.",
         ),
     },
     "transport": {
-        "technical_restoration":  (
+        "technical_restoration": (
             "Emergency Structural Repair",
             "Patch the immediate damage. Fast, but structural risk remains.",
         ),
-        "resilience_investment":  (
+        "resilience_investment": (
             "Full Infrastructure Rebuild",
             "Restore to engineering standard. Long closure, lasting outcome.",
         ),
@@ -373,7 +368,7 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Establish Detour Route",
             "Redirect traffic. Adds journey time and strain to other routes.",
         ),
-        "public_compensation":    (
+        "public_compensation": (
             "Transport Disruption Fund",
             "Compensate traders and commuters for losses during the closure.",
         ),
@@ -381,21 +376,21 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Commission Engineering Inquiry",
             "Investigate why maintenance was deferred. Politically safe; rarely produces change.",
         ),
-        "press_statement":        (
+        "press_statement": (
             "Issue Progress Update",
             "Keep the public informed of repair timelines. Manages anger.",
         ),
-        "do_nothing":             (
+        "do_nothing": (
             "Leave It",
             "Structural decay continues. Eventual failure will be considerably more expensive.",
         ),
     },
     "media": {
-        "technical_restoration":  (
+        "technical_restoration": (
             "Restore Press Operations",
             "Fix the immediate printing failure. Back to presses quickly.",
         ),
-        "resilience_investment":  (
+        "resilience_investment": (
             "Print House Modernisation",
             "Upgrade machinery and facilities. Slow, but permanently improves reliability.",
         ),
@@ -403,7 +398,7 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Arrange Guest Printing",
             "Use a competitor's press. Keeps publication running; reveals vulnerabilities.",
         ),
-        "public_compensation":    (
+        "public_compensation": (
             "Subscriber Compensation",
             "Refund readers and advertisers. Goodwill preserved, content gap remains.",
         ),
@@ -411,21 +406,21 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Investigate Editorial Failure",
             "Public inquiry into press reliability. May expose things best left unexposed.",
         ),
-        "press_statement":        (
+        "press_statement": (
             "Issue Temporary Bulletin",
             "Minimal communication to maintain presence. Buys time.",
         ),
-        "do_nothing":             (
+        "do_nothing": (
             "Go Silent",
             "The void fills with rumour. Rumour is rarely flattering to the Patrician.",
         ),
     },
     "civic": {
-        "technical_restoration":  (
+        "technical_restoration": (
             "Emergency Restoration",
             "Restore essential functions immediately. Quick but superficial.",
         ),
-        "resilience_investment":  (
+        "resilience_investment": (
             "Civic Refurbishment",
             "Full structural and operational upgrade. Significant investment, lasting benefit.",
         ),
@@ -433,7 +428,7 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Redirect Services",
             "Route functions through neighbouring facilities. Manages the gap temporarily.",
         ),
-        "public_compensation":    (
+        "public_compensation": (
             "Public Goodwill Fund",
             "Financial relief to affected citizens. A trust patch.",
         ),
@@ -441,21 +436,21 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Commission Administrative Review",
             "Investigate the failure publicly. Politically useful.",
         ),
-        "press_statement":        (
+        "press_statement": (
             "Statement of Civic Intent",
             "Affirm commitment to restoration. Buys time.",
         ),
-        "do_nothing":             (
+        "do_nothing": (
             "Postpone Indefinitely",
             "Public confidence erodes. The queue for other failures grows.",
         ),
     },
     "education": {
-        "technical_restoration":  (
+        "technical_restoration": (
             "Emergency Academic Restoration",
             "Restore immediate operational capacity. The Archchancellor's patience has limits.",
         ),
-        "resilience_investment":  (
+        "resilience_investment": (
             "Faculty Infrastructure Upgrade",
             "Comprehensive rebuilding of affected facilities. The University operates on its own schedule.",
         ),
@@ -463,7 +458,7 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Temporary Closure & Reallocation",
             "Suspend affected operations and redistribute staff. Loss of research continuity.",
         ),
-        "public_compensation":    (
+        "public_compensation": (
             "Scholar Stipend Fund",
             "Compensation for disrupted students and faculty. The University requests this be substantial.",
         ),
@@ -471,21 +466,21 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Call for a University Inquiry",
             "An internal investigation. The University will conduct it entirely on its own terms.",
         ),
-        "press_statement":        (
+        "press_statement": (
             "Chancellor's Public Statement",
             "Official reassurance from the academic leadership. The Times will print it verbatim.",
         ),
-        "do_nothing":             (
+        "do_nothing": (
             "Leave to the Wizards",
             "The University manages its own crises. Usually.",
         ),
     },
     "trade": {
-        "technical_restoration":  (
+        "technical_restoration": (
             "Emergency Repair",
             "Fix the immediate operational failure. Rapid restoration of trade functions.",
         ),
-        "resilience_investment":  (
+        "resilience_investment": (
             "Facility & Systems Upgrade",
             "Invest in lasting operational improvements. Expensive, durable.",
         ),
@@ -493,7 +488,7 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Temporary Workaround",
             "Improvise a bypass. Keeps income flowing; documents nothing.",
         ),
-        "public_compensation":    (
+        "public_compensation": (
             "Client Compensation",
             "Compensate affected businesses and customers. Goodwill, not fixes.",
         ),
@@ -501,21 +496,21 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Guild Inquiry",
             "Formal investigation into the failure. Guildmasters take this personally.",
         ),
-        "press_statement":        (
+        "press_statement": (
             "Trade Statement",
             "Reassure commercial partners and the public. Narrative management.",
         ),
-        "do_nothing":             (
+        "do_nothing": (
             "Ignore It",
             "Trade disruption compounds. Competitors notice.",
         ),
     },
     "housing": {
-        "technical_restoration":  (
+        "technical_restoration": (
             "Emergency Repairs",
             "Patch the most immediate structural or service failures.",
         ),
-        "resilience_investment":  (
+        "resilience_investment": (
             "Housing Improvement Programme",
             "Substantive upgrade to fabric and services. Residents remember who paid for it.",
         ),
@@ -523,7 +518,7 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Temporary Relocation",
             "Move affected residents to alternative accommodation. Disrupts community structure.",
         ),
-        "public_compensation":    (
+        "public_compensation": (
             "Resident Compensation Fund",
             "Financial support for displaced or affected residents.",
         ),
@@ -531,21 +526,21 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Landlord & Builder Inquiry",
             "Investigate responsibility for the failure. Popular with residents.",
         ),
-        "press_statement":        (
+        "press_statement": (
             "Reassure Residents",
             "Communicate action plan to the affected community. Manages anxiety.",
         ),
-        "do_nothing":             (
+        "do_nothing": (
             "Leave Residents to Manage",
             "They are accustomed to being left to manage. Their trust reflects this.",
         ),
     },
     "hospitality": {
-        "technical_restoration":  (
+        "technical_restoration": (
             "Emergency Reopening",
             "Get the doors back open. Morale returns with the first pint.",
         ),
-        "resilience_investment":  (
+        "resilience_investment": (
             "Full Premises Refurbishment",
             "Rebuild and reopen properly. Worth the wait, according to regulars.",
         ),
@@ -553,7 +548,7 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Temporary Venue",
             "Set up a makeshift arrangement. Not the same, but the Watch informants need somewhere to sit.",
         ),
-        "public_compensation":    (
+        "public_compensation": (
             "Complimentary Round",
             "A goodwill gesture to regulars. Costs little, means a great deal.",
         ),
@@ -561,21 +556,21 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Investigate the Landlord",
             "Formal inquiry into the management failure. The regulars will have opinions.",
         ),
-        "press_statement":        (
+        "press_statement": (
             "Post a Notice",
             "Communicate the situation to patrons. Reduces grumbling slightly.",
         ),
-        "do_nothing":             (
+        "do_nothing": (
             "Keep the Doors Shut",
             "Trust erodes quickly. The social temperature of the district with it.",
         ),
     },
     "intelligence": {
-        "technical_restoration":  (
+        "technical_restoration": (
             "Operational Reset",
             "Reactivate dormant assets and restore routine collection. Fast. The underlying vulnerability remains.",
         ),
-        "resilience_investment":  (
+        "resilience_investment": (
             "Structural Reorganisation",
             "Rebuild the network from new foundations. Slow, thorough, and not something that can be discussed "
             "in any committee with a record.",
@@ -585,7 +580,7 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Repurpose other operatives to cover the gap. Effective in the short term. "
             "Depleting in the medium term. Do not examine what they are being redirected from.",
         ),
-        "public_compensation":    (
+        "public_compensation": (
             "Official Diversion",
             "Draw attention to something else. Buys time. Does not fix anything. "
             "Works best applied early; considerably less so once the story exists.",
@@ -595,23 +590,23 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Identify the failure point and the person responsible for it. "
             "Conducted quietly. Conclusions not shared. Outcomes occasionally apparent in retrospect.",
         ),
-        "press_statement":        (
+        "press_statement": (
             "Managed Silence",
             "Ensure the incident remains unprinted. Standard practice. "
             "The Times editor is, as always, cooperative within the usual understanding.",
         ),
-        "do_nothing":             (
+        "do_nothing": (
             "Monitor and Wait",
             "Observe. Do not intervene. The risk of action may exceed the risk of inaction. "
             "This is a legitimate assessment. Probably.",
         ),
     },
     "guild": {
-        "technical_restoration":  (
+        "technical_restoration": (
             "Bring in a Mediator",
             "Negotiate a rapid settlement. Work resumes quickly, but the underlying dispute is not resolved.",
         ),
-        "resilience_investment":  (
+        "resilience_investment": (
             "Address the Underlying Grievances",
             "Structural reform of wages, conditions, or representation. Slow, expensive, but earns lasting loyalty.",
         ),
@@ -619,7 +614,7 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Hire Replacement Labour",
             "Bypass the guild entirely. Keeps operations running; the guild will remember. Political cost is high.",
         ),
-        "public_compensation":    (
+        "public_compensation": (
             "Buy Off the Strikers",
             "Direct financial settlement. Work resumes; the precedent invites repetition.",
         ),
@@ -627,21 +622,21 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Sanction Guild Leadership",
             "Assign blame publicly and discipline the organisers. May satisfy the press; will not satisfy the members.",
         ),
-        "press_statement":        (
+        "press_statement": (
             "Issue Conciliatory Statement",
             "Signal willingness to negotiate without committing to anything. Buys time; backfires if no action follows.",
         ),
-        "do_nothing":             (
+        "do_nothing": (
             "Wait It Out",
             "Let the strike run. Trust erodes daily. The guild is watching how long the Patrician holds.",
         ),
     },
     "apothecary": {
-        "technical_restoration":  (
+        "technical_restoration": (
             "Emergency Restock",
             "Procure medicines and get the doors open. Fast, but supply remains precarious.",
         ),
-        "resilience_investment":  (
+        "resilience_investment": (
             "Proper Premises & Equipment",
             "Upgrade the facility and secure Guild certification. Slow and expensive; "
             "considerably harder to close without cause afterwards.",
@@ -651,7 +646,7 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Direct cases to the closest Guild-licensed practitioner. "
             "May be some distance away. In the Shades, it is.",
         ),
-        "public_compensation":    (
+        "public_compensation": (
             "Open the Door for Free",
             "Treat without payment until supplies run out. "
             "Trust rises; stock depletes faster than it is replaced.",
@@ -661,12 +656,12 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
             "Request formal review by the Guild of Physicians. "
             "May resolve the problem. May also surface other problems. Attention cuts both ways.",
         ),
-        "press_statement":        (
+        "press_statement": (
             "Post a Notice",
             "Inform the district of the situation and what is being done about it. "
             "Manages expectations. Does not manage the underlying shortage.",
         ),
-        "do_nothing":             (
+        "do_nothing": (
             "Remain Closed",
             "The district has no alternative nearby. Trust in the city's capacity to care "
             "for its residents decays accordingly.",
@@ -676,7 +671,6 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
 
 
 def _remedy_text(type_id: str, remedy_id: str, default_label: str, default_desc: str) -> tuple[str, str]:
-    """Return (label, description) for a remedy, adapted to the building type if an override exists."""
     category = _CATEGORY_MAP.get(type_id)
     if category:
         override = _REMEDY_LABELS.get(category, {}).get(remedy_id)
@@ -684,10 +678,6 @@ def _remedy_text(type_id: str, remedy_id: str, default_label: str, default_desc:
             return override
     return default_label, default_desc
 
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
 
 def _status_colour(status: BuildingStatus) -> str:
     return {
@@ -702,10 +692,10 @@ def _buildings_relying_on(
     city: City,
     district_id: str | None = None,
 ) -> list[tuple[Building, str]]:
-    """Return (building, dependency_level) pairs for buildings that depend on this one's outputs.
+    """Buildings consuming something this one produces, with the dependency level.
 
-    If district_id is given, only buildings in that district are returned (used by EventPopup
-    when cascade scope is neighbours — cross-district buildings are not actual cascade targets).
+    Restricting to district_id matches cascade scope "neighbours": buildings in
+    other districts are not real cascade targets there.
     """
     produced = set(building.produces)
     if not produced:
@@ -755,13 +745,7 @@ def _bullet(parent, f, text: str, colour: str = INK) -> None:
     ).pack(side="left", fill="x", expand=True)
 
 
-# ---------------------------------------------------------------------------
-# HoverPopup
-# ---------------------------------------------------------------------------
-
 class HoverPopup:
-    """Tooltip that appears when hovering over a building lamp."""
-
     def __init__(self, root: ctk.CTk):
         self.root = root
         self._popup: tk.Toplevel | None = None
@@ -807,18 +791,14 @@ class HoverPopup:
             self._popup = None
 
 
-# ---------------------------------------------------------------------------
-# RemedyMenu — full building info popup with dependency map and actions
-# ---------------------------------------------------------------------------
-
 class RemedyMenu:
-    """Full building info popup: description, dependencies, event status, and remedy actions."""
+    """Building briefing: description, dependencies, incident status and remedy actions."""
 
     def __init__(self, root: ctk.CTk, cfg: GameConfig):
         self.root = root
         self.cfg = cfg
         self._window: ctk.CTkToplevel | None = None
-        self.on_remedy_selected: callable | None = None  # (event_id, remedy_id) -> None
+        self.on_remedy_selected: Callable[[str, str], None] | None = None
 
     def show(
         self,
@@ -835,7 +815,6 @@ class RemedyMenu:
 
         f = fonts()
 
-        # Clamp position to screen
         sw = self.root.winfo_screenwidth()
         sh = self.root.winfo_screenheight()
         px = min(x + 10, sw - 660)
@@ -849,7 +828,6 @@ class RemedyMenu:
         self._window = win
         win.protocol("WM_DELETE_WINDOW", self.hide)
 
-        # --- Header ---
         header = ctk.CTkFrame(win, fg_color=PAPER_DARK)
         header.pack(fill="x")
 
@@ -870,10 +848,8 @@ class RemedyMenu:
             font=f.body_bold, text_color=badge_colour,
         ).pack(side="right", padx=20, pady=12)
 
-        # Type label subheader
         district = city.districts.get(building.district_id)
         district_name = district.name if district else building.district_id
-        type_cfg = city.districts  # just used for district name above
         type_label = building.type_id.replace("_", " ").title()
         ctk.CTkLabel(
             win,
@@ -881,11 +857,9 @@ class RemedyMenu:
             font=f.small, text_color=INK_MUTED,
         ).pack(anchor="w", padx=20, pady=(8, 0))
 
-        # --- Scrollable content ---
         scroll = ctk.CTkScrollableFrame(win, fg_color=PAPER, label_text="")
         scroll.pack(fill="both", expand=True, padx=0, pady=0)
 
-        # Description
         description = _TYPE_DESCRIPTIONS.get(
             building.type_id,
             f"A {type_label.lower()} operating within {district_name}.",
@@ -896,7 +870,6 @@ class RemedyMenu:
             wraplength=575, justify="left",
         ).pack(anchor="w", padx=20, pady=(14, 4))
 
-        # Consumes / produces
         if building.consumes:
             _section_heading(scroll, f, "Depends on (consumes)")
             deps = building.dependencies
@@ -907,14 +880,13 @@ class RemedyMenu:
                     tag, colour = "Operational", STATUS_YELLOW
                 else:
                     tag, colour = "Strategic", INK_MUTED
-                _bullet(scroll, f, f"{resource.replace('_', ' ')}  —  {tag}", colour)
+                _bullet(scroll, f, f"{resource.replace('_', ' ')}: {tag}", colour)
 
         if building.produces:
             _section_heading(scroll, f, "Produces (outputs)")
             for resource in building.produces:
                 _bullet(scroll, f, resource.replace("_", " "), INK_MUTED)
 
-        # Relied on by
         relying = _buildings_relying_on(building, city)
         if relying:
             _section_heading(scroll, f, "Relied on by")
@@ -924,7 +896,7 @@ class RemedyMenu:
                 dot_colour = _status_colour(b.status)
                 _bullet(
                     scroll, f,
-                    f"{b.name}  —  depends {level_tag}  ·  {b.status.value}",
+                    f"{b.name}: depends {level_tag}  ·  {b.status.value}",
                     dot_colour if b.status != BuildingStatus.OPERATIONAL else INK_MUTED,
                 )
             if len(relying) > 8:
@@ -934,7 +906,6 @@ class RemedyMenu:
                     font=f.small, text_color=INK_MUTED,
                 ).pack(anchor="w", padx=36, pady=2)
 
-        # --- Active event ---
         if event and event.is_visible:
             phase_colour = STATUS_RESPONDING if event.phase == EventPhase.RESPONDING else STATUS_YELLOW
             _section_heading(scroll, f, "Active incident")
@@ -973,10 +944,7 @@ class RemedyMenu:
                     font=f.small_bold, text_color=STATUS_RESPONDING,
                 ).pack(anchor="w", padx=20, pady=(0, 8))
             else:
-                # Remedy action cards. Filter by event domain: the threatmodel
-                # lists only certain recovery pathways per domain; meta-options
-                # (press_statement, operational_workaround, do_nothing) stay
-                # universal.
+                # Filtered by domain: the threatmodel restricts recovery pathways per domain.
                 _section_heading(scroll, f, "Available responses")
                 for remedy in get_available_remedies(self.cfg, event):
                     remedy_id = remedy.id
@@ -994,7 +962,7 @@ class RemedyMenu:
 
                     ctk.CTkButton(
                         card,
-                        text=f"{label}   —   {remedy.base_cost} AM$   ·   {downtime_text}",
+                        text=f"{label}   ·   {remedy.base_cost} AM$   ·   {downtime_text}",
                         command=lambda eid=event.id, rid=remedy_id: self._select_remedy(eid, rid),
                         font=f.body_bold,
                         fg_color=ACCENT_BROWN, hover_color="#a07a1a", text_color=PAPER,
@@ -1008,10 +976,9 @@ class RemedyMenu:
                     ).pack(anchor="w", padx=14, pady=(0, 8))
 
         else:
-            # No active visible event
             _section_heading(scroll, f, "Current status")
             if building.is_failed and not event:
-                msg = "Building has failed — incident not yet detected."
+                msg = "Building has failed. Incident not yet detected."
                 colour = STATUS_RED
             elif building.is_degraded:
                 msg = "Building is degraded. Monitoring recommended."
@@ -1024,7 +991,6 @@ class RemedyMenu:
                 font=f.small, text_color=colour,
             ).pack(anchor="w", padx=20, pady=(0, 12))
 
-        # --- Close button ---
         ctk.CTkButton(
             win, text="Close",
             command=self.hide,
@@ -1043,17 +1009,13 @@ class RemedyMenu:
             self.on_remedy_selected(event_id, remedy_id)
 
 
-# ---------------------------------------------------------------------------
-# EventPopup — shown when a new incident is detected; game pauses automatically
-# ---------------------------------------------------------------------------
-
 class EventPopup:
-    """Full-screen incident popup: pauses the game, shows event details and building context."""
+    """Incident report shown when a failure is detected. The app pauses the clock around it."""
 
     def __init__(self, root: ctk.CTk):
         self.root = root
         self._window: ctk.CTkToplevel | None = None
-        self.on_close: callable | None = None  # called when popup is dismissed
+        self.on_close: Callable[[], None] | None = None
 
     def is_visible(self) -> bool:
         return self._window is not None
@@ -1069,7 +1031,6 @@ class EventPopup:
         district = city.districts.get(event.target_district_id)
         district_name = district.name if district else event.target_district_id
 
-        # Centre on screen
         sw = self.root.winfo_screenwidth()
         sh = self.root.winfo_screenheight()
         w, h = 620, 580
@@ -1084,7 +1045,6 @@ class EventPopup:
         self._window = win
         win.protocol("WM_DELETE_WINDOW", self._close)
 
-        # --- Header ---
         header = ctk.CTkFrame(win, fg_color=PAPER_DARK)
         header.pack(fill="x")
 
@@ -1099,7 +1059,6 @@ class EventPopup:
             font=f.body, text_color=INK_MUTED,
         ).pack(side="right", padx=20, pady=12)
 
-        # Building subheader
         if building:
             type_label = building.type_id.replace("_", " ").title()
             ctk.CTkLabel(
@@ -1108,17 +1067,14 @@ class EventPopup:
                 font=f.small, text_color=INK_MUTED,
             ).pack(anchor="w", padx=20, pady=(8, 0))
 
-        # --- Scrollable content ---
         scroll = ctk.CTkScrollableFrame(win, fg_color=PAPER, label_text="")
         scroll.pack(fill="both", expand=True, padx=0, pady=0)
 
-        # Event name
         ctk.CTkLabel(
             scroll, text=event.name,
             font=f.body_bold, text_color=STATUS_RED,
         ).pack(anchor="w", padx=20, pady=(14, 6))
 
-        # Story / headline
         story_text = event.story or event.headline or ""
         if story_text:
             ctk.CTkLabel(
@@ -1127,7 +1083,6 @@ class EventPopup:
                 wraplength=555, justify="left",
             ).pack(anchor="w", padx=20, pady=(0, 8))
 
-        # Affected building
         if building:
             _section_heading(scroll, f, "Affected building")
             status_colour = _status_colour(building.status)
@@ -1145,8 +1100,7 @@ class EventPopup:
                     wraplength=555, justify="left",
                 ).pack(anchor="w", padx=20, pady=(6, 4))
 
-        # Buildings at risk — scoped to the cascade reach of this event.
-        # cascade_scope "neighbours" = same district only; no cascade = city-wide dependency view.
+        # Cascade scope "neighbours" only reaches the same district, so only list those.
         if building:
             cascade_district = (
                 event.target_district_id
@@ -1169,7 +1123,7 @@ class EventPopup:
                     dot_colour = _status_colour(b.status)
                     _bullet(
                         scroll, f,
-                        f"{b.name}  —  depends {level_tag}  ·  {b.status.value}",
+                        f"{b.name}: depends {level_tag}  ·  {b.status.value}",
                         dot_colour if b.status != BuildingStatus.OPERATIONAL else INK_MUTED,
                     )
                 if len(relying) > 6:
@@ -1178,18 +1132,16 @@ class EventPopup:
                         text=f"  +{len(relying) - 6} more buildings depend on this",
                         font=f.small, text_color=INK_MUTED,
                     ).pack(anchor="w", padx=36, pady=2)
-                # Vendor monoculture warning: cascades may jump district boundaries
                 if cascade_district:
                     vendor_mono = city.stressors.get("vendor_monoculture", 0.0)
                     if vendor_mono >= 0.5:
                         ctk.CTkLabel(
                             scroll,
-                            text=f"⚠  Vendor monoculture is high ({vendor_mono:.0%}) — cascade may spread city-wide.",
+                            text=f"⚠  Vendor monoculture is high ({vendor_mono:.0%}): the cascade may spread city-wide.",
                             font=f.small, text_color=STATUS_YELLOW,
                             wraplength=555, justify="left",
                         ).pack(anchor="w", padx=20, pady=(4, 0))
 
-        # Pause notice
         ctk.CTkLabel(
             scroll,
             text="The city is paused. Click the highlighted building on the map to choose a response, "
@@ -1198,7 +1150,6 @@ class EventPopup:
             wraplength=555, justify="left",
         ).pack(anchor="w", padx=20, pady=(18, 10))
 
-        # --- Close / Next button ---
         btn_text = "Close" if more_remaining == 0 else f"Next incident  ({more_remaining} remaining)"
         ctk.CTkButton(
             win, text=btn_text,
@@ -1218,13 +1169,7 @@ class EventPopup:
             self.on_close()
 
 
-# ---------------------------------------------------------------------------
-# ArticlePopup — full newspaper article shown when a news headline is clicked
-# ---------------------------------------------------------------------------
-
 class ArticlePopup:
-    """Newspaper-styled popup showing the full story behind a headline."""
-
     def __init__(self, root: ctk.CTk):
         self.root = root
         self._window: ctk.CTkToplevel | None = None
@@ -1250,7 +1195,6 @@ class ArticlePopup:
         self._window = win
         win.protocol("WM_DELETE_WINDOW", self.hide)
 
-        # --- Masthead ---
         masthead = ctk.CTkFrame(win, fg_color=PAPER_DARK)
         masthead.pack(fill="x")
 
@@ -1264,17 +1208,14 @@ class ArticlePopup:
             font=f.small, text_color=INK_MUTED,
         ).pack(side="right", padx=20, pady=10)
 
-        # --- Headline ---
         ctk.CTkLabel(
             win, text=headline,
             font=(f.family, 15, "bold"), text_color=INK,
             wraplength=520, justify="left",
         ).pack(anchor="w", padx=24, pady=(16, 8))
 
-        # Horizontal rule (thin frame)
         ctk.CTkFrame(win, fg_color=ACCENT_BROWN, height=2).pack(fill="x", padx=24, pady=(0, 10))
 
-        # --- Article body ---
         scroll = ctk.CTkScrollableFrame(win, fg_color=PAPER, label_text="")
         scroll.pack(fill="both", expand=True, padx=0, pady=0)
 
@@ -1284,7 +1225,6 @@ class ArticlePopup:
             wraplength=520, justify="left",
         ).pack(anchor="w", padx=24, pady=(8, 16))
 
-        # --- Close ---
         ctk.CTkButton(
             win, text="Close",
             command=self.hide,

@@ -1,4 +1,4 @@
-# End conditions:multiple ways to lose, one way to survive
+# End conditions: multiple ways to lose, one way to survive
 
 loss_conditions:
   election_loss:
@@ -61,7 +61,7 @@ escape_condition:
     label: "Early Retirement"
     description: "Player steps down early, passes to successor."
     trigger: player_action
-    min_days: 365                  # must serve at least 1 year
+    min_days: 365                  # a year served first
     narrative: "You have chosen to retire early. The city continues without you. There is unfinished business."
 
 postgame:

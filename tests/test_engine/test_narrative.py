@@ -1,9 +1,3 @@
-"""Tests for the narrative engine: headline templating, story selection, detection-narrative
-thresholds, political-narrative branches, and stressor labelling.
-
-Closes coverage gaps around src/engine/narrative.py (no dedicated test file existed before).
-"""
-
 from __future__ import annotations
 
 import random
@@ -64,7 +58,6 @@ class TestHeadlines:
         random.seed(0)
         result = generate_headline(cfg, city, event)
 
-        # Result is a string and includes district or building substitution
         assert isinstance(result, str)
         assert len(result) > 0
 
@@ -115,7 +108,7 @@ class TestDetectionNarrative:
 
         text = _get_detection_narrative(cfg, event, tick=10)
 
-        assert "immediately" in text.lower() or text  # immediate template present
+        assert "immediately" in text.lower() or text
 
     def test_short_delay_picks_citizen_narrative(self):
         cfg, _ = build_city(CONFIG_DIR)
@@ -164,7 +157,6 @@ class TestPoliticalNarrative:
 class TestStressorNarrative:
     def test_dominant_stressor_label_used(self):
         cfg, city = build_city(CONFIG_DIR)
-        # Make underinvestment dominate
         city.stressors["underinvestment"] = 0.95
         for k in city.stressors:
             if k != "underinvestment":
@@ -188,7 +180,6 @@ class TestFormatDuration:
         cfg, city = build_city(CONFIG_DIR)
         district = city.districts["the_shades"]
         building = next(iter(district.buildings.values()))
-        # _format_duration treats created_tick=0 as falsy in its loop, so use tick=1
         event = _make_event(building.id, district.id, tick=1)
         event.detected_tick = 10  # 9 hours
         city.events.append(event)
@@ -202,7 +193,7 @@ class TestFormatDuration:
         district = city.districts["the_shades"]
         building = next(iter(district.buildings.values()))
         event = _make_event(building.id, district.id, tick=1)
-        event.detected_tick = 100  # 99h → 4 days
+        event.detected_tick = 100  # 99 hours, four days
         city.events.append(event)
 
         text = _format_duration(event, city)

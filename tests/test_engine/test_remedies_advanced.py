@@ -1,11 +1,3 @@
-"""Regression tests for load-bearing remedy mechanics that were previously uncovered.
-
-Covers the press-statement contradicts window, accountability backfire, do_nothing
-inaction signal, operational_workaround risk transfer, public_compensation reversal,
-resilience_investment infrastructure boost and delayed trust, and social_inequality
-shifts on remedy application.
-"""
-
 from __future__ import annotations
 
 import random
@@ -40,7 +32,6 @@ def _make_event(
 
 
 def _setup_event_in_district(district_id: str = "the_shades"):
-    """Build a city, fail the first building in `district_id`, and return (cfg, city, event, district, building)."""
     cfg, city = build_city(CONFIG_DIR)
     # Neutralise stressors that perturb downtime so test arithmetic is deterministic
     city.stressors["underinvestment"] = 0.0
@@ -79,8 +70,7 @@ class TestPressStatementWindow:
         assert event.phase == EventPhase.DETECTED
         assert event.remedy_applied is None
         assert event.remedy_applied_tick is None
-        # Contradicts penalty (-10) is filtered through media_attention_multiplier
-        # and the inequality modifier on negative deltas, so check direction not magnitude
+        # the -10 penalty passes through media_attention and the inequality modifier, so check direction only
         assert district.local_trust.value < trust_before
 
 
@@ -88,12 +78,11 @@ class TestAccountabilityBackfire:
     def test_backfire_fires_when_rng_under_risk(self):
         cfg, city, event, district, _ = _setup_event_in_district("nap_hill")
 
-        # backfire_risk = 0.25. Seed 4 → first random() call returns ~0.237, < 0.25.
+        # backfire_risk = 0.25. With seed 4 the first random() is about 0.237
         random.seed(4)
 
         apply_remedy(cfg, city, event, "accountability_actions", tick=10)
 
-        # Detect backfire by inspecting metric history for the "backfired" cause.
         backfire_entries = [
             s for s in district.local_trust.history if "backfired" in s.cause
         ]
@@ -106,7 +95,7 @@ class TestAccountabilityBackfire:
     def test_no_backfire_when_rng_above_risk(self):
         cfg, city, event, district, _ = _setup_event_in_district("nap_hill")
 
-        # Seed 0 → first random() call returns ~0.844, well above 0.25.
+        # with seed 0 the first random() is about 0.844
         random.seed(0)
 
         apply_remedy(cfg, city, event, "accountability_actions", tick=10)
@@ -124,7 +113,7 @@ class TestDoNothing:
 
         apply_remedy(cfg, city, event, "do_nothing", tick=10)
 
-        # decay_multiplier=2.0 → -(2.0-1.0)*3 = -3 trust dock (modulated by media + inequality)
+        # decay_multiplier=2.0 gives -(2.0-1.0)*3 = -3 trust, modulated by media and inequality
         assert district.local_trust.value < trust_before
 
     def test_cascade_risk_boost_set_on_event(self):
@@ -139,7 +128,6 @@ class TestOperationalWorkaroundRiskTransfer:
     def test_risk_transfer_hits_another_district(self):
         cfg, city, event, target_district, _ = _setup_event_in_district("the_shades")
 
-        # Snapshot trust of every other district
         other_trust = {
             d.id: d.local_trust.value
             for d in city.districts.values()
@@ -149,7 +137,6 @@ class TestOperationalWorkaroundRiskTransfer:
         random.seed(42)
         apply_remedy(cfg, city, event, "operational_workaround", tick=10)
 
-        # Exactly one other district takes a trust hit
         dropped = [
             d.id for d in city.districts.values()
             if d.id != target_district.id and d.local_trust.value < other_trust[d.id]
@@ -180,16 +167,14 @@ class TestResilienceInvestmentInfrastructureBoost:
         iq_before = district.infrastructure_quality  # 3.0
         assert iq_before > 1.0
 
-        # Make sure budget covers the wealth-adjusted cost
-        # cost = 300 * (wealth/50) = 300 * 10/50 = 60. Default 4200 budget is plenty.
+        # cost = 300 * wealth/50 = 60
         apply_remedy(cfg, city, event, "resilience_investment", tick=10)
-        # 72h downtime → completes at tick 82
+        # 72h downtime completes at tick 82
         process_remedy_completions(cfg, city, tick=82)
 
-        # boost = 0.3 of excess(2.0) = 0.6 reduction; new IQ ≈ 2.4
+        # boost 0.3 of excess 2.0 is a 0.6 reduction, new value 2.4
         assert district.infrastructure_quality < iq_before
         assert district.infrastructure_quality >= 1.0
-        # Tolerate floating-point rounding
         assert abs(district.infrastructure_quality - 2.4) < 0.01
 
 
@@ -201,7 +186,7 @@ class TestResilienceInvestmentDelayedTrust:
         apply_remedy(cfg, city, event, "resilience_investment", tick=10)
         process_remedy_completions(cfg, city, tick=82)
 
-        # delayed_days=14 → scheduled at tick 82 + 336 = 418
+        # delayed_days=14, scheduled at tick 82 + 336 = 418
         assert len(district.pending_trust_boosts) == 1
         scheduled_tick, amount, _ = district.pending_trust_boosts[0]
         assert scheduled_tick == 418
@@ -214,8 +199,7 @@ class TestResilienceInvestmentDelayedTrust:
         process_remedy_completions(cfg, city, tick=82)
         trust_before_flush = district.local_trust.value
 
-        # Run passive dynamics at a daily-divisible tick beyond the scheduled apply_at (418).
-        # ticks_per_day=24, so the next day boundary after 418 is 432.
+        # next daily boundary after 418 is 432
         apply_passive_dynamics(city, tick=432, ticks_per_day=24, cfg=cfg)
 
         assert district.local_trust.value > trust_before_flush
@@ -247,9 +231,8 @@ class TestSocialInequalityShift:
 class TestResilienceInvestmentStressorDecrease:
     def test_completion_decreases_underinvestment_stressor(self):
         cfg, city, event, district, _ = _setup_event_in_district("the_shades")
-        # underinvestment was zeroed in setup to keep downtime deterministic at 72h.
-        # Set a non-zero baseline after apply (downtime is cached at apply time so
-        # this does not retroactively extend repair).
+        # underinvestment was zeroed in setup; downtime is cached at apply time so
+        # setting it now does not extend the repair
         apply_remedy(cfg, city, event, "resilience_investment", tick=10)
         city.stressors["underinvestment"] = 0.6
 

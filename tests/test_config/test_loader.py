@@ -1,5 +1,3 @@
-"""Tests for config loading and city assembly."""
-
 from pathlib import Path
 
 from src.config.loader import build_city, load_config
@@ -81,7 +79,6 @@ class TestBuildCity:
 
     def test_buildings_attached_to_districts(self):
         _, city = build_city(CONFIG_DIR)
-        # Mended Drum should be in Merchant Quarter
         mq = city.districts["merchant_quarter"]
         assert "mended_drum" in mq.buildings
         assert mq.buildings["mended_drum"].name == "The Mended Drum"
@@ -101,7 +98,6 @@ class TestBuildCity:
 
     def test_building_dependencies_merged_from_type(self):
         cfg, city = build_city(CONFIG_DIR)
-        # Assassins' Guild should have guild_hq dependencies
         ag = city.districts["merchant_quarter"].buildings.get("assassins_guild")
         assert ag is not None
         assert "communications" in ag.dependencies.critical

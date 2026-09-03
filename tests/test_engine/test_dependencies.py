@@ -1,5 +1,3 @@
-"""Tests for the dependency graph: cascade propagation, scope, and probability cap."""
-
 import random
 from pathlib import Path
 
@@ -91,7 +89,6 @@ class TestPropagateCascades:
         assert len(results) == 0
 
     def test_responding_events_do_not_cascade(self):
-        """A building under active repair should not cascade failures to neighbours."""
         _, city = build_city(CONFIG_DIR)
         district = next(iter(city.districts.values()))
         building = next(iter(district.buildings.values()))
@@ -105,7 +102,6 @@ class TestPropagateCascades:
         assert len(results) == 0
 
     def test_no_cascade_at_mid_day_tick(self):
-        """After first detection, cascades only roll at daily boundaries (every 24 ticks)."""
         _, city = build_city(CONFIG_DIR)
         district = next(iter(city.districts.values()))
         building = next(iter(district.buildings.values()))
@@ -114,12 +110,11 @@ class TestPropagateCascades:
         event = _make_cascade_event(building.id, district.id, tick=0)
         city.events.append(event)
 
-        # tick=12: hours_since_detected=12, not 0 and not divisible by 24 → skip
+        # tick 12 is not a daily boundary
         results = propagate_cascades(city, tick=12)
         assert len(results) == 0
 
     def test_no_cascade_without_dependency_rule(self):
-        """Events with no cascade_dependency never propagate."""
         _, city = build_city(CONFIG_DIR)
         district = next(iter(city.districts.values()))
         building = next(iter(district.buildings.values()))
@@ -133,12 +128,6 @@ class TestPropagateCascades:
         assert len(results) == 0
 
     def test_cascade_probability_capped_at_0_95(self):
-        """Even with extreme multipliers, cascade probability is capped at 0.95 (not 1.0).
-
-        With p=0.95, running 200 independent trials should yield at least one non-cascade.
-        P(all 200 cascade) = 0.95^200 ≈ 0.000035.
-        """
-        # Build once; find a source and an energy-dependent neighbour
         _, city = build_city(CONFIG_DIR)
         source_id = None
         dependent_id = None
@@ -173,9 +162,8 @@ class TestPropagateCascades:
         event.cascade_risk_boost = 10.0
         city.events.append(event)
 
-        # Run 200 trials: restore dep between each, vary random seed.
-        # propagate_cascades does NOT add cascade events to city.events,
-        # so only dep.status needs resetting between trials.
+        # propagate_cascades does not append to city.events, so only dep.status
+        # needs resetting between trials
         not_cascaded = 0
         for seed in range(200):
             random.seed(seed)
@@ -185,6 +173,6 @@ class TestPropagateCascades:
                 not_cascaded += 1
 
         assert not_cascaded > 0, (
-            "Cascade probability must be capped at 0.95: all 200 trials cascaded, "
-            "which has probability 0.95^200 ≈ 0.000035 if the cap is applied"
+            "Cascade cap of 0.95 not applied: all 200 trials cascaded, "
+            "which has probability 0.95^200, about 0.000035, under the cap"
         )

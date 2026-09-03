@@ -1,15 +1,9 @@
-"""GUI integration: confirm RemedyMenu only renders filtered remedies for a
-domain-restricted event (Communications)."""
-
 from __future__ import annotations
 
 import tkinter as tk
 
 
 def _collect_button_texts(window) -> list[str]:
-    """Walk every child of a Tk window and collect text from any widget that has it.
-    CTk widgets raise ValueError if `text` is not a supported option, hence the
-    broad except."""
     texts: list[str] = []
     stack = [window]
     while stack:
@@ -28,9 +22,6 @@ def _collect_button_texts(window) -> list[str]:
 def test_communications_event_offers_only_filtered_remedies(
     ctk_root, loaded_city, detected_event_communications
 ):
-    """Communications events on clacks_tower buildings use the 'communications'
-    label overrides. The two valid pathways + 3 universals show, the two filtered
-    pathways do not."""
     cfg, city = loaded_city
     event, district, building = detected_event_communications
 
@@ -41,14 +32,14 @@ def test_communications_event_offers_only_filtered_remedies(
 
     button_blob = " ".join(_collect_button_texts(menu._window))
 
-    # SHOULD appear (universals + technical_restoration + resilience_investment)
+    # present
     assert "Restore Signal" in button_blob          # technical_restoration
     assert "Network Upgrade" in button_blob          # resilience_investment
     assert "Reroute Traffic" in button_blob          # operational_workaround (meta)
     assert "Issue Network Bulletin" in button_blob   # press_statement (meta)
     assert "No Comment" in button_blob               # do_nothing (meta)
 
-    # SHOULD NOT appear (filtered out by communications domain)
+    # filtered out by the communications domain
     assert "Refund Subscribers" not in button_blob   # public_compensation
     assert "Suspend Tower Operator" not in button_blob  # accountability_actions
 
@@ -57,8 +48,6 @@ def test_communications_event_offers_only_filtered_remedies(
 
 
 def test_water_event_offers_all_pathways(ctk_root, loaded_city, detected_event_water):
-    """Water events on water_source buildings use the 'infrastructure' label
-    overrides and have all four pathways available."""
     cfg, city = loaded_city
     event, district, building = detected_event_water
 

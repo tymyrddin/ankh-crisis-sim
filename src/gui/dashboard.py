@@ -1,6 +1,6 @@
-"""Dashboard panel: global metrics, city status, district summary, and active events."""
-
 from __future__ import annotations
+
+from collections.abc import Callable
 
 import customtkinter as ctk
 
@@ -13,35 +13,31 @@ from src.models.city import City
 
 
 def _bind_click(widget, callback) -> None:
-    """Recursively bind a left-click handler to widget and all its children."""
     try:
         widget.configure(cursor="hand2")
     except Exception:
-        pass
+        pass  # not every CTk widget takes a cursor
     widget.bind("<Button-1>", lambda e: callback(), add="+")
     for child in widget.winfo_children():
         _bind_click(child, callback)
 
 
-# Metrics where a higher value is worse (trend arrows and colours invert)
+# higher is worse
 _LOWER_IS_BETTER = {"regulatory_pressure", "crime_level"}
 
-# Threshold tuples: (green_at, yellow_at, orange_at)
-# For normal metrics: value >= green → green, >= yellow → yellow, >= orange → orange, else red
-# For lower-is-better: value <= green → green, <= yellow → yellow, <= orange → orange, else red
+# (green_at, yellow_at, orange_at); lower-is-better metrics compare the other way
 _METRIC_THRESHOLDS: dict[str, tuple[float, float, float]] = {
-    "public_trust":        (60,   40,   20),    # config: trust collapse < 25; healthy ≥ 60
-    "budget":              (3000, 1500, 500),    # comfortable / tight / critical
-    "regulatory_pressure": (20,   40,   60),    # config: low=20, moderate=40, high=60
-    "political_stability": (70,   50,   30),    # high = stable; below 30 = very dangerous
-    "legitimacy":          (70,   50,   30),    # slow to move; below 30 is existential
-    "public_health":       (70,   50,   30),    # healthy city / stressed / failing
-    "crime_level":         (20,   40,   60),    # config: low=20, moderate=40, high=60
+    "public_trust": (60, 40, 20),
+    "budget": (3000, 1500, 500),
+    "regulatory_pressure": (20, 40, 60),
+    "political_stability": (70, 50, 30),
+    "legitimacy": (70, 50, 30),
+    "public_health": (70, 50, 30),
+    "crime_level": (20, 40, 60),
 }
 
 
 def _metric_colour(key: str, value: float) -> str:
-    """Return green / yellow / orange / red based on metric thresholds."""
     thresholds = _METRIC_THRESHOLDS.get(key)
     if not thresholds:
         return INK
@@ -66,7 +62,6 @@ def _metric_colour(key: str, value: float) -> str:
 
 
 def _trend_arrow(trend: float, lower_is_better: bool) -> tuple[str, str]:
-    """Return (arrow_character, colour) for a metric trend."""
     improving = trend > 0.05 if not lower_is_better else trend < -0.05
     declining = trend < -0.05 if not lower_is_better else trend > 0.05
     if improving:
@@ -77,7 +72,6 @@ def _trend_arrow(trend: float, lower_is_better: bool) -> tuple[str, str]:
 
 
 def _status_colour(pct: float, invert: bool = False) -> str:
-    """Green/amber/red based on percentage, optionally inverted (higher = worse)."""
     good = pct >= 80 if not invert else pct <= 30
     warn = pct >= 50 if not invert else pct <= 60
     if good:
@@ -88,8 +82,6 @@ def _status_colour(pct: float, invert: bool = False) -> str:
 
 
 class Dashboard:
-    """Right-side panel showing metrics and district status."""
-
     def __init__(self, parent: ctk.CTkFrame):
         self.parent = parent
         self._metric_labels: dict[str, ctk.CTkLabel] = {}
@@ -98,11 +90,9 @@ class Dashboard:
         self._metric_rows: dict[str, ctk.CTkFrame] = {}
         self._status_rows: dict[str, ctk.CTkFrame] = {}
         self._district_row_frames: dict[str, ctk.CTkFrame] = {}
-        self.on_settings_click: callable | None = None
-        self.on_emergency_borrow: callable | None = None
+        self.on_settings_click: Callable[[], None] | None = None
         f = fonts()
 
-        # Title row with settings gear
         title_row = ctk.CTkFrame(parent, fg_color="transparent")
         title_row.pack(fill="x", pady=(10, 0))
 
@@ -127,7 +117,6 @@ class Dashboard:
             font=f.subtitle, text_color=INK_MUTED,
         ).pack(pady=(0, 15))
 
-        # --- City Metrics ---
         ctk.CTkLabel(
             parent, text="CITY METRICS", font=f.heading, text_color=ACCENT_BROWN,
         ).pack(anchor="w", padx=15, pady=(5, 2))
@@ -135,7 +124,6 @@ class Dashboard:
         self._metrics_frame = ctk.CTkFrame(parent, fg_color="transparent")
         self._metrics_frame.pack(fill="x", padx=10, pady=5)
 
-        # --- City Status ---
         ctk.CTkLabel(
             parent, text="CITY STATUS", font=f.heading, text_color=ACCENT_BROWN,
         ).pack(anchor="w", padx=15, pady=(8, 2))
@@ -147,7 +135,6 @@ class Dashboard:
         self._incidents_label: ctk.CTkLabel | None = None
         self._watch_label: ctk.CTkLabel | None = None
 
-        # --- Districts ---
         ctk.CTkLabel(
             parent, text="DISTRICTS", font=f.heading, text_color=ACCENT_BROWN,
         ).pack(anchor="w", padx=15, pady=(8, 2))
@@ -157,21 +144,18 @@ class Dashboard:
         )
         self._districts_frame.pack(fill="both", expand=True, padx=10, pady=5)
 
-    # ------------------------------------------------------------------
-    # Build (called once on game start)
-    # ------------------------------------------------------------------
+    # built once
 
     def build_metrics(self, city: City) -> None:
-        """Create metric display rows with trend arrows."""
         f = fonts()
         metrics = [
-            ("Public Trust",        "public_trust",        city.public_trust),
-            ("Budget",              "budget",               city.budget),
-            ("Reg. Pressure",       "regulatory_pressure",  city.regulatory_pressure),
-            ("Pol. Stability",      "political_stability",  city.political_stability),
-            ("Legitimacy",          "legitimacy",           city.legitimacy),
-            ("Public Health",       "public_health",        city.public_health),
-            ("Crime Level",         "crime_level",          city.crime_level),
+            ("Public Trust", "public_trust", city.public_trust),
+            ("Budget", "budget", city.budget),
+            ("Reg. Pressure", "regulatory_pressure", city.regulatory_pressure),
+            ("Pol. Stability", "political_stability", city.political_stability),
+            ("Legitimacy", "legitimacy", city.legitimacy),
+            ("Public Health", "public_health", city.public_health),
+            ("Crime Level", "crime_level", city.crime_level),
         ]
 
         for label, key, metric in metrics:
@@ -201,7 +185,6 @@ class Dashboard:
             self._metric_labels[key] = value_label
 
     def build_status(self, city: City) -> None:
-        """Create city status indicator rows."""
         f = fonts()
 
         def _status_row(key: str, label: str, value_text: str, colour: str) -> ctk.CTkLabel:
@@ -240,7 +223,6 @@ class Dashboard:
         )
 
     def build_districts(self, city: City) -> None:
-        """Create district summary rows."""
         f = fonts()
         for district in city.districts.values():
             if not district.is_residential:
@@ -279,7 +261,6 @@ class Dashboard:
             self.on_settings_click()
 
     def attach_popup(self, popup: InfoPopup, city: City) -> None:
-        """Bind info popups to all metric, status, and district rows."""
         for key, frame in self._metric_rows.items():
             _bind_click(frame, lambda k=key: popup.show_metric(city, k))
         for key, frame in self._status_rows.items():
@@ -287,20 +268,17 @@ class Dashboard:
         for district_id, frame in self._district_row_frames.items():
             _bind_click(frame, lambda d=district_id: popup.show_district(city, d))
 
-    # ------------------------------------------------------------------
-    # Update (called every tick)
-    # ------------------------------------------------------------------
+    # every tick
 
     def update(self, city: City) -> None:
-        """Refresh all metric values and trend arrows."""
         metrics_map = {
-            "public_trust":        city.public_trust,
-            "budget":              city.budget,
+            "public_trust": city.public_trust,
+            "budget": city.budget,
             "regulatory_pressure": city.regulatory_pressure,
             "political_stability": city.political_stability,
-            "legitimacy":          city.legitimacy,
-            "public_health":       city.public_health,
-            "crime_level":         city.crime_level,
+            "legitimacy": city.legitimacy,
+            "public_health": city.public_health,
+            "crime_level": city.crime_level,
         }
 
         for key, metric in metrics_map.items():
@@ -319,7 +297,6 @@ class Dashboard:
                 )
                 tlbl.configure(text=arrow, text_color=colour)
 
-        # Status indicators
         if self._infra_label:
             pct = city.infrastructure_health_pct
             self._infra_label.configure(
@@ -337,7 +314,6 @@ class Dashboard:
                 text=f"{pct:.0f}%", text_color=_status_colour(pct),
             )
 
-        # District rows
         for district in city.districts.values():
             row_labels = self._district_rows.get(district.id)
             if not row_labels:
@@ -362,10 +338,6 @@ class Dashboard:
                 )
             else:
                 row_labels["events"].configure(text="")
-
-    # ------------------------------------------------------------------
-    # Helpers
-    # ------------------------------------------------------------------
 
     @staticmethod
     def _fmt(key: str, value: float) -> str:

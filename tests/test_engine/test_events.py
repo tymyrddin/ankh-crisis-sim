@@ -1,5 +1,3 @@
-"""Tests for event generation: probability calculation, target selection, and generation."""
-
 import random
 from pathlib import Path
 
@@ -12,7 +10,6 @@ CONFIG_DIR = Path(__file__).parent.parent.parent / "config"
 
 class TestCalculateProbability:
     def test_higher_stressor_level_increases_probability(self):
-        """Higher city-wide stressor level → higher event probability."""
         cfg, city = build_city(CONFIG_DIR)
         template = EventTemplate(
             id="test",
@@ -31,7 +28,6 @@ class TestCalculateProbability:
         assert high_prob > low_prob
 
     def test_district_failure_modifier_scales_probability(self):
-        """Higher infrastructure_quality modifier raises probability."""
         cfg, city = build_city(CONFIG_DIR)
         template = EventTemplate(
             id="test",
@@ -46,7 +42,6 @@ class TestCalculateProbability:
         assert high_prob > low_prob
 
     def test_probability_capped_at_0_5(self):
-        """Probability never exceeds 50% per tick regardless of stressor levels."""
         cfg, city = build_city(CONFIG_DIR)
         template = EventTemplate(
             id="test",
@@ -62,7 +57,6 @@ class TestCalculateProbability:
         assert prob <= 0.5
 
     def test_district_stressor_label_amplifies_probability(self):
-        """A district with 'extreme' label for a stressor further raises probability."""
         cfg, city = build_city(CONFIG_DIR)
         template = EventTemplate(
             id="test",
@@ -95,7 +89,6 @@ class TestCalculateProbability:
 
 class TestFindTargetBuilding:
     def test_returns_none_when_no_candidates(self):
-        """Returns None if all buildings in the district are occupied."""
         _, city = build_city(CONFIG_DIR)
         district = next(iter(city.districts.values()))
 
@@ -107,7 +100,6 @@ class TestFindTargetBuilding:
         assert result is None
 
     def test_skips_occupied_buildings(self):
-        """Buildings with an active event are excluded from selection."""
         _, city = build_city(CONFIG_DIR)
         district = next(iter(city.districts.values()))
         buildings = list(district.buildings.values())
@@ -125,7 +117,6 @@ class TestFindTargetBuilding:
         assert result.id == buildings[-1].id
 
     def test_filters_by_building_type(self):
-        """Only buildings whose type_id is in target_building_types are candidates."""
         _, city = build_city(CONFIG_DIR)
         district = next(iter(city.districts.values()))
 
@@ -148,7 +139,6 @@ class TestFindTargetBuilding:
 
 class TestGenerateEvents:
     def test_no_events_with_zero_rate_multiplier(self):
-        """event_rate_multiplier=0 suppresses all event generation."""
         cfg, city = build_city(CONFIG_DIR)
         cfg.settings.event_rate_multiplier = 0.0
 
@@ -158,7 +148,6 @@ class TestGenerateEvents:
             assert len(events) == 0, f"Event fired at tick {tick} with multiplier=0"
 
     def test_generated_event_marks_building_failed(self):
-        """When an event fires, its target building enters FAILED status."""
         cfg, city = build_city(CONFIG_DIR)
         cfg.settings.event_rate_multiplier = 100.0
 
@@ -179,7 +168,6 @@ class TestGenerateEvents:
         assert building.hidden_failure is True
 
     def test_generated_event_starts_hidden(self):
-        """Newly generated events start in HIDDEN phase (not yet detected)."""
         cfg, city = build_city(CONFIG_DIR)
         cfg.settings.event_rate_multiplier = 100.0
 
@@ -196,7 +184,6 @@ class TestGenerateEvents:
         assert events[0].phase == EventPhase.HIDDEN
 
     def test_generated_event_has_correct_district(self):
-        """Generated event's district should exist in the city."""
         cfg, city = build_city(CONFIG_DIR)
         cfg.settings.event_rate_multiplier = 100.0
 

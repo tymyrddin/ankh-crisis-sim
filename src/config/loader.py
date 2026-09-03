@@ -1,5 +1,3 @@
-"""YAML config loader: reads all config files and assembles a City + game settings."""
-
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -19,9 +17,7 @@ def _load_yaml(path: Path) -> dict | list:
         return yaml.safe_load(f)
 
 
-# ---------------------------------------------------------------------------
-# Config data classes (read-only reference data, not runtime state)
-# ---------------------------------------------------------------------------
+# Read-only reference data, not runtime state.
 
 @dataclass
 class TimeConfig:
@@ -99,11 +95,10 @@ class BuildingTypeConfig:
 
 @dataclass
 class GameSettings:
-    """Runtime-adjustable game options. Defaults apply at game start."""
-    event_rate_multiplier: float = 0.3       # fraction of base event probability; 0.3 = 30%
-    discovery_speed_multiplier: float = 1.0  # >1 = events stay hidden longer
-    cascade_multiplier: float = 1.0          # multiplier on cascade probability rolls
-    game_duration_days: int = 730            # override days_elapsed end condition (0 = use YAML)
+    event_rate_multiplier: float = 0.3  # fraction of base event probability
+    discovery_speed_multiplier: float = 1.0  # above 1 keeps events hidden longer
+    cascade_multiplier: float = 1.0
+    game_duration_days: int = 730  # 0 falls back to the YAML days_elapsed
 
 
 @dataclass
@@ -118,7 +113,6 @@ class EndCondition:
 
 @dataclass
 class GameConfig:
-    """All loaded configuration for a game session."""
     time: TimeConfig = field(default_factory=TimeConfig)
     speed: SpeedConfig = field(default_factory=SpeedConfig)
     settings: GameSettings = field(default_factory=GameSettings)
@@ -137,10 +131,6 @@ class GameConfig:
     budget_income: dict = field(default_factory=dict)
     budget_raw: dict = field(default_factory=dict)
 
-
-# ---------------------------------------------------------------------------
-# Parsing helpers
-# ---------------------------------------------------------------------------
 
 def _parse_metric_effects(effects_list: list[dict]) -> list[MetricEffect]:
     result = []
@@ -214,16 +204,10 @@ def _parse_building_instance(raw: dict) -> Building:
     )
 
 
-# ---------------------------------------------------------------------------
-# Main loader
-# ---------------------------------------------------------------------------
-
 def load_config(config_dir: str | Path) -> GameConfig:
-    """Load all YAML files from the config directory and return a GameConfig."""
     config_dir = Path(config_dir)
     cfg = GameConfig()
 
-    # --- game.yml ---
     game_raw = _load_yaml(config_dir / "game.yml")
     time_raw = game_raw.get("time", {})
     cfg.time = TimeConfig(
@@ -246,11 +230,9 @@ def load_config(config_dir: str | Path) -> GameConfig:
     cfg.budget_income = budget_section.get("income_per_month", {})
     cfg.budget_raw = budget_section
 
-    # --- metrics ---
     cfg.metrics_global_raw = _load_yaml(config_dir / "metrics" / "global.yml")
     cfg.metrics_district_raw = _load_yaml(config_dir / "metrics" / "district.yml")
 
-    # --- building types ---
     types_raw = _load_yaml(config_dir / "buildings" / "_types.yml")
     for type_id, tdata in types_raw.items():
         dep_str = tdata.get("dependency_strengths", {})
@@ -264,7 +246,6 @@ def load_config(config_dir: str | Path) -> GameConfig:
             dependency_strengths=dep_str,
         )
 
-    # --- threats ---
     cfg.stressors = {}
     stressors_raw = _load_yaml(config_dir / "threats" / "stressors.yml")
     for sid, sdata in stressors_raw.items():
@@ -279,7 +260,6 @@ def load_config(config_dir: str | Path) -> GameConfig:
     events_raw = _load_yaml(config_dir / "threats" / "events.yml")
     cfg.event_templates = [_parse_event_template(e) for e in events_raw]
 
-    # --- remedies ---
     remedies_raw = _load_yaml(config_dir / "remedies.yml")
     for rid, rdata in remedies_raw.items():
         cfg.remedies[rid] = RemedyConfig(
@@ -293,14 +273,11 @@ def load_config(config_dir: str | Path) -> GameConfig:
             raw=rdata,
         )
 
-    # --- detection ---
     cfg.detection_raw = _load_yaml(config_dir / "detection.yml")
 
-    # --- narratives ---
     cfg.headlines_raw = _load_yaml(config_dir / "narratives" / "headlines.yml")
     cfg.stories_raw = _load_yaml(config_dir / "narratives" / "stories.yml")
 
-    # --- end conditions ---
     end_raw = _load_yaml(config_dir / "end_conditions.yml")
     for section in ("loss_conditions", "neutral_end", "escape_condition"):
         conditions = end_raw.get(section, {})
@@ -319,27 +296,29 @@ def load_config(config_dir: str | Path) -> GameConfig:
 
 
 def build_city(config_dir: str | Path) -> tuple[GameConfig, City]:
-    """Load config and construct the initial City state."""
     config_dir = Path(config_dir)
     cfg = load_config(config_dir)
 
     city = City()
 
-    # Set global metrics from starting values
     sv = cfg.starting_values
     city.public_trust = Metric("public_trust", sv.get("public_trust", 68))
-    city.budget = Metric("budget", sv.get("budget", 4200), min_value=0, max_value=99999)
+    budget_bounds = cfg.metrics_global_raw.get("budget", {})
+    city.budget = Metric(
+        "budget",
+        sv.get("budget", 4200),
+        min_value=float(budget_bounds.get("min", 0)),
+        max_value=float(budget_bounds.get("max", 99999)),
+    )
     city.regulatory_pressure = Metric("regulatory_pressure", sv.get("regulatory_pressure", 18))
     city.political_stability = Metric("political_stability", sv.get("political_stability", 75))
     city.legitimacy = Metric("legitimacy", sv.get("legitimacy", 82))
     city.public_health = Metric("public_health", sv.get("public_health", 75))
     city.crime_level = Metric("crime_level", sv.get("crime_level", 22))
 
-    # Set city-wide stressor levels
     for sid, scfg in cfg.stressors.items():
         city.stressors[sid] = scfg.starting_level
 
-    # Load districts
     for district_id in cfg.active_districts:
         district_path = config_dir / "districts" / f"{district_id}.yml"
         if not district_path.exists():
@@ -365,20 +344,18 @@ def build_city(config_dir: str | Path) -> tuple[GameConfig, City]:
             local_trust=Metric("local_trust", ddata.get("local_trust", 50)),
         )
 
-        # Parse stressor levels for this district
         stressors_raw = ddata.get("stressors", {})
         for k, v in stressors_raw.items():
             district.stressors[k] = v
 
         city.districts[district.id] = district
 
-    # Load buildings and attach to districts
     buildings_raw = _load_yaml(config_dir / "buildings" / "instances.yml")
     for bdata in buildings_raw:
         building = _parse_building_instance(bdata)
         district_id = building.district_id
         if district_id in city.districts:
-            # Merge defaults from building type config
+            # type defaults fill in what the instance leaves blank
             if building.type_id in cfg.building_types:
                 btype = cfg.building_types[building.type_id]
                 if not building.dependencies.critical and "critical" in btype.dependency_strengths:

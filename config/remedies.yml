@@ -23,7 +23,7 @@ resilience_investment:
   cost_modifiers:
     district_wealth: direct          # richer districts demand better materials
   downtime_hours: 72
-  recurrence_risk: 0.05             # 5%:much lower
+  recurrence_risk: 0.05             # 5%, much lower
   infrastructure_quality_boost: 0.3 # permanent improvement: cuts excess above 1.0 by 30% per upgrade
   # Per-threatmodel recovery pathway; available for every domain.
   valid_domains: [energy, water, communications, transport, public_services, commercial, residential]

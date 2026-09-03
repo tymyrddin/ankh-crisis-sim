@@ -1,5 +1,3 @@
-"""Tests for the metrics engine: effects, delays, duration penalties, income, passive dynamics."""
-
 from pathlib import Path
 
 from src.config.loader import build_city
@@ -71,7 +69,7 @@ class TestApplyImmediateEffects:
             metric="no_such_metric", delta=-5, scope="global",
         )]
 
-        # Should not raise
+        # just checks it does not raise
         apply_immediate_effects(city, event, tick=1)
 
 
@@ -159,7 +157,6 @@ class TestApplyDurationPenalties:
         assert district.local_trust.value == trust_before
 
     def test_suspended_while_responding(self):
-        """Duration penalty is suspended once a remedy is in progress."""
         cfg, city = build_city(CONFIG_DIR)
         district = next(iter(city.districts.values()))
         building = next(iter(district.buildings.values()))
@@ -195,7 +192,6 @@ class TestApplyIncome:
         assert city.budget.value == budget_before
 
     def test_failed_transport_reduces_tariffs(self):
-        """Failing all transport buildings should yield less income than baseline."""
         cfg1, city1 = build_city(CONFIG_DIR)
         transport_buildings = [
             b for d in city1.districts.values()
@@ -256,7 +252,6 @@ class TestPassiveDynamics:
         assert city.political_stability.value < stability_before
 
     def test_stressor_drift_on_neglect(self):
-        """Events ignored for >24h should increase the underinvestment stressor."""
         cfg, city = build_city(CONFIG_DIR)
         district = next(iter(city.districts.values()))
         building = next(iter(district.buildings.values()))
@@ -266,13 +261,12 @@ class TestPassiveDynamics:
         event.detected_tick = 0
         city.events.append(event)
 
-        # Tick 48: daily boundary, event has been detected for 48h (neglected)
+        # tick 48 is a daily boundary and the event has been detected for 48h
         underinvestment_before = city.stressors.get("underinvestment", 0.0)
         apply_passive_dynamics(city, tick=48, ticks_per_day=24, cfg=cfg)
         assert city.stressors.get("underinvestment", 0.0) >= underinvestment_before
 
     def test_no_change_at_non_daily_boundary(self):
-        """Passive dynamics only fires at daily ticks; mid-day has no effect."""
         cfg, city = build_city(CONFIG_DIR)
         district = next(iter(city.districts.values()))
         building = next(iter(district.buildings.values()))
@@ -297,7 +291,6 @@ class TestInequalityModifier:
         assert _inequality_modifier(None, 0.7) == 1.0
 
     def test_at_zero_level_victim_is_neutral(self):
-        """With no city-wide inequality, victim label adds no extra damage."""
         assert _inequality_modifier("victim", 0.0) == 1.0
 
     def test_ordering_victim_moderate_beneficiary(self):

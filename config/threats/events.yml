@@ -1,4 +1,4 @@
-# Event templates:concrete incidents that can occur
+# Event templates: concrete incidents that can occur
 
 # --- Degradation and Neglect ---
 - id: pump_failure

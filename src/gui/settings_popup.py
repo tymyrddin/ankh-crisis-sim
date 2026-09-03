@@ -1,5 +1,3 @@
-"""Settings popup: lets the player adjust game options at any time."""
-
 from __future__ import annotations
 
 import customtkinter as ctk
@@ -10,34 +8,30 @@ from src.gui.theme import (
 )
 
 
-# ---------------------------------------------------------------------------
-# Option maps: display label → value
-# ---------------------------------------------------------------------------
-
 _DURATION_OPTIONS: list[tuple[str, int]] = [
-    ("1 Year",   365),
-    ("2 Years",  730),
+    ("1 Year", 365),
+    ("2 Years", 730),
     ("4 Years", 1460),
 ]
 
 _EVENT_RATE_OPTIONS: list[tuple[str, float]] = [
-    ("Quiet",   0.15),
-    ("Normal",  0.30),
-    ("Active",  0.50),
+    ("Quiet", 0.15),
+    ("Normal", 0.30),
+    ("Active", 0.50),
     ("Frantic", 0.80),
 ]
 
 _DISCOVERY_OPTIONS: list[tuple[str, float]] = [
     ("Immediate", 0.5),
-    ("Normal",    1.0),
-    ("Delayed",   1.5),
-    ("Buried",    2.5),
+    ("Normal", 1.0),
+    ("Delayed", 1.5),
+    ("Buried", 2.5),
 ]
 
 _CASCADE_OPTIONS: list[tuple[str, float]] = [
-    ("Low",    0.5),
+    ("Low", 0.5),
     ("Normal", 1.0),
-    ("High",   1.5),
+    ("High", 1.5),
     ("Severe", 2.5),
 ]
 
@@ -57,13 +51,7 @@ def _value_for_label(opts, label):
     return opts[0][1]
 
 
-# ---------------------------------------------------------------------------
-# SettingsPopup
-# ---------------------------------------------------------------------------
-
 class SettingsPopup:
-    """Modal panel for adjusting runtime game settings."""
-
     def __init__(self, root: ctk.CTk):
         self.root = root
         self._overlay: ctk.CTkToplevel | None = None
@@ -91,7 +79,6 @@ class SettingsPopup:
         win.after(50, win.grab_set)
         self._overlay = win
 
-        # --- Masthead ---
         masthead = ctk.CTkFrame(win, fg_color=PAPER_DARK)
         masthead.pack(fill="x")
         ctk.CTkLabel(
@@ -115,7 +102,6 @@ class SettingsPopup:
             fill="x", padx=24, pady=(0, 0)
         )
 
-        # --- Scrollable settings area ---
         scroll = ctk.CTkScrollableFrame(win, fg_color=PAPER, label_text="")
         scroll.pack(fill="both", expand=True, padx=0, pady=0)
 
@@ -149,7 +135,7 @@ class SettingsPopup:
 
         ctk.CTkFrame(scroll, fg_color="transparent", height=8).pack()
 
-        # --- Close (outside scroll, always visible) ---
+        # outside the scroll area so it stays visible
         ctk.CTkButton(
             win,
             text="Close",
@@ -165,13 +151,8 @@ class SettingsPopup:
             self._overlay = None
 
 
-# ---------------------------------------------------------------------------
-# Row helper: title + hint + option menu
-# ---------------------------------------------------------------------------
-
 def _row(parent, f, title: str, hint: str,
          options: list[str], current: str, command) -> None:
-    """One setting: label + hint text + dropdown menu."""
     ctk.CTkLabel(
         parent, text=title,
         font=f.small_bold, text_color=ACCENT_BROWN,

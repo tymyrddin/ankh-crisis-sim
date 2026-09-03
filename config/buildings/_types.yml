@@ -1,4 +1,4 @@
-# Building type templates:define shared behaviour per archetype
+# Building type templates: define shared behaviour per archetype
 
 guild_hq:
   label: "Guild Headquarters"
@@ -238,7 +238,7 @@ workshop:
   dependency_strengths:
     critical: [energy]                 # power cut = immediate closure; workshops cannot operate without it
     operational: [water, transport, public_safety]  # fire-prone; no fire coverage = accelerated catastrophic loss
-    strategic: [guild_licensing]       # workshops must be guild-approved to operate legally
+    strategic: [guild_licensing]       # workshops need guild approval to operate legally
 
 fire_service:
   label: "Fire Station / Emergency Pump"
@@ -266,7 +266,7 @@ media:
 
 intelligence_service:
   label: "Intelligence Service"
-  sensitivity: extreme             # when it fails, things that should have been prevented quietly aren't
+  sensitivity: extreme             # when it fails, things that were meant to be prevented quietly aren't
   trust_decay_rate: delayed        # nobody knows it has failed; consequences manifest later, obliquely
   detection_time_modifier: 3.0    # operates in deep cover; failures surface very late and at one remove
   consumes: [energy, communications, financial_reserves, loyal_staff]

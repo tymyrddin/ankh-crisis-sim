@@ -1,8 +1,3 @@
-"""Shared fixtures for GUI smoke tests.
-
-Each test gets a hidden CTk root. Tests are skipped automatically when no
-DISPLAY is available (CI without xvfb, headless server, etc.)."""
-
 from __future__ import annotations
 
 import os
@@ -14,7 +9,6 @@ CONFIG_DIR = Path(__file__).parent.parent.parent / "config"
 
 
 def _display_available() -> bool:
-    """True iff a Tk root can be opened on this host."""
     if not os.environ.get("DISPLAY") and os.name != "nt":
         return False
     try:
@@ -28,14 +22,10 @@ def _display_available() -> bool:
 
 
 _HAS_DISPLAY = _display_available()
-pytestmark_no_display = pytest.mark.skipif(
-    not _HAS_DISPLAY, reason="No display available for GUI smoke test"
-)
 
 
 @pytest.fixture
 def ctk_root():
-    """A hidden CustomTk root that is destroyed after the test."""
     if not _HAS_DISPLAY:
         pytest.skip("No display available for GUI smoke test")
     import customtkinter as ctk
@@ -57,7 +47,6 @@ def loaded_city():
 
 @pytest.fixture
 def detected_event_water(loaded_city):
-    """A DETECTED event of domain 'water' targeting the first Shades building."""
     cfg, city = loaded_city
     district = city.districts["the_shades"]
     building = next(iter(district.buildings.values()))
@@ -81,9 +70,7 @@ def detected_event_water(loaded_city):
 
 @pytest.fixture
 def detected_event_communications(loaded_city):
-    """A DETECTED event of domain 'communications' targeting a clacks_tower."""
     cfg, city = loaded_city
-    # Pick any district containing a clacks_tower
     target_district = None
     target_building = None
     for d in city.districts.values():

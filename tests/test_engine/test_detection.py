@@ -1,5 +1,3 @@
-"""Tests for the detection system: timing, caching, and discovery speed multiplier."""
-
 from pathlib import Path
 
 from src.config.loader import build_city
@@ -30,7 +28,6 @@ def _make_hidden_event(
 
 class TestProcessDetection:
     def test_hidden_event_not_detected_early(self):
-        """An event with a very long discovery time should not be detected at tick 0."""
         cfg, city = build_city(CONFIG_DIR)
         district = next(iter(city.districts.values()))
         building = next(iter(district.buildings.values()))
@@ -46,7 +43,6 @@ class TestProcessDetection:
         assert event.phase == EventPhase.HIDDEN
 
     def test_hidden_event_detected_after_elapsed_time(self):
-        """An event with discovery_time_hours=5 should be detected by tick 5."""
         cfg, city = build_city(CONFIG_DIR)
         district = next(iter(city.districts.values()))
         building = next(iter(district.buildings.values()))
@@ -63,7 +59,6 @@ class TestProcessDetection:
         assert event.detected_tick == 5
 
     def test_building_hidden_flag_cleared_on_detection(self):
-        """When an event is detected, building.hidden_failure is cleared."""
         cfg, city = build_city(CONFIG_DIR)
         district = next(iter(city.districts.values()))
         building = next(iter(district.buildings.values()))
@@ -78,14 +73,13 @@ class TestProcessDetection:
         assert not building.hidden_failure
 
     def test_already_detected_event_not_reprocessed(self):
-        """Events that are already visible should never appear in detection output."""
         cfg, city = build_city(CONFIG_DIR)
         district = next(iter(city.districts.values()))
         building = next(iter(district.buildings.values()))
         building.fail(tick=0, event_id="test_hidden_evt")
 
         event = _make_hidden_event(building.id, district.id, tick=0)
-        event.phase = EventPhase.DETECTED  # already visible
+        event.phase = EventPhase.DETECTED
         event.discovery_time_hours = 1.0
         city.events.append(event)
 
@@ -93,7 +87,6 @@ class TestProcessDetection:
         assert len(detected) == 0
 
     def test_resolved_event_not_reprocessed(self):
-        """RESOLVED events are inactive and should not go through detection."""
         cfg, city = build_city(CONFIG_DIR)
         district = next(iter(city.districts.values()))
         building = next(iter(district.buildings.values()))
@@ -109,7 +102,6 @@ class TestProcessDetection:
 
 class TestDiscoveryTimeCaching:
     def test_discovery_time_cached_after_first_check(self):
-        """process_detection should set discovery_time_hours on the first call."""
         cfg, city = build_city(CONFIG_DIR)
         district = next(iter(city.districts.values()))
         building = next(iter(district.buildings.values()))
@@ -125,7 +117,6 @@ class TestDiscoveryTimeCaching:
         assert event.discovery_time_hours is not None
 
     def test_cached_value_not_recalculated(self):
-        """Once cached, discovery_time_hours must not change on subsequent calls."""
         cfg, city = build_city(CONFIG_DIR)
         district = next(iter(city.districts.values()))
         building = next(iter(district.buildings.values()))
@@ -138,7 +129,7 @@ class TestDiscoveryTimeCaching:
         process_detection(cfg, city, tick=0)
         cached_time = event.discovery_time_hours
 
-        # Change the district's range; this must not affect the cached value
+        # changing the district range does not touch the cached value
         district.discovery_time_hours = (1000.0, 2000.0)
         process_detection(cfg, city, tick=1)
 
@@ -147,12 +138,6 @@ class TestDiscoveryTimeCaching:
 
 class TestDiscoverySpeedMultiplier:
     def test_lower_multiplier_yields_shorter_discovery_time(self):
-        """discovery_speed_multiplier < 1 makes events surface faster.
-
-        Uses domain="" to avoid incident_type_discovery overrides, and a large
-        multiplier gap (0.001 vs 1000) so the ranges never overlap regardless
-        of the random base time drawn from the district's [low, high] range.
-        """
         cfg1, city1 = build_city(CONFIG_DIR)
         district1 = city1.districts.get("the_shades") or next(iter(city1.districts.values()))
         building1 = next(iter(district1.buildings.values()))
@@ -162,7 +147,7 @@ class TestDiscoverySpeedMultiplier:
         cfg1.settings.discovery_speed_multiplier = 0.001  # discover almost immediately
         event1 = _make_hidden_event(building1.id, district1.id, tick=0, domain="")
         city1.events.append(event1)
-        process_detection(cfg1, city1, tick=0)  # triggers caching
+        process_detection(cfg1, city1, tick=0)
         fast_time = event1.discovery_time_hours
 
         cfg2, city2 = build_city(CONFIG_DIR)
@@ -174,7 +159,7 @@ class TestDiscoverySpeedMultiplier:
         cfg2.settings.discovery_speed_multiplier = 1000.0  # extremely slow discovery
         event2 = _make_hidden_event(building2.id, district2.id, tick=0, domain="")
         city2.events.append(event2)
-        process_detection(cfg2, city2, tick=0)  # triggers caching
+        process_detection(cfg2, city2, tick=0)
         slow_time = event2.discovery_time_hours
 
         assert fast_time < slow_time

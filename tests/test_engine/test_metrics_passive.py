@@ -1,9 +1,3 @@
-"""Tests for passive metric dynamics: pending trust boost flush, press-statement scandal
-halving, stressor drift via neglect_increase and budget_cut_increase.
-
-Closes coverage gaps around src/engine/metrics.py:268-272 and 283-295.
-"""
-
 from __future__ import annotations
 
 from pathlib import Path
@@ -38,7 +32,7 @@ class TestPendingTrustBoostFlush:
         district.pending_trust_boosts.append((100, 5.0, "Test deferred boost"))
         trust_before = district.local_trust.value
 
-        # Tick 120 is a daily boundary (ticks_per_day=24), past the scheduled apply_at=100
+        # daily boundary past apply_at=100
         apply_passive_dynamics(city, tick=120, ticks_per_day=24, cfg=cfg)
 
         assert district.local_trust.value > trust_before
@@ -67,16 +61,14 @@ class TestPressStatementScandalHalving:
         building.fail(tick=1, event_id="test_evt_passive")
 
         event = _make_event(building.id, district.id, tick=1)
-        # Detected long enough ago to trigger scandal escalation (> 1 day)
         event.detected_tick = 1
         city.events.append(event)
 
-        # Snapshot trust without any remedy: ordinary scandal at full strength
         baseline_trust = district.local_trust.value
         apply_passive_dynamics(city, tick=48, ticks_per_day=24, cfg=cfg)
         full_scandal_drop = baseline_trust - district.local_trust.value
 
-        # Reset and apply press_statement: scandal damage should be halved
+        # press_statement halves the scandal hit
         cfg, city = build_city(CONFIG_DIR)
         city.stressors["underinvestment"] = 0.0
         city.stressors["organisational_fragmentation"] = 0.0
@@ -94,8 +86,7 @@ class TestPressStatementScandalHalving:
         apply_passive_dynamics(city, tick=48, ticks_per_day=24, cfg=cfg)
         muted_scandal_drop = trust_after_remedy - district.local_trust.value
 
-        # The muted version is roughly half (multiplier is 0.5).
-        # Tolerate the inequality modifier amplifying the muted hit too.
+        # roughly half; the inequality modifier scales the muted hit as well
         assert muted_scandal_drop < full_scandal_drop
         assert muted_scandal_drop > 0
 
@@ -108,7 +99,7 @@ class TestStressorDrift:
         building.fail(tick=1, event_id="test_evt_passive")
 
         event = _make_event(building.id, district.id, tick=1)
-        event.detected_tick = 1  # ignored from tick 1 onwards
+        event.detected_tick = 1
         city.events.append(event)
 
         # just_in_time has neglect_increase: 0.01 in its change_rate
@@ -125,12 +116,11 @@ class TestStressorDrift:
         city.public_trust.set(20.0, tick=0, cause="test setup")
         before = city.stressors["underinvestment"]
 
-        # 30 days * 24 ticks = 720. apply_passive_dynamics needs a monthly boundary.
+        # monthly boundary
         apply_passive_dynamics(city, tick=720, ticks_per_day=24, cfg=cfg)
 
         assert city.stressors["underinvestment"] > before
-        # 0.05 from monthly budget_cut + 0.01 neglect_increase if any neglected events;
-        # there are none here, so only budget_cut fires
+        # no neglected events, so only budget_cut fires
         assert abs(city.stressors["underinvestment"] - (before + 0.05)) < 1e-6
 
     def test_budget_cut_does_not_fire_when_trust_high(self):

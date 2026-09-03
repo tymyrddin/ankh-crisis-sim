@@ -1,6 +1,6 @@
-"""News ticker: scrolling headline feed at the bottom of the screen."""
-
 from __future__ import annotations
+
+from collections.abc import Callable
 
 import customtkinter as ctk
 
@@ -8,12 +8,6 @@ from src.gui.theme import ACCENT_BROWN, INK, PAPER, fonts
 
 
 class NewsTicker:
-    """A scrolling text area showing headlines as they arrive.
-
-    Headlines that carry a full article are shown in ACCENT_BROWN with an
-    underline. Clicking them fires ``on_article_click(timestamp, headline, article)``.
-    """
-
     def __init__(self, parent: ctk.CTkFrame):
         self.parent = parent
         f = fonts()
@@ -30,16 +24,10 @@ class NewsTicker:
 
         self._headlines: list[tuple[str, str, str]] = []  # (timestamp, text, article)
         self._tag_counter = 0
-        self._tag_articles: dict[str, tuple[str, str, str]] = {}  # tag → (ts, text, article)
-
-        # Set by app.py: called with (timestamp, headline, article) when a line is clicked
-        self.on_article_click: callable | None = None
+        self._tag_articles: dict[str, tuple[str, str, str]] = {}
+        self.on_article_click: Callable[[str, str, str], None] | None = None
 
     def add_headline(self, timestamp: str, text: str, article: str = "") -> None:
-        """Add a headline to the top of the ticker.
-
-        If *article* is provided the line will be shown as a clickable link.
-        """
         self._headlines.insert(0, (timestamp, text, article))
 
         content = f"[{timestamp}] {text}\n"
@@ -54,7 +42,7 @@ class NewsTicker:
             self._tag_counter += 1
             self._tag_articles[tag] = (timestamp, text, article)
 
-            # Access the underlying tk.Text widget for tag operations
+            # CTkTextbox does not expose tags
             tk_text = self._textbox._textbox
             tk_text.tag_add(tag, "1.0", "2.0")
             tk_text.tag_configure(tag, foreground=ACCENT_BROWN, underline=True)
@@ -66,7 +54,6 @@ class NewsTicker:
             tk_text.tag_bind(tag, "<Leave>", lambda e: tk_text.configure(cursor=""))
 
     def add_headlines(self, timestamp: str, headlines: list[str]) -> None:
-        """Add multiple plain headlines at once (no article body)."""
         for headline in headlines:
             self.add_headline(timestamp, headline)
 
@@ -76,8 +63,6 @@ class NewsTicker:
         self._textbox.configure(state="disabled")
         self._headlines.clear()
         self._tag_articles.clear()
-
-    # ------------------------------------------------------------------
 
     def _on_click(self, tag: str) -> None:
         data = self._tag_articles.get(tag)

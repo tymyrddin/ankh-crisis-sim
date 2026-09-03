@@ -1,5 +1,3 @@
-"""Tests for the narrative_effects stressor: accumulator + shaped display value."""
-
 from __future__ import annotations
 
 import math
@@ -77,7 +75,6 @@ class TestAccumulator:
         city.events.append(event)
 
         apply_remedy(cfg, city, event, "press_statement", tick=10)
-        # After apply: counter = 0.05 (press_statement increment)
         before_contradicts = city.stressors["narrative_effects"]
 
         # Let the 48h window close without action
@@ -89,7 +86,7 @@ class TestAccumulator:
 
     def test_helper_no_op_when_stressor_missing_from_cfg(self):
         cfg, city = build_city(CONFIG_DIR)
-        # Strip the stressor config; the helper should be tolerant
+        # the helper tolerates a missing stressor config
         cfg.stressors.pop("narrative_effects", None)
         city.stressors["narrative_effects"] = 0.0
 
@@ -108,7 +105,6 @@ class TestAccumulator:
 
 class TestTrustDecayAmplifier:
     def test_high_narrative_effects_amplifies_scandal_damage(self):
-        """Scandal damage with high narrative_effects must exceed scandal damage at zero."""
         cfg, city = build_city(CONFIG_DIR)
         # Neutralise drift stressors and the inequality amplifier
         city.stressors["underinvestment"] = 0.0
@@ -126,7 +122,6 @@ class TestTrustDecayAmplifier:
         apply_passive_dynamics(city, tick=48, ticks_per_day=24, cfg=cfg)
         zero_damage = baseline_trust - district.local_trust.value
 
-        # Reset and run with high narrative_effects
         cfg, city = build_city(CONFIG_DIR)
         city.stressors["underinvestment"] = 0.0
         city.stressors["organisational_fragmentation"] = 0.0

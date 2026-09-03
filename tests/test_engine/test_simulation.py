@@ -1,12 +1,8 @@
-"""Tests for the simulation engine."""
-
 from pathlib import Path
 
 from src.config.loader import build_city
 from src.engine.clock import ClockState, GameClock
 from src.engine.simulation import Simulation
-from src.models.building import BuildingStatus
-from src.models.event import EventPhase, GameEvent, MetricEffect
 
 CONFIG_DIR = Path(__file__).parent.parent.parent / "config"
 
@@ -68,7 +64,7 @@ class TestSimulation:
         sim = Simulation(CONFIG_DIR)
         sim.initialise()
         events = sim.get_visible_events()
-        assert len(events) == 0  # no events at start
+        assert len(events) == 0
 
 
 class TestMetrics:
@@ -102,7 +98,7 @@ class TestMetrics:
 
 class TestBuilding:
     def test_fail_and_restore(self):
-        from src.models.building import Building, BuildingStatus
+        from src.models.building import Building
         b = Building(id="test", name="Test", type_id="tavern", district_id="small_gods", position=(0, 0))
         assert b.is_operational
         b.fail(tick=1, event_id="evt1")
@@ -123,15 +119,12 @@ class TestDistrict:
         _, city = build_city(CONFIG_DIR)
         nap = city.districts["nap_hill"]
         shades = city.districts["the_shades"]
-        # Nap Hill should have lower failure probability than Shades
         assert nap.failure_probability_modifier < shades.failure_probability_modifier
 
     def test_is_in_crisis(self):
         _, city = build_city(CONFIG_DIR)
         shades = city.districts["the_shades"]
-        # Not in crisis initially
         assert not shades.is_in_crisis
-        # Fail all buildings
         for b in shades.buildings.values():
             b.fail(tick=1, event_id="test")
         assert shades.is_in_crisis
@@ -148,9 +141,9 @@ class TestEndConditions:
         from src.engine.end_check import check_end_conditions
         from src.models.metric import Metric, MetricSnapshot
         cfg, city = build_city(CONFIG_DIR)
-        # Replace budget with one that allows negative (debt)
+        # a budget that allows debt
         city.budget = Metric("budget", -100, min_value=-10000, max_value=99999)
-        # Add enough history to simulate sustained 15 days (15*24 ticks)
+        # 15 days of hourly snapshots
         for i in range(24 * 15):
             city.budget.history.append(MetricSnapshot(tick=i, value=-100))
         result = check_end_conditions(cfg, city, elapsed_days=30)

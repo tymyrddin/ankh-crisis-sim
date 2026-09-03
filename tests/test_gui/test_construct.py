@@ -1,8 +1,4 @@
-"""Smoke tests: build each popup with a stub city/event and confirm no crash."""
-
 from __future__ import annotations
-
-import pytest
 
 
 def test_intro_screen_constructs(ctk_root, loaded_city):
@@ -87,7 +83,6 @@ def test_info_popup_metric_constructs(ctk_root, loaded_city):
     cfg, city = loaded_city
     from src.gui.info_popups import InfoPopup
     popup = InfoPopup(ctk_root)
-    # Iterate every metric key the popup knows about
     for key in ("public_trust", "budget", "regulatory_pressure",
                 "political_stability", "legitimacy", "public_health", "crime_level"):
         popup.show_metric(city, key)

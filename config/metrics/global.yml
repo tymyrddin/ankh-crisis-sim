@@ -45,8 +45,8 @@ public_trust:
       success_recovery: 18
 
 budget:
-  description: "City treasury:capacity to spend on repairs, compensation, investment"
-  min: 0
+  description: "City treasury: capacity to spend on repairs, compensation, investment"
+  min: -5000                       # overdraft the guilds tolerate; bankruptcy fires after 14 days below zero
   max: 99999
   starting: 15000
 

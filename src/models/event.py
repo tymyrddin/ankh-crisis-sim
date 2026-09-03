@@ -1,5 +1,3 @@
-"""Event model: an active incident affecting buildings and metrics."""
-
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -42,36 +40,28 @@ class GameEvent:
     detected_tick: int | None = None
     resolved_tick: int | None = None
 
-    # Effects
     immediate_effects: list[MetricEffect] = field(default_factory=list)
     delayed_effects: list[DelayedEffect] = field(default_factory=list)
     duration_penalty_per_day: float = 0.0
     duration_penalty_metric: str = "local_trust"
 
-    # Cascading
     cascade_dependency: str | None = None
     cascade_scope: str = "neighbours"  # "neighbours" or "all_dependents"
 
-    # Detection
     discovery_time_hours: float | None = None
 
-    # Narrative
     headline: str = ""
     story: str = ""
 
-    # Remedy tracking
     remedy_applied: str | None = None
     remedy_applied_tick: int | None = None
-    # Stressor-adjusted downtime committed at remedy application time (hours).
-    # Used by process_remedy_completions and displayed to the player.
+    # hours, fixed when the remedy is applied; the completion check reads this
     effective_downtime_hours: float | None = None
 
-    # do_nothing raises cascade probability on this event
+    # raised by do_nothing
     cascade_risk_boost: float = 1.0
 
-    # Threatmodel impact tags. Residential events live under a utility domain
-    # (water/energy/etc.) but flag themselves so the GUI and narrative engine
-    # can highlight harm to residents.
+    # an impact tag, not a domain; residential events keep their utility domain
     residential_impact: bool = False
 
     @property

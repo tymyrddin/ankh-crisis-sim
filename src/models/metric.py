@@ -1,5 +1,3 @@
-"""Metric value with history tracking for post-game timeline."""
-
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -21,7 +19,6 @@ class Metric:
     history: list[MetricSnapshot] = field(default_factory=list)
 
     def apply(self, delta: float, tick: int, cause: str = "") -> float:
-        """Apply a change, clamp, record history, return new value."""
         old = self.value
         self.value = max(self.min_value, min(self.max_value, self.value + delta))
         if self.value != old:
@@ -38,8 +35,7 @@ class Metric:
 
     @property
     def recent_trend(self) -> float:
-        """Average change per snapshot over the last 5 recorded snapshots.
-        Positive = improving, negative = declining, 0.0 = stable or no history."""
+        """Average change per snapshot over the last five; 0.0 with fewer than two."""
         if len(self.history) < 2:
             return 0.0
         recent = self.history[-5:]

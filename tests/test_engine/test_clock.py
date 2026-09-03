@@ -1,5 +1,3 @@
-"""Tests for GameClock: pause/resume/speed transitions, advance arithmetic, day rollover."""
-
 from __future__ import annotations
 
 from src.engine.clock import ClockState, GameClock
@@ -51,10 +49,10 @@ class TestDayRollover:
 class TestHour:
     def test_hour_wraps_around_modulus(self):
         clock = GameClock(ticks_per_day=24, starting_hour=22)
-        # starting_hour=22, tick=0 → 22
+        # starting_hour 22, tick 0 gives hour 22
         assert clock.hour == 22
 
-        # tick=2 → (22+2) % 24 = 0
+        # (22 + 2) % 24 == 0
         clock.advance()
         clock.advance()
         assert clock.hour == 0

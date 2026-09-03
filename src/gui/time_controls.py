@@ -1,25 +1,22 @@
-"""Time controls: pause, play, speed buttons and game clock display."""
-
 from __future__ import annotations
+
+from collections.abc import Callable
 
 import customtkinter as ctk
 
 from src.engine.clock import ClockState, GameClock
-from src.gui.theme import ACCENT_BROWN, INK, INK_MUTED, PAPER, PAPER_DARK, STATUS_GREEN, fonts
+from src.gui.theme import ACCENT_BROWN, INK, INK_MUTED, PAPER, STATUS_GREEN, fonts
 
 
 class TimeControls:
-    """Bottom bar with pause/play/speed controls and time display."""
-
     def __init__(self, parent: ctk.CTkFrame):
         self.parent = parent
-        self.on_pause: callable | None = None
-        self.on_play: callable | None = None
-        self.on_speed: callable | None = None  # (multiplier: float) -> None
-        self.on_exit: callable | None = None
+        self.on_pause: Callable[[], None] | None = None
+        self.on_play: Callable[[], None] | None = None
+        self.on_speed: Callable[[float], None] | None = None
+        self.on_exit: Callable[[], None] | None = None
         f = fonts()
 
-        # Controls row
         controls = ctk.CTkFrame(parent, fg_color="transparent")
         controls.pack(fill="x", padx=10, pady=5)
 
@@ -53,7 +50,6 @@ class TimeControls:
         )
         self._fast_btn.pack(side="left", padx=3)
 
-        # Exit button
         self._exit_btn = ctk.CTkButton(
             controls, text="Exit",
             command=self._on_exit,
@@ -63,7 +59,6 @@ class TimeControls:
         )
         self._exit_btn.pack(side="left", padx=(15, 3))
 
-        # Time and speed row (below buttons)
         info_row = ctk.CTkFrame(parent, fg_color="transparent")
         info_row.pack(fill="x", padx=10, pady=(0, 5))
 
@@ -80,16 +75,13 @@ class TimeControls:
         self._speed_label.pack(side="left", padx=5)
 
     def update(self, clock: GameClock) -> None:
-        """Refresh the time display."""
         self._time_label.configure(text=clock.time_string)
         self._speed_label.configure(text=f"{clock.speed_multiplier:.1f}x")
 
         if clock.state == ClockState.PAUSED:
-            # Paused: highlight Pause in active colour, Play returns to normal gold
             self._pause_btn.configure(fg_color=INK, hover_color="#333333", text_color=PAPER)
             self._play_btn.configure(fg_color=ACCENT_BROWN, hover_color="#a07a1a", text_color=PAPER)
         else:
-            # Playing: highlight Play in green, Pause returns to normal gold
             self._pause_btn.configure(fg_color=ACCENT_BROWN, hover_color="#a07a1a", text_color=PAPER)
             self._play_btn.configure(fg_color=STATUS_GREEN, hover_color="#388e3c", text_color=PAPER)
 

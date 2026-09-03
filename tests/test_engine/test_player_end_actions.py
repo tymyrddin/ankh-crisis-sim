@@ -1,5 +1,3 @@
-"""Tests for Simulation.resign() and Simulation.retire()."""
-
 from __future__ import annotations
 
 from pathlib import Path
@@ -38,7 +36,6 @@ class TestRetire:
 
     def test_retire_after_min_days_triggers(self):
         sim = _fresh_sim()
-        # Advance the clock past min_days (365 * 24 ticks)
         sim.clock.tick = 365 * 24 + 1
 
         result = sim.retire()

@@ -1,5 +1,3 @@
-"""Narrative engine: generates headlines and stories from templates."""
-
 from __future__ import annotations
 
 import random
@@ -14,12 +12,10 @@ def generate_headline(
     city: City,
     event: GameEvent,
 ) -> str:
-    """Generate a simple headline for an event."""
     if event.headline:
         return event.headline
 
-    # Residential-impact events draw from the residential pool when present,
-    # then fall through to the domain pool, then general.
+    # residential pool first, then domain, then general
     pools = []
     if event.residential_impact:
         pools.extend(cfg.headlines_raw.get("residential", []))
@@ -48,7 +44,6 @@ def generate_story(
     event: GameEvent,
     tick: int,
 ) -> str:
-    """Generate a richer Layer 2 story for an event."""
     domain = event.domain or "general"
     story_entries = cfg.stories_raw.get(domain, [])
     if not story_entries:
@@ -76,18 +71,13 @@ def generate_story(
             remedy=event.remedy_applied or "none",
         )
     except (KeyError, IndexError):
-        return template  # return unformatted if variables missing
+        return template  # a placeholder the story does not know
 
 
 def _format_duration(event: GameEvent, city: City) -> str:
-    """Format how long the event has been active."""
     if event.detected_tick is None:
         return "an unknown time"
-    hours = 0
-    for e in city.active_events:
-        if e.id == event.id and e.created_tick:
-            hours = max(0, (event.detected_tick or 0) - e.created_tick)
-            break
+    hours = max(0, event.detected_tick - event.created_tick)
 
     if hours < 24:
         return f"{hours} hours"
@@ -96,7 +86,6 @@ def _format_duration(event: GameEvent, city: City) -> str:
 
 
 def _count_affected(event: GameEvent, city: City) -> int:
-    """Estimate number of affected buildings in the district."""
     district = city.districts.get(event.target_district_id)
     if not district:
         return 0
@@ -104,7 +93,6 @@ def _count_affected(event: GameEvent, city: City) -> int:
 
 
 def _get_detection_narrative(cfg: GameConfig, event: GameEvent, tick: int) -> str:
-    """Pick an appropriate detection narrative."""
     narratives = cfg.stories_raw.get("detection_narratives", {})
     if event.created_tick == event.detected_tick:
         return narratives.get("immediate", "The failure was noticed immediately.")
@@ -124,7 +112,6 @@ def _get_detection_narrative(cfg: GameConfig, event: GameEvent, tick: int) -> st
 
 
 def _get_political_narrative(cfg: GameConfig, city: City) -> str:
-    """Pick a political narrative based on current pressure."""
     narratives = cfg.stories_raw.get("political_narratives", {})
     pressure = city.regulatory_pressure.value
 
@@ -137,7 +124,6 @@ def _get_political_narrative(cfg: GameConfig, city: City) -> str:
 
 
 def _get_stressor_narrative(city: City) -> str:
-    """Generate a brief description of the dominant stressor."""
     if not city.stressors:
         return "underlying conditions"
 

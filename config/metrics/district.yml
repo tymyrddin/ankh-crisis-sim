@@ -1,4 +1,4 @@
-# District metric templates:per-incident trust decay and per-remedy recovery rates
+# District metric templates: per-incident trust decay and per-remedy recovery rates
 # These are the district-specific modifiers referenced by each district config
 
 # Trust decay per incident type, by district archetype

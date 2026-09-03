@@ -1,5 +1,3 @@
-"""Game clock: manages simulated time with pause and speed control."""
-
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -21,7 +19,6 @@ class GameClock:
     state: ClockState = ClockState.PAUSED
 
     def advance(self) -> int:
-        """Advance one tick. Returns the new tick number."""
         self.tick += 1
         return self.tick
 

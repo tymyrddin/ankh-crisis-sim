@@ -1,7 +1,3 @@
-"""Tests for the Phase 3 stressor wirings: just_in_time buffer reduction and
-vendor_monoculture multi-district duplication.
-"""
-
 from __future__ import annotations
 
 import random
@@ -21,7 +17,7 @@ class TestJustInTimeBuffer:
     def test_full_stressor_subtracts_full_day_per_buffer_day(self):
         cfg, city = build_city(CONFIG_DIR)
         city.stressors["just_in_time"] = 1.0
-        # shortens_buffer_days=1 → 24 hours reduction at full stressor
+        # shortens_buffer_days=1 is 24 hours off at full stressor
         assert _just_in_time_buffer_reduction(cfg, city) == 24
 
     def test_half_stressor_halves_reduction(self):
@@ -41,8 +37,6 @@ class TestJustInTimeBuffer:
         assert _just_in_time_buffer_reduction(cfg, city) == 0
 
     def test_generated_event_delay_reduced(self):
-        """End-to-end: generate an event under high just_in_time and confirm
-        its delayed_effect is shortened relative to the template."""
         cfg, city = build_city(CONFIG_DIR)
         city.stressors["just_in_time"] = 1.0
         # Disable all templates, then enable one that has delayed effects with >= 24h delay.
@@ -57,7 +51,6 @@ class TestJustInTimeBuffer:
             t.probability_base = 0.0
         target.probability_base = 1.0
 
-        # Try several seeds; assert that at least one generated event has reduced delay
         seen_reduced = False
         for seed in range(20):
             random.seed(seed)
@@ -88,7 +81,7 @@ class TestVendorMonoculture:
         city.stressors["vendor_monoculture"] = 1.0
         target = next(t for t in cfg.event_templates if t.category == "supply_chain_failure")
 
-        # With level=1.0 and probability=0.5, half of seeds should return True.
+        # level 1.0 and probability 0.5: about half the seeds return True
         random.seed(0)
         outcomes = [_vendor_monoculture_duplicates(cfg, city, target) for _ in range(20)]
         assert any(outcomes), "Duplicate check never fired over 20 trials at full stressor"
@@ -115,9 +108,6 @@ class TestVendorMonoculture:
         assert not any(outcomes)
 
     def test_multi_district_template_can_produce_two_events(self):
-        """End-to-end: when vendor_monoculture is high and a supply-chain template
-        targets a building type present in multiple districts, generate_events can
-        produce two events from one template tick."""
         cfg, city = build_city(CONFIG_DIR)
         city.stressors["vendor_monoculture"] = 1.0
         # food_supply exists in merchant_quarter, small_gods, river_ankh (3 districts)

@@ -1,5 +1,3 @@
-"""End condition evaluation: checks for loss, completion, or escape each tick."""
-
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -21,7 +19,6 @@ def check_end_conditions(
     city: City,
     elapsed_days: int,
 ) -> EndResult | None:
-    """Check all end conditions. Returns the first one triggered, or None."""
     for condition in cfg.end_conditions:
         result = _check_condition(condition, city, elapsed_days, cfg)
         if result:
@@ -38,12 +35,9 @@ def _check_condition(
     trigger = condition.trigger
 
     if not isinstance(trigger, dict):
-        # player_action triggers (resignation, early_retirement) are entered
-        # through Simulation.resign() / Simulation.retire(), not via the passive
-        # tick loop. Skip them here.
+        # player_action triggers go through Simulation.resign() and retire()
         return None
 
-    # Metric threshold check
     if "metric" in trigger:
         metric = city.get_metric(trigger["metric"])
         if not metric:
@@ -54,10 +48,10 @@ def _check_condition(
             sustained = trigger.get("sustained_days", 0)
 
             if metric.value < threshold:
-                # Check if it's been sustained long enough
                 if sustained > 0:
-                    # Look at history to see how long below threshold
-                    days_below = _days_below_threshold(metric, threshold)
+                    days_below = _days_below_threshold(
+                        metric, threshold, elapsed_days, cfg.time.ticks_per_day
+                    )
                     if days_below < sustained:
                         return None
 
@@ -68,7 +62,6 @@ def _check_condition(
                     narrative=condition.narrative,
                 )
 
-    # Days elapsed check (term completion)
     if "days_elapsed" in trigger:
         target_days = (
             cfg.settings.game_duration_days
@@ -83,7 +76,6 @@ def _check_condition(
                 narrative=condition.narrative,
             )
 
-    # Districts in crisis check
     if "districts_in_crisis" in trigger:
         if city.districts_in_crisis >= trigger["districts_in_crisis"]:
             return EndResult(
@@ -96,16 +88,20 @@ def _check_condition(
     return None
 
 
-def _days_below_threshold(metric, threshold: float) -> int:
-    """Count consecutive days the metric has been below threshold."""
-    if not metric.history:
-        return 0
-
-    consecutive_ticks = 0
+def _days_below_threshold(
+    metric,
+    threshold: float,
+    elapsed_days: int,
+    ticks_per_day: int,
+) -> int:
+    # Snapshots only land when a metric changes, so count from the tick of the
+    # first snapshot in the current run rather than the number of snapshots.
+    first_below_tick: int | None = None
     for snapshot in reversed(metric.history):
         if snapshot.value < threshold:
-            consecutive_ticks += 1
+            first_below_tick = snapshot.tick
         else:
             break
-
-    return consecutive_ticks // 24  # approximate: ticks to days
+    if first_below_tick is None:
+        return 0
+    return elapsed_days - first_below_tick // ticks_per_day
