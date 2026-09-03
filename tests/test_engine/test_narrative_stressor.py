@@ -9,7 +9,7 @@ from src.engine.metrics import (
     increment_narrative_effects,
     narrative_effects_shaped,
 )
-from src.engine.remedies import apply_remedy, process_remedy_completions
+from src.engine.remedies import apply_remedy, expire_statements
 from src.models.event import EventPhase, GameEvent
 
 CONFIG_DIR = Path(__file__).parent.parent.parent / "config"
@@ -48,7 +48,7 @@ class TestShape:
 class TestAccumulator:
     def test_press_statement_application_raises_counter(self):
         cfg, city = build_city(CONFIG_DIR)
-        city.stressors["narrative_effects"] = 0.0
+        city.narrative_effects = 0.0
         district = city.districts["the_shades"]
         building = next(iter(district.buildings.values()))
         building.fail(tick=1, event_id="test_evt_ne")
@@ -59,12 +59,12 @@ class TestAccumulator:
         apply_remedy(cfg, city, event, "press_statement", tick=10)
 
         # press_statement_increment = 0.05
-        assert city.stressors["narrative_effects"] > 0.0
-        assert abs(city.stressors["narrative_effects"] - 0.05) < 1e-6
+        assert city.narrative_effects > 0.0
+        assert abs(city.narrative_effects - 0.05) < 1e-6
 
     def test_contradicts_raises_counter_more_than_press_statement(self):
         cfg, city = build_city(CONFIG_DIR)
-        city.stressors["narrative_effects"] = 0.0
+        city.narrative_effects = 0.0
         city.stressors["underinvestment"] = 0.0
         city.stressors["organisational_fragmentation"] = 0.0
         district = city.districts["the_shades"]
@@ -75,32 +75,32 @@ class TestAccumulator:
         city.events.append(event)
 
         apply_remedy(cfg, city, event, "press_statement", tick=10)
-        before_contradicts = city.stressors["narrative_effects"]
+        before_contradicts = city.narrative_effects
 
         # Let the 48h window close without action
-        process_remedy_completions(cfg, city, tick=60)
+        expire_statements(cfg, city, tick=60)
 
         # Contradicts increment = 0.10
-        assert city.stressors["narrative_effects"] > before_contradicts
-        assert abs(city.stressors["narrative_effects"] - (before_contradicts + 0.10)) < 1e-6
+        assert city.narrative_effects > before_contradicts
+        assert abs(city.narrative_effects - (before_contradicts + 0.10)) < 1e-6
 
     def test_helper_no_op_when_stressor_missing_from_cfg(self):
         cfg, city = build_city(CONFIG_DIR)
         # the helper tolerates a missing stressor config
         cfg.stressors.pop("narrative_effects", None)
-        city.stressors["narrative_effects"] = 0.0
+        city.narrative_effects = 0.0
 
         increment_narrative_effects(city, cfg, "press_statement")
 
-        assert city.stressors["narrative_effects"] == 0.0
+        assert city.narrative_effects == 0.0
 
     def test_unknown_increment_key_is_zero(self):
         cfg, city = build_city(CONFIG_DIR)
-        city.stressors["narrative_effects"] = 0.0
+        city.narrative_effects = 0.0
 
         increment_narrative_effects(city, cfg, "no_such_key")
 
-        assert city.stressors["narrative_effects"] == 0.0
+        assert city.narrative_effects == 0.0
 
 
 class TestTrustDecayAmplifier:
@@ -109,7 +109,7 @@ class TestTrustDecayAmplifier:
         # Neutralise drift stressors and the inequality amplifier
         city.stressors["underinvestment"] = 0.0
         city.stressors["organisational_fragmentation"] = 0.0
-        city.stressors["narrative_effects"] = 0.0
+        city.narrative_effects = 0.0
 
         district = city.districts["the_shades"]
         building = next(iter(district.buildings.values()))
@@ -125,7 +125,7 @@ class TestTrustDecayAmplifier:
         cfg, city = build_city(CONFIG_DIR)
         city.stressors["underinvestment"] = 0.0
         city.stressors["organisational_fragmentation"] = 0.0
-        city.stressors["narrative_effects"] = 5.0  # tanh(5) is essentially 1
+        city.narrative_effects = 5.0  # tanh(5) is essentially 1
 
         district = city.districts["the_shades"]
         building = next(iter(district.buildings.values()))
@@ -144,10 +144,10 @@ class TestTrustDecayAmplifier:
 class TestCityDisplayProperty:
     def test_display_property_returns_shaped_value(self):
         cfg, city = build_city(CONFIG_DIR)
-        city.stressors["narrative_effects"] = 1.0
+        city.narrative_effects = 1.0
         assert abs(city.narrative_effects_display - math.tanh(1.0)) < 1e-9
 
     def test_display_property_zero_when_counter_zero(self):
         cfg, city = build_city(CONFIG_DIR)
-        city.stressors["narrative_effects"] = 0.0
+        city.narrative_effects = 0.0
         assert city.narrative_effects_display == 0.0

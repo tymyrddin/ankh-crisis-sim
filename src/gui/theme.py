@@ -5,7 +5,6 @@ import ctypes.util
 import os
 from pathlib import Path
 
-
 PAPER = "#eddab9"  # parchment
 PAPER_DARK = "#ddc8a0"  # cards and frames
 PAPER_LIGHT = "#f5e8d0"  # hover

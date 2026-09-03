@@ -1,21 +1,21 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 
 
-class EventPhase(str, Enum):
-    HIDDEN = "hidden"          # occurred but not yet detected
-    DETECTED = "detected"      # player can see it
-    RESPONDING = "responding"  # remedy applied, in progress
-    RESOLVED = "resolved"      # fixed (may recur)
+class EventPhase(StrEnum):
+    HIDDEN = "hidden"
+    DETECTED = "detected"
+    RESPONDING = "responding"
+    RESOLVED = "resolved"  # the building may fail again
 
 
 @dataclass
 class MetricEffect:
     metric: str
     delta: float
-    scope: str = "global"        # "global" or "district"
+    scope: str = "global"  # or "district"
     district_id: str | None = None
 
 
@@ -46,7 +46,7 @@ class GameEvent:
     duration_penalty_metric: str = "local_trust"
 
     cascade_dependency: str | None = None
-    cascade_scope: str = "neighbours"  # "neighbours" or "all_dependents"
+    cascade_scope: str = "neighbours"  # anything else means the whole city
 
     discovery_time_hours: float | None = None
 
@@ -55,6 +55,9 @@ class GameEvent:
 
     remedy_applied: str | None = None
     remedy_applied_tick: int | None = None
+    # a press statement does not occupy the response slot; it runs alongside DETECTED
+    statement_remedy: str | None = None
+    statement_tick: int | None = None
     # hours, fixed when the remedy is applied; the completion check reads this
     effective_downtime_hours: float | None = None
 

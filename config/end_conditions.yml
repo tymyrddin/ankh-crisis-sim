@@ -65,10 +65,8 @@ escape_condition:
     narrative: "You have chosen to retire early. The city continues without you. There is unfinished business."
 
 postgame:
-  show_timeline: true
   show_district_outcomes: true
   show_inequality_record: true
-  show_who_paid_the_price: true
   reflection_questions:
     - "Which districts bore the cost of your decisions?"
     - "Did the wealthy districts receive more attention than they deserved?"

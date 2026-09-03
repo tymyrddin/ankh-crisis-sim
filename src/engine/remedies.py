@@ -5,8 +5,9 @@ from dataclasses import dataclass
 
 from src.config.loader import GameConfig, RemedyConfig
 from src.engine.metrics import increment_narrative_effects
+from src.models.building import Building
 from src.models.city import City
-from src.models.event import DelayedEffect, EventPhase, GameEvent, MetricEffect
+from src.models.event import EventPhase, GameEvent
 
 
 @dataclass
@@ -15,6 +16,11 @@ class RemedyResult:
     message: str
     cost: float = 0
     headline: str = ""
+
+
+def is_statement(remedy: RemedyConfig) -> bool:
+    """True for a remedy that buys time rather than fixing anything (it declares a contradicts_penalty)."""
+    return remedy.raw.get("trust_effect", {}).get("contradicts_penalty") is not None
 
 
 def get_available_remedies(
@@ -45,6 +51,28 @@ def get_available_remedies(
     return filtered
 
 
+def _cost(remedy: RemedyConfig, district) -> float:
+    cost = float(remedy.base_cost)
+    if not district:
+        return cost
+    cost_raw = remedy.raw.get("cost_modifiers", {})
+    # infrastructure_quality is the failure multiplier, so worse districts pay more
+    if cost_raw.get("infrastructure_quality") == "inverse" and district.infrastructure_quality > 0:
+        cost *= district.infrastructure_quality
+    if cost_raw.get("district_wealth") == "direct":
+        cost *= district.wealth / 50.0  # 50 is the median
+    if cost_raw.get("population_affected") == "direct":
+        cost *= district.density / 100.0
+    return cost
+
+
+def _remedy_headline(cfg: GameConfig, remedy_id: str, building, district) -> str:
+    template = cfg.headlines_raw.get("remedy_applied", {}).get(remedy_id, "")
+    if not template or not building:
+        return ""
+    return template.format(building=building.name, district=district.name if district else "")
+
+
 def apply_remedy(
     cfg: GameConfig,
     city: City,
@@ -59,21 +87,14 @@ def apply_remedy(
     if not event.is_visible:
         return RemedyResult(success=False, message="Cannot address an undetected event")
 
+    if event.phase == EventPhase.RESPONDING:
+        return RemedyResult(success=False, message="A response is already in progress")
+
     building = city.get_building(event.target_building_id)
     district = city.districts.get(event.target_district_id)
 
-    cost = float(remedy.base_cost)
-    if district:
-        cost_raw = remedy.raw.get("cost_modifiers", {})
-        # infrastructure_quality is the failure multiplier, so worse districts pay more
-        if cost_raw.get("infrastructure_quality") == "inverse" and district.infrastructure_quality > 0:
-            cost *= district.infrastructure_quality
-        if cost_raw.get("district_wealth") == "direct":
-            cost *= district.wealth / 50.0  # 50 is the median
-        if cost_raw.get("population_affected") == "direct":
-            cost *= district.density / 100.0
+    cost = _cost(remedy, district)
 
-    # may run into the red, down to the configured floor
     if city.budget.value - cost < city.budget.min_value:
         return RemedyResult(
             success=False,
@@ -85,6 +106,21 @@ def apply_remedy(
 
     city.budget.apply(-cost, tick, cause=f"{remedy.label} at {building.name if building else 'unknown'}")
 
+    if is_statement(remedy):
+        # Does not enter RESPONDING. A real remedy within the window honours it; expiry punishes it.
+        event.statement_remedy = remedy_id
+        event.statement_tick = tick
+        increment_narrative_effects(city, cfg, "press_statement")
+        return RemedyResult(
+            success=True,
+            message=f"{remedy.label} issued",
+            cost=cost,
+            headline=_remedy_headline(cfg, remedy_id, building, district),
+        )
+
+    # A real response honours a standing statement.
+    event.statement_remedy = None
+    event.statement_tick = None
     event.start_response(remedy_id, tick)
 
     trust_raw = remedy.raw.get("trust_effect", {})
@@ -116,7 +152,6 @@ def apply_remedy(
         if boost is not None:
             event.cascade_risk_boost = float(boost)
         if side_effect.get("risk_transfer"):
-            # the burden lands on another district
             shifted_penalty = trust_raw.get("shifted_district_penalty", 0)
             if shifted_penalty:
                 others = [d for d in city.districts.values() if d.id != event.target_district_id]
@@ -126,21 +161,15 @@ def apply_remedy(
                         float(shifted_penalty), tick, cause=f"{remedy.label} burden transferred"
                     )
 
-    # a temporary trust boost reverses after duration_days
+    # The fade is scheduled on the district, not the event, because a zero-downtime
+    # remedy resolves the event before the fade is due.
     duration_days = trust_raw.get("duration_days", 0)
     if duration_days > 0 and immediate_trust and district:
-        delay_hours = int(duration_days * 24) + (tick - event.created_tick)
-        event.delayed_effects.append(DelayedEffect(
-            delay_hours=delay_hours,
-            effects=[MetricEffect(
-                metric="local_trust",
-                delta=-float(immediate_trust),
-                scope="district",
-                district_id=event.target_district_id,
-            )],
-        ))
+        district.scheduled_trust_changes.append(
+            (tick + int(duration_days * 24), -float(immediate_trust), f"{remedy.label} faded")
+        )
 
-    # spending in rich districts widens inequality; resilience investment in poor ones narrows it
+    # Spending in rich districts widens inequality; resilience investment in poor ones narrows it.
     inequality_sc = cfg.stressors.get("social_inequality")
     if inequality_sc and district:
         change_rate = inequality_sc.raw.get("change_rate", {})
@@ -168,28 +197,14 @@ def apply_remedy(
                     effective_downtime *= 1.0 + (float(dr) - 1.0) * level
     event.effective_downtime_hours = effective_downtime
 
-    # a remedy with contradicts_penalty is a window remedy (press_statement)
-    if trust_raw.get("contradicts_penalty") is not None:
-        increment_narrative_effects(city, cfg, "press_statement")
-
-    # zero-downtime remedies resolve now; window remedies wait for process_remedy_completions
-    if remedy.downtime_hours == 0 and trust_raw.get("contradicts_penalty") is None:
+    if remedy.downtime_hours == 0:
         _resolve_event(cfg, city, event, remedy, building, tick)
-
-    headline = ""
-    headlines_raw = cfg.headlines_raw.get("remedy_applied", {})
-    template = headlines_raw.get(remedy_id, "")
-    if template and building:
-        headline = template.format(
-            building=building.name,
-            district=district.name if district else "",
-        )
 
     return RemedyResult(
         success=True,
         message=f"{remedy.label} applied",
         cost=cost,
-        headline=headline,
+        headline=_remedy_headline(cfg, remedy_id, building, district),
     )
 
 
@@ -200,39 +215,17 @@ def process_remedy_completions(
 ) -> list[tuple[str, GameEvent]]:
     completed: list[tuple[str, GameEvent]] = []
     for event in city.active_events:
-        if event.remedy_applied is None:
+        if event.phase != EventPhase.RESPONDING or event.remedy_applied is None:
             continue
         remedy = cfg.remedies.get(event.remedy_applied)
-        if not remedy:
-            continue
-        if event.remedy_applied_tick is None:
-            continue
-
-        hours_since_remedy = tick - event.remedy_applied_tick
-
-        # window remedy expired with nothing real behind it: penalty, then back to DETECTED
-        trust_raw = remedy.raw.get("trust_effect", {})
-        if trust_raw.get("contradicts_penalty") is not None:
-            window = trust_raw.get("duration_hours", 48)
-            if hours_since_remedy >= window:
-                penalty = trust_raw.get("contradicts_penalty", 0)
-                district = city.districts.get(event.target_district_id)
-                if penalty and district:
-                    district.local_trust.apply(
-                        float(penalty), tick, cause=f"{remedy.label} contradicted by inaction"
-                    )
-                increment_narrative_effects(city, cfg, "contradicts")
-                event.phase = EventPhase.DETECTED
-                event.remedy_applied = None
-                event.remedy_applied_tick = None
-                completed.append((f"{event.name}: no action followed {remedy.label.lower()}", event))
+        if not remedy or event.remedy_applied_tick is None:
             continue
 
         effective_downtime = event.effective_downtime_hours
         if effective_downtime is None:
             effective_downtime = float(remedy.downtime_hours)
 
-        if hours_since_remedy >= effective_downtime:
+        if tick - event.remedy_applied_tick >= effective_downtime:
             building = city.get_building(event.target_building_id)
             _resolve_event(cfg, city, event, remedy, building, tick)
             completed.append((f"{event.name} resolved via {remedy.label}", event))
@@ -240,12 +233,43 @@ def process_remedy_completions(
     return completed
 
 
+def expire_statements(
+    cfg: GameConfig,
+    city: City,
+    tick: int,
+) -> list[tuple[str, GameEvent]]:
+    """Punish statements whose window closed without a real response and clear them."""
+    expired: list[tuple[str, GameEvent]] = []
+    for event in city.active_events:
+        if event.statement_remedy is None or event.statement_tick is None:
+            continue
+        remedy = cfg.remedies.get(event.statement_remedy)
+        if not remedy:
+            continue
+        trust_raw = remedy.raw.get("trust_effect", {})
+        if tick - event.statement_tick < trust_raw.get("duration_hours", 48):
+            continue
+
+        penalty = trust_raw.get("contradicts_penalty", 0)
+        district = city.districts.get(event.target_district_id)
+        if penalty and district:
+            district.local_trust.apply(
+                float(penalty), tick, cause=f"{remedy.label} contradicted by inaction"
+            )
+        increment_narrative_effects(city, cfg, "contradicts")
+        event.statement_remedy = None
+        event.statement_tick = None
+        expired.append((f"{event.name}: no action followed {remedy.label.lower()}", event))
+
+    return expired
+
+
 def _resolve_event(
     cfg: GameConfig,
     city: City,
     event: GameEvent,
     remedy: RemedyConfig,
-    building,
+    building: Building | None,
     tick: int,
 ) -> None:
     event.resolve(tick)
@@ -276,9 +300,8 @@ def _resolve_event(
         delayed_days = trust_raw.get("delayed_days", 0)
         if district:
             if delayed_days > 0:
-                apply_at = tick + int(delayed_days * 24)
-                district.pending_trust_boosts.append(
-                    (apply_at, resolution_amount, f"{remedy.label} completed")
+                district.scheduled_trust_changes.append(
+                    (tick + int(delayed_days * 24), resolution_amount, f"{remedy.label} completed")
                 )
             else:
                 district.local_trust.apply(resolution_amount, tick, cause=f"{remedy.label} completed")

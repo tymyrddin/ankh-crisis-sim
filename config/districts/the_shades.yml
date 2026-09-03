@@ -17,11 +17,3 @@ stressors:
   social_inequality: victim
   organisational_fragmentation: high
   just_in_time: amplifier
-
-protest_threshold: 10              # fatalistic, low threshold
-
-narrative_hooks:
-  - "Fire in the Shades spreads for hours before Watch notices"
-  - "Shades residents block entrance to Cockbill Street demanding clean water"
-  - "Rumour of hidden treasure draws adventurers into the Shades; none return"
-  - "Shades community organises own night watch after Watch pulled out"

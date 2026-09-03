@@ -20,11 +20,9 @@ def _find_dependent_buildings(
         district = city.districts.get(failed_building.district_id)
         if not district:
             return []
-        candidates = district.buildings.values()
+        candidates = list(district.buildings.values())
     else:
-        candidates = []
-        for d in city.districts.values():
-            candidates.extend(d.buildings.values())
+        candidates = [b for d in city.districts.values() for b in d.buildings.values()]
 
     for building in candidates:
         if building.id == failed_building.id:

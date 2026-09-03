@@ -4,11 +4,19 @@ from collections.abc import Callable
 
 import customtkinter as ctk
 
-from src.gui.theme import (
-    INK, INK_MUTED, PAPER, PAPER_DARK,
-    STATUS_YELLOW, TRUST_BAD, TRUST_GOOD, TRUST_WARN, ACCENT_BROWN, fonts,
-)
 from src.gui.info_popups import InfoPopup
+from src.gui.theme import (
+    ACCENT_BROWN,
+    INK,
+    INK_MUTED,
+    PAPER,
+    PAPER_DARK,
+    STATUS_YELLOW,
+    TRUST_BAD,
+    TRUST_GOOD,
+    TRUST_WARN,
+    fonts,
+)
 from src.models.city import City
 
 
@@ -144,8 +152,6 @@ class Dashboard:
         )
         self._districts_frame.pack(fill="both", expand=True, padx=10, pady=5)
 
-    # built once
-
     def build_metrics(self, city: City) -> None:
         f = fonts()
         metrics = [
@@ -267,8 +273,6 @@ class Dashboard:
             _bind_click(frame, lambda k=key: popup.show_status(city, k))
         for district_id, frame in self._district_row_frames.items():
             _bind_click(frame, lambda d=district_id: popup.show_district(city, d))
-
-    # every tick
 
     def update(self, city: City) -> None:
         metrics_map = {

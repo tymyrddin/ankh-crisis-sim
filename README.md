@@ -197,8 +197,6 @@ strengths, detection speed). Concrete buildings are placed in `config/buildings/
   district: merchant_quarter
   position: [ 460, 280 ]
   status: operational
-  narrative_hooks:
-    - "Mended Drum brawl spills into street, breaks new fountain"
 ```
 
 Add a building by appending to `instances.yml`. Add a new type by adding a key to `_types.yml`.
@@ -246,14 +244,19 @@ All seven remedy types are defined in `config/remedies.yml`. Four are the named 
 `valid_domains` lists; three are universal meta-options (`press_statement`, `operational_workaround`, `do_nothing`). The
 GUI offers only the pathways the threat model permits for each event's domain, plus all three meta-options.
 
-Any remedy with a `contradicts_penalty` in its `trust_effect` is treated as a narrative-window remedy: it stays in
-RESPONDING for `duration_hours`, then either follows up with substantive action or fires the penalty. Press statement is
-the only such remedy today; future ones plug in with no code change.
+Any remedy with a `contradicts_penalty` in its `trust_effect` is a statement rather than a response. It does not
+occupy the event: the incident stays open and the other remedies stay on offer. A real response inside
+`duration_hours` honours the statement; if the window closes with nothing behind it, the penalty lands and the
+statement is forgotten. Press statement is the only such remedy today; future ones plug in with no code change.
 
 ### Detection
 
-Discovery times per district and building type, detection mechanisms (Watch patrols, citizen complaints, Vimes
-intuition, media investigation), and player investments to improve detection are in `config/detection.yml`.
+A hidden failure surfaces after a random number of hours drawn from the district's `discovery_time_hours`
+(`config/districts/*.yml`), or from the event template's `discovery_hours` where one is set. The result is multiplied
+by the building type's `detection_time_modifier` in `config/buildings/_types.yml`, by any
+`detection_time_modifier_override` on the instance, and by the discovery-speed setting. Mechanisms that have not been
+built yet (Watch patrols, citizen complaints, Vimes, detection investments) are described in
+`docs/detection-design-notes.md`.
 
 ### Narratives
 
@@ -282,7 +285,7 @@ popup when you click the Budget metric.
 | Change remedy costs or valid domains  | `config/remedies.yml`                                |
 | Add a new event type                  | `config/threats/events.yml`                          |
 | Adjust stressor effects or increments | `config/threats/stressors.yml`                       |
-| Adjust how fast failures are noticed  | `config/detection.yml`                               |
+| Adjust how fast failures are noticed  | `config/districts/*.yml`, `config/buildings/_types.yml` |
 | Change starting budget or trust       | `config/game.yml`                                    |
 | Reconfigure emergency lenders         | `config/game.yml` under `budget.emergency_borrowing` |
 | Write new headlines                   | `config/narratives/headlines.yml`                    |

@@ -81,11 +81,6 @@ class TestMetrics:
         m.apply(-20, tick=1)
         assert m.value == 0.0
 
-    def test_metric_is_critical(self):
-        from src.models.metric import Metric
-        m = Metric("test", 5.0, min_value=0, max_value=100)
-        assert m.is_critical  # 5 <= 10 (10% of range)
-
     def test_metric_history(self):
         from src.models.metric import Metric
         m = Metric("test", 50.0)
@@ -106,12 +101,6 @@ class TestBuilding:
         b.restore(recurrence_risk=0.3)
         assert b.is_operational
         assert b.recurrence_risk == 0.3
-
-    def test_degrade(self):
-        from src.models.building import Building
-        b = Building(id="test", name="Test", type_id="tavern", district_id="small_gods", position=(0, 0))
-        b.degrade(tick=1, event_id="evt1")
-        assert b.is_degraded
 
 
 class TestDistrict:

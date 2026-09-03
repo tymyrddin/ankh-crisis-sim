@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from src.config.loader import build_city
 from src.engine.metrics import (
     _inequality_modifier,
@@ -199,7 +201,7 @@ class TestApplyIncome:
             if b.type_id == "transport"
         ]
         if not transport_buildings:
-            return  # skip if no transport buildings in this config
+            pytest.skip("no transport buildings in this config")
 
         budget_start1 = city1.budget.value
         apply_income(city1, cfg1, tick=24 * 30, ticks_per_day=24)

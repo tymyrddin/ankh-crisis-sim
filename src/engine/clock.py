@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 
 
-class ClockState(str, Enum):
+class ClockState(StrEnum):
     PAUSED = "paused"
     RUNNING = "running"
 
@@ -37,9 +37,6 @@ class GameClock:
     @property
     def elapsed_days(self) -> int:
         return self.tick // self.ticks_per_day
-
-    def hours_since(self, past_tick: int) -> int:
-        return self.tick - past_tick
 
     def pause(self) -> None:
         self.state = ClockState.PAUSED

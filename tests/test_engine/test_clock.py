@@ -67,16 +67,6 @@ class TestTimeString:
         assert "14:00" in text
 
 
-class TestHoursSince:
-    def test_hours_since_returns_diff(self):
-        clock = GameClock()
-        for _ in range(50):
-            clock.advance()
-
-        assert clock.hours_since(20) == 30
-        assert clock.hours_since(0) == 50
-
-
 class TestPauseResume:
     def test_initial_state_paused(self):
         clock = GameClock()

@@ -16,10 +16,3 @@ stressors:
   organisational_fragmentation: moderate  # competing temples
   geographic_isolation: high              # river bend, one bridge
   underinvestment: moderate
-
-protest_threshold: 20
-
-narrative_hooks:
-  - "Isle of Gods bridge closed for repairs; residents demand ferry service"
-  - "Temple of Offler demands river cleaning after crocodile spotted near shore"
-  - "Inter-faith potluck dinner ends in doctrinal dispute over the offending sausage"

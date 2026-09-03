@@ -4,9 +4,13 @@ import customtkinter as ctk
 
 from src.config.loader import GameSettings
 from src.gui.theme import (
-    ACCENT_BROWN, INK, INK_MUTED, PAPER, PAPER_DARK, fonts,
+    ACCENT_BROWN,
+    INK,
+    INK_MUTED,
+    PAPER,
+    PAPER_DARK,
+    fonts,
 )
-
 
 _DURATION_OPTIONS: list[tuple[str, int]] = [
     ("1 Year", 365),

@@ -26,8 +26,7 @@ def increment_narrative_effects(city: City, cfg: GameConfig, key: str) -> None:
     delta = float(increments.get(key, 0.0))
     if delta <= 0:
         return
-    current = city.stressors.get("narrative_effects", 0.0)
-    city.stressors["narrative_effects"] = current + delta
+    city.narrative_effects += delta
 
 
 def apply_immediate_effects(
@@ -62,11 +61,11 @@ def apply_duration_penalties(
     tick: int,
     ticks_per_day: int,
 ) -> None:
-    """Daily penalty for events left in DETECTED; a response in progress suspends it."""
+    """Daily penalty for events the player can see and has not answered."""
     for event in city.active_events:
         if event.duration_penalty_per_day == 0:
             continue
-        if event.phase == EventPhase.RESPONDING:
+        if event.phase != EventPhase.DETECTED:
             continue
         hours_active = tick - event.created_tick
         if hours_active > 0 and hours_active % ticks_per_day == 0:
@@ -85,7 +84,12 @@ def apply_income(
     tick: int,
     ticks_per_day: int,
 ) -> None:
-    """Monthly income. Fees, tariffs and duties scale with what is still standing; taxes drop when trust is very low."""
+    """Monthly income.
+
+    Guild fees, river duties and clacks licensing scale with the buildings still
+    standing, tariffs fall per failed transport or food building, and taxes take
+    a cut when public trust is below the threshold.
+    """
     days = tick // ticks_per_day
     if days == 0 or tick % (ticks_per_day * 30) != 0:
         return
@@ -96,10 +100,9 @@ def apply_income(
     tariffs = float(income_raw.get("trade_tariffs", 150))
     university = float(income_raw.get("university_contribution", 50))
 
-    budget_cfg = cfg.metrics_global_raw.get("budget", {}).get("income_sources", {})
+    budget_cfg = _income_sources(cfg)
 
-    trust_threshold = budget_cfg.get("taxes", {}).get("trust_threshold", 30)
-    if city.public_trust.value < trust_threshold:
+    if city.public_trust.value < tax_trust_threshold(cfg):
         penalty_mult = budget_cfg.get("taxes", {}).get("penalty_multiplier", 0.6)
         taxes *= penalty_mult
 
@@ -149,6 +152,15 @@ def apply_income(
     city.budget.apply(total_income, tick, cause="Monthly income")
 
 
+def _income_sources(cfg: GameConfig) -> dict:
+    return cfg.metrics_global_raw.get("budget", {}).get("income_sources", {})
+
+
+def tax_trust_threshold(cfg: GameConfig) -> float:
+    """Public trust below this costs tax income and, monthly, feeds the budget-cut stressor drift."""
+    return float(_income_sources(cfg).get("taxes", {}).get("trust_threshold", 30))
+
+
 def update_global_trust_from_districts(city: City, tick: int) -> None:
     total_weight = 0.0
     weighted_trust = 0.0
@@ -162,7 +174,6 @@ def update_global_trust_from_districts(city: City, tick: int) -> None:
 
     if total_weight > 0:
         new_trust = weighted_trust / total_weight
-        # smoothed
         blended = city.public_trust.value * 0.3 + new_trust * 0.7
         city.public_trust.set(blended, tick, cause="District aggregate")
 
@@ -184,30 +195,25 @@ def apply_passive_dynamics(
     detected = [e for e in visible if e.phase == EventPhase.DETECTED]
     responding = [e for e in visible if e.phase == EventPhase.RESPONDING]
 
-    # ignored for more than a day
     neglected = [
         e for e in detected
         if e.detected_tick is not None and tick - e.detected_tick >= ticks_per_day
     ]
 
-    # regulatory pressure
     if detected or responding:
         rise = len(detected) * 1.0 + len(responding) * 0.2
         city.regulatory_pressure.apply(rise, tick, cause="Unresolved incidents")
     elif is_week:
         city.regulatory_pressure.apply(-2.0, tick, cause="Quiet city")
 
-    # trust collapse destabilises politics
     if city.public_trust.value < 25:
         city.political_stability.apply(-2.0, tick, cause="Trust collapse")
     elif is_week and not visible:
         city.political_stability.apply(1.0, tick, cause="Stable period")
 
-    # legitimacy
     if is_month and city.political_stability.value > 50:
         city.legitimacy.apply(0.5, tick, cause="Sustained governance")
 
-    # crime and Watch coverage
     coverage = city.watch_coverage_pct
     if coverage < 50:
         crime_rise = (50.0 - coverage) / 50.0 * 0.3
@@ -215,8 +221,8 @@ def apply_passive_dynamics(
     elif coverage >= 80:
         city.crime_level.apply(-0.1, tick, cause="Strong Watch presence")
 
-    # scandal: ignored events compound daily; RESPONDING events are visibly being handled
-    # organisational_fragmentation.accelerates_trust_decay scales the damage
+    # Scandal. Ignored events compound daily; organisational fragmentation makes each one worse,
+    # and a standing press statement mutes it.
     scandal_org_frag_mult = 1.0
     if cfg:
         org_frag_level = city.stressors.get("organisational_fragmentation", 0.0)
@@ -228,12 +234,11 @@ def apply_passive_dynamics(
                     scandal_org_frag_mult = 1.0 + (float(atd) - 1.0) * org_frag_level
                     break
 
-    # narrative_effects amplifies on top
     narrative_mult = 1.0
     if cfg:
         ne_sc = cfg.stressors.get("narrative_effects")
         if ne_sc:
-            raw = city.stressors.get("narrative_effects", 0.0)
+            raw = city.narrative_effects
             shape = "tanh"
             amp = 0.0
             for eff in ne_sc.raw.get("effects", []):
@@ -245,54 +250,29 @@ def apply_passive_dynamics(
 
     for event in neglected:
         district = city.districts.get(event.target_district_id)
-        if district:
-            scandal_damage = (
-                -1.5 * district.media_attention_multiplier
-                * scandal_org_frag_mult * narrative_mult
-            )
-            district.local_trust.apply(scandal_damage, tick, cause=f"{event.name} (scandal)")
-            if cfg:
-                increment_narrative_effects(city, cfg, "scandal")
+        if not district:
+            continue
+        muted = _statement_mute(cfg, event)
+        scandal_damage = (
+            -1.5 * district.media_attention_multiplier
+            * scandal_org_frag_mult * narrative_mult * muted
+        )
+        label = "muted scandal" if muted < 1.0 else "scandal"
+        district.local_trust.apply(scandal_damage, tick, cause=f"{event.name} ({label})")
+        if cfg:
+            increment_narrative_effects(city, cfg, "scandal")
 
-    # deferred trust gains from resilience_investment
     for district in city.districts.values():
-        due = [(t, amt, cause) for (t, amt, cause) in district.pending_trust_boosts if tick >= t]
+        due = [entry for entry in district.scheduled_trust_changes if tick >= entry[0]]
         if due:
-            district.pending_trust_boosts = [
-                entry for entry in district.pending_trust_boosts if tick < entry[0]
+            district.scheduled_trust_changes = [
+                entry for entry in district.scheduled_trust_changes if tick < entry[0]
             ]
             for _, amt, cause in due:
                 district.local_trust.apply(amt, tick, cause=cause)
 
-    # a window remedy (press_statement) mutes scandal damage by slows_decay_multiplier
     if cfg:
-        for event in city.visible_events:
-            if event.phase != EventPhase.RESPONDING:
-                continue
-            if event.remedy_applied is None:
-                continue
-            remedy = cfg.remedies.get(event.remedy_applied)
-            if not remedy:
-                continue
-            trust_raw = remedy.raw.get("trust_effect", {})
-            slows = trust_raw.get("slows_decay_multiplier")
-            if slows is None:
-                continue
-            if event.detected_tick is None:
-                continue
-            if tick - event.detected_tick < ticks_per_day:
-                continue
-            district = city.districts.get(event.target_district_id)
-            if district:
-                scandal_damage = (
-                    -1.5 * district.media_attention_multiplier
-                    * scandal_org_frag_mult * narrative_mult * float(slows)
-                )
-                district.local_trust.apply(scandal_damage, tick, cause=f"{event.name} (muted scandal)")
-
-    # stressor drift through neglect and budget cuts
-    if cfg:
-        trust_floor = 30  # same threshold as the tax penalty
+        trust_floor = tax_trust_threshold(cfg)
         for stressor_id, sc in cfg.stressors.items():
             change_rate = sc.raw.get("change_rate", {})
             if not change_rate:
@@ -307,6 +287,16 @@ def apply_passive_dynamics(
             if budget_cut_rate and is_month and city.public_trust.value < trust_floor:
                 current = city.stressors.get(stressor_id, 0.0)
                 city.stressors[stressor_id] = min(1.0, current + float(budget_cut_rate))
+
+
+def _statement_mute(cfg: GameConfig | None, event: GameEvent) -> float:
+    if not cfg or not event.statement_remedy:
+        return 1.0
+    remedy = cfg.remedies.get(event.statement_remedy)
+    if not remedy:
+        return 1.0
+    slows = remedy.raw.get("trust_effect", {}).get("slows_decay_multiplier")
+    return float(slows) if slows is not None else 1.0
 
 
 def _apply_effect(

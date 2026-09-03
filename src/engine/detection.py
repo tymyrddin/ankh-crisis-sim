@@ -12,12 +12,12 @@ def _get_discovery_time(
     city: City,
     event: GameEvent,
 ) -> float:
-    """Hours until the event surfaces."""
     district = city.districts.get(event.target_district_id)
     if not district:
         return 1.0
 
-    low, high = district.discovery_time_hours
+    template = cfg.template(event.template_id)
+    low, high = template.discovery_hours if template and template.discovery_hours else district.discovery_time_hours
     if low == 0 and high == 0:
         return 0.0
 
@@ -25,24 +25,7 @@ def _get_discovery_time(
 
     building = district.buildings.get(event.target_building_id)
     if building:
-        bt_modifiers = cfg.detection_raw.get("building_type_modifiers", {})
-        modifier = bt_modifiers.get(building.type_id, 1.0)
-
-        # per-building override (Cockbill pride)
-        if building.detection_time_modifier_override is not None:
-            modifier = building.detection_time_modifier_override
-
-        base_hours *= modifier
-
-    incident_discovery = cfg.detection_raw.get("incident_type_discovery", {})
-    for incident_type, idata in incident_discovery.items():
-        # substring match on the incident key
-        if event.domain and event.domain in incident_type:
-            hours = idata.get("hours", base_hours)
-            if isinstance(hours, list):
-                base_hours = min(base_hours, random.uniform(hours[0], hours[1]))
-            elif isinstance(hours, (int, float)):
-                base_hours = min(base_hours, hours)
+        base_hours *= building.detection_time_modifier
 
     base_hours *= cfg.settings.discovery_speed_multiplier
     return max(0.0, base_hours)

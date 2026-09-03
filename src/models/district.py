@@ -12,7 +12,6 @@ class District:
     name: str
     description: str = ""
 
-    # from YAML
     wealth: float = 50.0
     density: float = 100.0
     infrastructure_quality: float = 1.0
@@ -21,17 +20,15 @@ class District:
     wealth_archetype: str = "medium_wealth"
     is_residential: bool = True
     discovery_time_hours: tuple[float, float] = (24.0, 48.0)
-    protest_threshold: float = 20.0
-    narrative_hooks: list[str] = field(default_factory=list)
 
     # district stressors are string labels, not levels
-    stressors: dict[str, float] = field(default_factory=dict)
+    stressors: dict[str, str] = field(default_factory=dict)
 
     local_trust: Metric = field(default_factory=lambda: Metric("local_trust", 50.0))
     buildings: dict[str, Building] = field(default_factory=dict)
 
-    # (apply_at_tick, amount, cause)
-    pending_trust_boosts: list[tuple[int, float, str]] = field(default_factory=list)
+    # (apply_at_tick, amount, cause); deferred gains and fading boosts, independent of any event
+    scheduled_trust_changes: list[tuple[int, float, str]] = field(default_factory=list)
 
     @property
     def failure_probability_modifier(self) -> float:

@@ -92,6 +92,7 @@ class TestStories:
         district = city.districts["the_shades"]
         building = next(iter(district.buildings.values()))
         event = _make_event(building.id, district.id, domain="not_a_real_domain")
+        event.template_id = "no_such_template"  # no template pool either
 
         result = generate_story(cfg, city, event, tick=20)
 

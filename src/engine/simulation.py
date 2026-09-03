@@ -18,7 +18,7 @@ from src.engine.metrics import (
     update_global_trust_from_districts,
 )
 from src.engine.narrative import generate_headline, generate_story
-from src.engine.remedies import RemedyResult, apply_remedy, process_remedy_completions
+from src.engine.remedies import RemedyResult, apply_remedy, expire_statements, process_remedy_completions
 from src.models.city import City
 from src.models.event import GameEvent
 
@@ -38,12 +38,13 @@ class TickResult:
 class Simulation:
     def __init__(self, config_dir: str | Path = "config"):
         self.config_dir = Path(config_dir)
-        self.cfg: GameConfig | None = None
-        self.city: City | None = None
-        self.clock = GameClock()
-        self._initialised = False
+        self.cfg: GameConfig
+        self.city: City
+        self.clock: GameClock
+        self.initialise()
 
     def initialise(self) -> None:
+        """Reload the config and start a fresh city and clock."""
         self.cfg, self.city = build_city(self.config_dir)
         self.clock = GameClock(
             ticks_per_day=self.cfg.time.ticks_per_day,
@@ -51,11 +52,8 @@ class Simulation:
             starting_hour=self.cfg.time.starting_hour,
             speed_multiplier=self.cfg.speed.default_multiplier,
         )
-        self._initialised = True
 
     def tick(self) -> TickResult:
-        assert self._initialised and self.cfg and self.city
-
         result = TickResult()
         self.clock.advance()
         result.tick = self.clock.tick
@@ -67,15 +65,6 @@ class Simulation:
 
         detected = process_detection(self.cfg, self.city, self.clock.tick)
         result.detected_events = detected
-
-        for event in detected:
-            apply_immediate_effects(self.city, event, self.clock.tick)
-            if not event.headline:
-                event.headline = generate_headline(self.cfg, self.city, event)
-            if not event.story:
-                event.story = generate_story(self.cfg, self.city, event, self.clock.tick)
-            if event.headline:
-                result.headlines.append(event.headline)
 
         # per-domain cascade amplifiers from stressors with amplifies_cascade
         domain_multipliers: dict[str, float] = {}
@@ -91,19 +80,25 @@ class Simulation:
             self.cfg.settings.cascade_multiplier,
             domain_multipliers,
         )
-        for ce in cascades:
-            self.city.events.append(ce)
-            if not ce.story:
-                ce.story = generate_story(self.cfg, self.city, ce, self.clock.tick)
-            if ce.headline:
-                result.headlines.append(ce.headline)
+        self.city.events.extend(cascades)
         result.cascade_events = cascades
+
+        # Cascades are born visible, so they take their immediate effects here with the detected ones.
+        for event in detected + cascades:
+            apply_immediate_effects(self.city, event, self.clock.tick)
+            if not event.headline:
+                event.headline = generate_headline(self.cfg, self.city, event)
+            if not event.story:
+                event.story = generate_story(self.cfg, self.city, event, self.clock.tick)
+            if event.headline:
+                result.headlines.append(event.headline)
 
         apply_delayed_effects(self.city, self.clock.tick)
 
         apply_duration_penalties(self.city, self.clock.tick, self.cfg.time.ticks_per_day)
 
         completed = process_remedy_completions(self.cfg, self.city, self.clock.tick)
+        completed += expire_statements(self.cfg, self.city, self.clock.tick)
         result.completed_remedies = [msg for msg, _ in completed]
         result.completed_remedy_events = [evt for _, evt in completed]
 
@@ -129,7 +124,6 @@ class Simulation:
         self.clock.set_speed(multiplier)
 
     def apply_remedy(self, event_id: str, remedy_id: str) -> RemedyResult:
-        assert self.cfg and self.city
         event = next((e for e in self.city.active_events if e.id == event_id), None)
         if not event:
             return RemedyResult(success=False, message=f"Event {event_id} not found or not active")
@@ -137,7 +131,6 @@ class Simulation:
 
     def emergency_borrow(self, lender_id: str) -> RemedyResult:
         """lender_id is a key under budget.emergency_borrowing in game.yml."""
-        assert self.cfg and self.city
         lenders = self.cfg.budget_raw.get("emergency_borrowing", {})
         lender = lenders.get(lender_id)
         if not lender:
@@ -169,7 +162,6 @@ class Simulation:
         )
 
     def resign(self) -> EndResult:
-        assert self.cfg
         for cond in self.cfg.end_conditions:
             if cond.id == "resignation":
                 return EndResult(
@@ -181,7 +173,6 @@ class Simulation:
         return EndResult(triggered=False)
 
     def retire(self) -> EndResult:
-        assert self.cfg and self.city
         for cond in self.cfg.end_conditions:
             if cond.id != "early_retirement":
                 continue
@@ -201,8 +192,7 @@ class Simulation:
         return EndResult(triggered=False)
 
     def get_visible_events(self) -> list[GameEvent]:
-        return self.city.visible_events if self.city else []
+        return self.city.visible_events
 
     def get_state(self) -> City:
-        assert self.city
         return self.city

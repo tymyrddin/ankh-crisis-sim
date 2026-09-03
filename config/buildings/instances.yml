@@ -8,18 +8,12 @@
   district: nap_hill
   position: [225, 135]
   status: operational
-  narrative_hooks:
-    - "Lord Rust demands personal audience with the Patrician over broken water main"
-
 - id: selachii_estate
   name: "Selachii Estate"
   type: middle_class_housing
   district: nap_hill
   position: [278, 112]
   status: operational
-  narrative_hooks:
-    - "Selachii family threatens to withhold guild dues over 'intolerable' road conditions"
-
 - id: nap_hill_gardens
   name: "Nap Hill Gardens"
   type: civic_amenity
@@ -34,9 +28,6 @@
   district: the_shades
   position: [725, 490]
   status: degraded
-  narrative_hooks:
-    - "Shades pump runs at half pressure; nobody reports it"
-
 - id: ragged_flophouse
   name: "Ragged Flophouse"
   type: slum_dwelling
@@ -50,9 +41,6 @@
   district: the_shades
   position: [760, 490]
   status: operational
-  narrative_hooks:
-    - "Bloody Mary mix-up at Biers causes existential dread"
-
 # --- Cockbill Street ---
 - id: cockbill_pump
   name: "Cockbill Street Pump"
@@ -61,18 +49,12 @@
   position: [683, 548]
   status: operational
   detection_time_modifier_override: 3.0  # pride concealment
-  narrative_hooks:
-    - "Cockbill Street pump breaks; residents refuse to report it for a week"
-
 - id: vimes_childhood_home
   name: "Vimes's Childhood Home"
   type: slum_dwelling
   district: cockbill_street
   position: [718, 555]
   status: operational
-  narrative_hooks:
-    - "Vimes personally pays for new roof; neighbours torn between gratitude and insult"
-
 # --- Isle of Gods ---
 - id: temple_blind_io
   name: "Temple of Blind Io"
@@ -87,18 +69,12 @@
   district: isle_of_gods
   position: [323, 222]
   status: operational
-  narrative_hooks:
-    - "Temple of Offler demands river cleaning after crocodile spotted"
-
 - id: isle_bridge
   name: "Isle of Gods Bridge"
   type: transport
   district: isle_of_gods
   position: [370, 252]
   status: operational
-  narrative_hooks:
-    - "Isle of Gods bridge closed; residents demand ferry service"
-
 # --- University Precinct ---
 - id: unseen_university
   name: "Unseen University"
@@ -106,20 +82,12 @@
   district: university_precinct
   position: [439, 131]
   status: operational
-  narrative_hooks:
-    - "Wizard experiment causes three days of perpetual twilight"
-    - "The Tower of Art is leaning"
-    - "UU requests city council fund new library wing"
-
 - id: scroll_shop
   name: "Midnight's Scroll Emporium"
   type: civic_amenity
   district: university_precinct
   position: [520, 135]
   status: operational
-  narrative_hooks:
-    - "Local scroll shop demands UU pay outstanding bills dating back three Archchancellors"
-
 # --- Merchant Quarter ---
 - id: assassins_guild
   name: "Assassins' Guild"
@@ -127,60 +95,36 @@
   district: merchant_quarter
   position: [650, 220]
   status: operational
-  narrative_hooks:
-    - "Assassins' Guild goes on strike over pension dispute"
-
 - id: thieves_guild
   name: "Thieves' Guild"
   type: guild_hq
   district: merchant_quarter
   position: [593, 288]
   status: operational
-  narrative_hooks:
-    - "Rogue faction within Thieves' Guild destabilises insurance market"
-
 - id: seamstresses_guild
   name: "Seamstresses' Guild"
   type: guild_hq
   district: merchant_quarter
   position: [591, 267]
   status: operational
-  narrative_hooks:
-    - "Seamstresses' Guild portal breach exposes member data; clients request discretion; Guild requests the same"
-    - "Seamstresses' Guild strike over safety conditions; certain districts experience measurable morale decline"
-    - "Seamstresses' Guild and Assassins' Guild in formal dispute; nature of dispute described as complex by both parties"
-    - "Seamstresses' Guild security incident blamed on disgruntled former client; Watch declines to investigate further"
-
 - id: fools_guild
   name: "Fools' Guild"
   type: guild_hq
   district: merchant_quarter
   position: [660, 185]
   status: operational
-  narrative_hooks:
-    - "Fools' Guild clown shortage leads to rise in amateur unlicensed street performers; public finds this worse"
-    - "Fools' Guild exam failure rate reaches 94%; Guild insists this is intentional; nobody laughs"
-    - "Fools' Guild refuses to certify new comedic disruption techniques; three rogue practitioners arrested"
-    - "Fools' Guild training facilities flood; apprentices relocated to Mended Drum; landlord regrets the agreement"
-
 - id: mended_drum
   name: "The Mended Drum"
   type: tavern
   district: merchant_quarter
   position: [700, 290]
   status: operational
-  narrative_hooks:
-    - "Mended Drum brawl spills into street, breaks new fountain"
-
 - id: royal_bank
   name: "Royal Bank of Ankh-Morpork"
   type: guild_hq
   district: merchant_quarter
   position: [529, 201]
   status: operational
-  narrative_hooks:
-    - "Filigree Street bank run after rumour of insolvency"
-
 # --- Small Gods ---
 - id: small_gods_pump
   name: "Small Gods Pump House"
@@ -195,30 +139,18 @@
   district: small_gods
   position: [301, 181]
   status: degraded
-  narrative_hooks:
-    - "Small Gods tanners pollute river downstream of Isle of Gods"
-
 - id: small_gods_workshops
   name: "Small Gods Workshop District"
   type: workshop
   district: small_gods
   position: [170, 235]
   status: operational
-  narrative_hooks:
-    - "Workshop fire spreads through three streets before inadequate pump located"
-    - "Power cut leaves workshop district dark for two days; seven small businesses do not reopen"
-    - "Workshop owners petition for clacks connection; petition lost in post; situation described as unresolved"
-    - "Tannery runoff contaminates workshop well; three trades shut down; source disputed for a fortnight"
-
 - id: pie_shop
   name: "Pie Shop"
   type: tavern
   district: small_gods
   position: [202, 235]
   status: operational
-  narrative_hooks:
-    - "Local hero prevents robbery of pie shop; rewarded with free pies for life"
-
 - id: small_gods_temple
   name: "Temple of Small Gods"
   type: civic_amenity
@@ -233,10 +165,6 @@
   district: merchant_quarter
   position: [540, 225]
   status: operational
-  narrative_hooks:
-    - "A sewer tunnel collapses beneath the Palace, revealing unknown route into the heart of power"
-    - "Vetinari is 'indisposed' for a week; the city holds its breath"
-
 # --- Civic Institutions ---
 - id: pseudopolis_yard
   name: "Pseudopolis Yard"
@@ -244,36 +172,24 @@
   district: merchant_quarter
   position: [695, 325]
   status: operational
-  narrative_hooks:
-    - "Pseudopolis Yard's new cell block collapses, freeing dozens of petty criminals"
-
 - id: post_office
   name: "Ankh-Morpork Post Office"
   type: civic_institution
   district: merchant_quarter
   position: [740, 325]
   status: operational
-  narrative_hooks:
-    - "Post Office glitch loses an aristocrat's invitation; he takes it out on a servant"
-
 - id: lady_sybil_hospital
   name: "Lady Sybil Free Hospital"
   type: healthcare
   district: small_gods
   position: [225, 298]
   status: operational
-  narrative_hooks:
-    - "Hospital diversion due to power failure"
-
 - id: dwarf_bread_museum
   name: "Dwarf Bread Museum"
   type: civic_amenity
   district: merchant_quarter
   position: [710, 185]
   status: operational
-  narrative_hooks:
-    - "Scone of Stone stolen from museum! Dwarfish diaspora in uproar"
-
 # --- Power Infrastructure ---
 - id: uu_power_and_light
   name: "Unseen University Power & Light Co."
@@ -282,53 +198,30 @@
   position: [455, 100]
   status: operational
   detection_time_modifier_override: 0.8   # operators can't always tell if an alarm has "developed opinions"
-  narrative_hooks:
-    - "Hex Steam Turbine trips; city lights flicker for six minutes; UU blames 'scheduled thaumic recalibration'"
-    - "Bursar's Alchemical Reactor produces surplus energy; Merchant Quarter streetlamps glow faintly purple for a week"
-    - "UU P&L control room receives alarm indicating something in the sub-basement has developed opinions"
-    - "UU Power & Light raises rates; Patrician's office points out the city has no alternative supplier"
-
 - id: merchant_quarter_substation
   name: "Filigree Street Switching Station"
   type: power_source
   district: merchant_quarter
   position: [785, 325]
   status: operational
-  narrative_hooks:
-    - "Switching station failure blacks out eastern Merchant Quarter during guild auction; fortunes lost in the dark"
-    - "Clacks-integrated distribution controls crash; operators fall back to handwritten logs dated 1782"
-
 - id: small_gods_substation
   name: "Small Gods Distribution Substation"
   type: power_source
   district: small_gods
   position: [186, 265]
   status: degraded
-  narrative_hooks:
-    - "Small Gods substation overloaded after workshop expansion; rolling cuts begin without warning"
-    - "Substation transformer leaks unidentified fluid onto Treacle Street; Watch refuses to investigate"
-
 - id: nap_hill_supply_node
   name: "Nap Hill Private Supply Exchange"
   type: power_source
   district: nap_hill
   position: [218, 105]
   status: operational
-  narrative_hooks:
-    - "Nap Hill supply restored within two hours; Small Gods still dark for three more days; no paper mentions it"
-    - "Lord Rust demands real-time clacks updates on his household power consumption"
-    - "UU P&L grants Nap Hill priority restoration; contract terms listed as 'confidential'"
-
 - id: isle_of_gods_relay
   name: "Isle of Gods Relay Station"
   type: power_source
   district: isle_of_gods
   position: [342, 195]
   status: operational
-  narrative_hooks:
-    - "Isle of Gods relay isolated after bridge inspection closes cable route; temples resort to candles for three days"
-    - "River flood damages underground cable crossing; Chief Priest demands written explanation from Patrician's office"
-
 - id: shades_substation
   name: "Shades Substation"
   type: power_source
@@ -336,11 +229,6 @@
   position: [720, 435]
   status: degraded
   detection_time_modifier_override: 2.5  # failures go unreported; nobody expects power anyway
-  narrative_hooks:
-    - "Shades substation fails silently for nine days before a fire reveals the full extent of the outage"
-    - "Three streets in the Shades have had no power for six weeks; no report was ever filed"
-    - "UU P&L engineers refuse to enter the Shades after dark; maintenance indefinitely deferred"
-
 - id: cockbill_tap
   name: "Cockbill Street Junction Box"
   type: power_source
@@ -348,10 +236,6 @@
   position: [700, 578]
   status: degraded
   detection_time_modifier_override: 3.5  # pride prevents reporting; residents wire in candles and say nothing
-  narrative_hooks:
-    - "Cockbill Street junction fails; residents wire in candles and call it an improvement"
-    - "Power restored to Cockbill Street after two weeks; residents decline to confirm it had been out"
-
 # --- Food Supply ---
 - id: the_shambles
   name: "The Shambles"
@@ -359,36 +243,18 @@
   district: small_gods
   position: [118, 265]
   status: operational
-  narrative_hooks:
-    - "Shambles butchers strike over new Guild of Meat regulations; city meat supply stops within a day"
-    - "Contamination found in Shambles stock; Lady Sybil Hospital on alert; source disputed by three parties"
-    - "River Ankh backup floods the Shambles; stock lost; Pie Shop menu quietly adjusted"
-    - "Shambles Guild refuses to accept Sto Plains imports; local shortage manufactured to raise prices"
-
 - id: saturday_market
   name: "Saturday Market"
   type: food_supply
   district: merchant_quarter
   position: [478, 222]
   status: operational
-  narrative_hooks:
-    - "Saturday Market cancelled for first time in 300 years; city at a loss as to what to do with itself"
-    - "Market price-fixing ring uncovered; Merchant Guild and Thieves' Guild both claim innocence"
-    - "Sto Plains produce shortage hits Saturday Market; prices triple; Nap Hill unaffected via private suppliers"
-    - "Market stall licensing dispute escalates; half the vendors refuse to open; Watch refuses to take sides"
-
 - id: ankh_brewery
   name: "Ankh-Morpork Brewery"
   type: brewery
   district: small_gods
   position: [152, 265]
   status: operational
-  narrative_hooks:
-    - "Brewery vat contamination ruins entire season's stock; Mended Drum immediately in crisis"
-    - "Brewery workers walk out; Watch estimates six hours before city morale becomes a public safety issue"
-    - "Hop supply from Sto Plains interrupted; brewery rations output; Thieves' Guild adjusts protection fees accordingly"
-    - "Brewery explosion rattles windows across Small Gods; remarkably, beer quality improves"
-
 - id: cheese_caves
   name: "The Cheese Caves"
   type: food_supply
@@ -396,23 +262,12 @@
   position: [800, 290]
   status: operational
   detection_time_modifier_override: 1.5  # underground; humidity failures are slow to surface; bad cheese discovered last
-  narrative_hooks:
-    - "Cheese Caves humidity control fails; three months of stock lost before anyone notices the smell"
-    - "Mysterious fire in the Cheese Caves; cause unknown; Thieves' Guild denies involvement; claim filed anyway"
-    - "Dwarf community requests access to Cheese Caves for 'ceremonial purposes'; Watch declines to elaborate on outcome"
-
 - id: grain_warehouse
   name: "Ankh-Morpork Grain Warehouse"
   type: food_supply
   district: river_ankh
   position: [338, 539]
   status: operational
-  narrative_hooks:
-    - "Grain warehouse flooding from river rise; three weeks of reserves lost; prices spike citywide within hours"
-    - "Rat infestation reaches scale Watch describes as 'biblical'; additional budget refused; situation escalates"
-    - "Sto Plains shipment delayed; warehouse nearly empty; Patrician quietly activates emergency reserves"
-    - "Grain warehouse records found falsified; declared reserves half the actual stock; auditor unavailable for comment"
-
 # --- Fire Service ---
 - id: central_fire_brigade
   name: "Central Fire Brigade"
@@ -420,22 +275,12 @@
   district: merchant_quarter
   position: [745, 290]
   status: operational
-  narrative_hooks:
-    - "City Fire Brigade response time: Nap Hill four minutes, Small Gods forty, Shades when available"
-    - "Fire Brigade budget cut; three engines mothballed; Merchant Guild offers to fund private service for Merchant Quarter only"
-    - "Central brigade equipment upgrade approved; parts ordered from Sto Plains; delivery expected in spring; spring passes"
-
 - id: small_gods_fire_station
   name: "Small Gods Fire Station"
   type: fire_service
   district: small_gods
   position: [178, 205]
   status: operational
-  narrative_hooks:
-    - "Workshop fire spreads through three streets before Small Gods engine located; pump found to be seized with rust"
-    - "Small Gods fire horses requisitioned for nobleman's parade; station left with one hand-pump and a bucket"
-    - "Small Gods crew prevents tannery blaze from reaching brewery; considered heroes; Watch takes credit in press statement"
-
 - id: shades_fire_post
   name: "Shades Fire Post"
   type: fire_service
@@ -443,12 +288,6 @@
   position: [798, 462]
   status: degraded
   detection_time_modifier_override: 1.5  # calls go unlogged; equipment failures unreported; nobody inspects
-  narrative_hooks:
-    - "Fire in the Shades spreads for six hours before Watch notices; post had one bucket and no horses"
-    - "Shades fire post equipment last formally inspected in 1791; inspector's report described conditions as 'adequate'"
-    - "Fire call from Shades unanswered for forty minutes; engines were attending chimney fire in Nap Hill"
-    - "Shades fire post closed for repair; no replacement arranged; repair never scheduled"
-
 # --- Transport Infrastructure ---
 - id: brass_bridge
   name: "The Brass Bridge"
@@ -457,46 +296,24 @@
   position: [579, 235]
   status: degraded
   detection_time_modifier_override: 1.5  # looks fine until it doesn't; structural decay is invisible until it isn't
-  narrative_hooks:
-    - "Brass Bridge inspection reveals three load-bearing joints held together by optimism and paint"
-    - "Brass Bridge weight restriction imposed; guild transport carts banned; merchants furious"
-    - "Brass Bridge closes for emergency repairs; city splits in two for four days"
-    - "Engineer who signed off on last Brass Bridge inspection found to be unavailable for comment"
-
 - id: ankh_omnibus_depot
   name: "Ankh-Morpork Omnibus Depot"
   type: transport
   district: small_gods
   position: [108, 205]
   status: operational
-  narrative_hooks:
-    - "Omnibus drivers strike over dangerous road conditions; working poor stranded at home"
-    - "Horse flu sweeps the depot; half the routes cancelled; no replacement horses available at any price"
-    - "New timetable introduced; coaches arrive at exactly the same time as under the old one; fares raised anyway"
-
 - id: river_wharves
   name: "River Ankh Wharves"
   type: transport
   district: river_ankh
   position: [439, 534]
   status: operational
-  narrative_hooks:
-    - "Barge collision blocks main channel; goods pile up at docks for three days; prices rise immediately"
-    - "River Ankh rises overnight; wharves flooded; dock workers refuse to work; cargo spoils on the quay"
-    - "Mysterious impounded cargo at wharves; nobody claims it; Watch declines to open it; smell worsens daily"
-    - "River Ankh so thick this season barges are getting stuck; dredging budget spent on Nap Hill road repairs"
-
 - id: sto_plains_coach_office
   name: "Sto Plains Coaching Office"
   type: transport
   district: merchant_quarter
   position: [800, 220]
   status: operational
-  narrative_hooks:
-    - "Sto Plains road washed out; coach service suspended; food prices in Merchant Quarter rise within hours"
-    - "Coach office bribery investigation opened; half the city's inbound goods found to have been 'redirected'"
-    - "Sto Plains coach monopoly raises rates; Patrician opens negotiations with competing Quirmian service"
-
 # --- Media ---
 - id: ankh_morpork_times
   name: "The Ankh-Morpork Times"
@@ -504,13 +321,6 @@
   district: merchant_quarter
   position: [760, 185]
   status: operational
-  narrative_hooks:
-    - "Times runs front-page story on Shades water crisis; Shades residents learn about their own crisis from the paper"
-    - "Times editor summoned to Palace; emerges with new perspective on what constitutes newsworthy"
-    - "Times offers to hold story on guild corruption for 24 hours; story appears 23 hours later with additional details"
-    - "Times circulation drops 30% after positive front page about water company; readership finds story implausible"
-    - "Times clacks connection cut during infrastructure crisis; paper publishes hand-delivered single sheet; sells out in minutes"
-
 # --- Communications Company Offices ---
 - id: grand_trunk_office
   name: "Grand Trunk Company Offices"
@@ -518,24 +328,12 @@
   district: merchant_quarter
   position: [810, 185]
   status: operational
-  narrative_hooks:
-    - "Grand Trunk CEO summoned to Palace; emerges three hours later looking considerably older"
-    - "Grand Trunk billing system fails; thousands of businesses receive invoices for services never rendered"
-    - "Grand Trunk staff strike over 'dangerous working conditions'; towers unmanned; city goes quiet"
-    - "Grand Trunk charter renewal delayed in Patrician's office; company lawyers arrive in force"
-
 - id: talking_drums_exchange
   name: "Talking Drums Exchange"
   type: communications_office
   district: small_gods
   position: [234, 235]
   status: operational
-  narrative_hooks:
-    - "Talking Drums Exchange undercuts Grand Trunk rates; Merchant Quarter considers switching; Grand Trunk furious"
-    - "Talking Drums network overloaded after Grand Trunk outage; new service buckles under demand"
-    - "Talking Drums Exchange raided by Watch over 'unlicensed relay operations'; service suspended pending inquiry"
-    - "Talking Drums offers free service to Shades residents; Grand Trunk lobbies Patrician to revoke their charter"
-
 # --- Clacks Towers ---
 - id: grand_trunk_tower
   name: "Grand Trunk Main Relay Tower"
@@ -543,23 +341,12 @@
   district: merchant_quarter
   position: [750, 220]
   status: operational
-  narrative_hooks:
-    - "Grand Trunk tower fails during guild auction; fortunes wagered on price signals that never arrived"
-    - "Grand Trunk monopoly under review after third outage this season; company insists failures are 'coincidental'"
-    - "Grand Trunk raises relay fees; entire Merchant Quarter furious; Patrician invites CEO to a quiet meeting"
-    - "Grand Trunk engineer spotted on roof at 3am; Watch asked no questions; Grand Trunk offered no explanation"
-
 - id: watch_clacks_tower
   name: "City Watch Emergency Tower"
   type: clacks_tower
   district: merchant_quarter
   position: [660, 290]
   status: operational
-  narrative_hooks:
-    - "Watch clacks tower goes dark; patrols revert to runners; crime rises 40% within six hours"
-    - "Rival faction found to have intercepted Watch clacks traffic; patrol routes sold to interested parties"
-    - "Patrician authorises dedicated Watch relay after Pseudopolis Yard outage; Grand Trunk submits invoice immediately"
-
 - id: uu_clacks_station
   name: "UU Clacks & Semaphore Station"
   type: clacks_tower
@@ -567,22 +354,12 @@
   position: [495, 103]
   status: operational
   detection_time_modifier_override: 1.5  # wizards notice but may not tell anyone
-  narrative_hooks:
-    - "UU station picks up transmissions from somewhere that does not technically exist; wizards find this promising"
-    - "UU refuses Grand Trunk access to their relay; Grand Trunk reroutes; half the Merchant Quarter loses signal"
-    - "UU clacks station used to send spell components order; entire city grid flickers for eleven minutes"
-
 - id: small_gods_tower
   name: "Small Gods Clacks Tower"
   type: clacks_tower
   district: small_gods
   position: [213, 205]
   status: operational
-  narrative_hooks:
-    - "Small Gods tower fails for the third time this season; investigation finds no clear cause"
-    - "Pattern of Small Gods outages emerges; Vetinari deploys personal agents; outages stop immediately"
-    - "Tower repaired; new operator installed; outages resume within a fortnight"
-
 - id: shades_relay
   name: "Shades Clacks Relay"
   type: clacks_tower
@@ -590,33 +367,18 @@
   position: [675, 460]
   status: degraded
   detection_time_modifier_override: 2.0  # nobody reports faults; the tower is used for drying laundry
-  narrative_hooks:
-    - "Shades relay has been transmitting garbled signals for three weeks; no fault report was ever filed"
-    - "Shades residents use tower platform for drying laundry; structural integrity has not improved"
-    - "Grand Trunk declines to service the Shades relay; maintenance contract expired in 1789 and was never renewed"
-
 - id: nap_hill_clacks
   name: "Nap Hill Private Clacks Terminal"
   type: clacks_tower
   district: nap_hill
   position: [248, 108]
   status: operational
-  narrative_hooks:
-    - "Nap Hill private line restored in forty minutes; Shades relay still dark eleven days later; no paper mentions both"
-    - "Lord Rust installs personal clacks terminal; demands city guarantee its uptime in writing"
-    - "Nap Hill residents receive outage warning twenty minutes before it happens; nobody explains how"
-
 - id: isle_of_gods_tower
   name: "Isle of Gods Clacks Tower"
   type: clacks_tower
   district: isle_of_gods
   position: [326, 243]
   status: operational
-  narrative_hooks:
-    - "Isle of Gods tower isolated after river flood damages cable crossing; temples cut off from city network"
-    - "Isle of Gods tower used to coordinate inter-faith festival; signal jammed by person or persons unknown"
-    - "With bridge closed and tower down simultaneously, Isle of Gods effectively becomes a separate city"
-
 # --- Healthcare ---
 - id: guild_of_apothecaries
   name: "Guild of Apothecaries"
@@ -624,12 +386,6 @@
   district: merchant_quarter
   position: [750, 255]
   status: operational
-  narrative_hooks:
-    - "Guild of Apothecaries reports critical medicine shortages; blames supply chain irregularities and the usual suspects"
-    - "Apothecaries Guild and Physicians Guild in open dispute over licensing; patients advised to wait it out"
-    - "Counterfeit medicines found in Apothecaries stock; traced to Sto Plains supplier; recall notices sent by slow coach"
-    - "Apothecaries Guild raises prices 40% citing 'exceptional circumstances'; Guild of Merchants requests definition of exceptional"
-
 - id: shades_healer
   name: "Shades Street Healer"
   type: apothecary
@@ -637,23 +393,12 @@
   position: [686, 429]
   status: degraded
   detection_time_modifier_override: 1.5  # the Shades under-reports everything, including its own medical crises
-  narrative_hooks:
-    - "Shades healer overwhelmed after pump failure; treating dehydration with no clean water supply to speak of"
-    - "Only healer in the Shades retires; no replacement found; residents return to traditional remedies and optimism"
-    - "Shades healer arrested for practising without Guild licence; district loses its only medical care overnight"
-    - "Outbreak contained to Shades for three weeks before report reaches Watch; Watch notes the report was filed"
-
 - id: small_gods_apothecary
   name: "Small Gods Apothecary"
   type: apothecary
   district: small_gods
   position: [203, 285]
   status: operational
-  narrative_hooks:
-    - "Small Gods apothecary runs out of basic medicines; nearest alternative in Merchant Quarter; residents note the distance"
-    - "Apothecary owner treats tannery accident victims and bills Watch for supplies; Watch disputes every line item"
-    - "Small Gods apothecary closes two days after Shambles contamination; coincidence not ruled out"
-
 # --- Tech Businesses ---
 - id: golem_trust_computing
   name: "Golem Trust Computing Ltd."
@@ -661,25 +406,12 @@
   district: the_shades
   position: [755, 435]
   status: operational
-  narrative_hooks:
-    - "Golem Trust cloud infrastructure in distant Finland unreachable for six hours; Patrician's Office runs on paper; nobody is told"
-    - "Ponder Stibbons called to Palace at midnight; emerges at dawn with new contract and a slightly haunted expression"
-    - "Seamstresses' Guild portal breach traced to Golem Trust client credentials; firm offers complimentary security review"
-    - "Golem Trust holds data for three competing guilds on the same platform; conflict of interest noted by nobody who matters"
-    - "Golem Trust single point of failure realised when routine maintenance takes down Patrician's Office, Royal Bank, and two guilds simultaneously"
-
 - id: purple_lantern_practice
   name: "Purple Lantern Practice Ltd."
   type: tech_business
   district: university_precinct
   position: [545, 115]
   status: operational
-  narrative_hooks:
-    - "Purple Lantern exercise reveals Patrician's Office cannot recover from a two-hour outage; report classified immediately"
-    - "Purple Lantern runs 'The Patrician's Dilemma' exercise; participants discover they are poor at governing; this is the point"
-    - "Shadow Exercise at Royal Bank uncovers seventeen undocumented access routes; bank disputes fourteen of them"
-    - "Purple Lantern asked to assess Thieves' Guild security; Thieves' Guild counter-proposes assessing Purple Lantern; standoff ensues"
-
 - id: scarlet_semaphore
   name: "Scarlet Semaphore"
   type: hackerspace
@@ -687,13 +419,6 @@
   position: [790, 435]
   status: operational
   detection_time_modifier_override: 2.0  # deliberately hard to locate; members are professionally evasive
-  narrative_hooks:
-    - "Scarlet Semaphore charter found pinned to DSS bulletin board; nobody claims to have put it there"
-    - "Semaphore members sighted at three separate infrastructure incidents on the same night; each claims to have been elsewhere"
-    - "Semaphore publishes vulnerability report on Grand Trunk clacks protocol; Grand Trunk denies the protocol exists"
-    - "Semaphore member receives second 'invitation' to consult for Department of Silent Stability; this time accepts"
-    - "Water level in ornamental Palace fountain found subtly altered; Semaphore connection suspected; nothing proven; Vetinari is amused"
-
 # --- Security ---
 - id: shades_watch_house
   name: "Shades Watch House"
@@ -702,35 +427,18 @@
   position: [728, 462]
   status: degraded
   detection_time_modifier_override: 2.0  # nobody is watching the watchers; failures go unreported
-  narrative_hooks:
-    - "Shades Watch house staffed by one officer and a borrowed lantern; response times measured in days"
-    - "Shades Watch post abandoned after structural concerns; area left unpatrolled for six weeks; Watch declines comment"
-    - "Shades Watch house log: 847 incidents reported, 12 investigated, 1 resolved; Vimes described as 'aware'"
-    - "New recruit assigned to Shades Watch post; veteran colleagues take collection for funeral expenses"
-
 - id: small_gods_watch_house
   name: "Small Gods Watch House"
   type: security
   district: small_gods
   position: [105, 235]
   status: operational
-  narrative_hooks:
-    - "Small Gods Watch house overwhelmed after brewery district brawl; requests backup; backup delayed by bridge works"
-    - "Small Gods Watch patrol halved to save budget; Thieves' Guild reports 40% increase in 'voluntary contributions'"
-    - "Small Gods Watch house receives anonymous tip; acts on it three days later; situation has resolved itself badly"
-
 - id: nap_hill_watch_house
   name: "Nap Hill Watch Post"
   type: security
   district: nap_hill
   position: [255, 140]
   status: operational
-  narrative_hooks:
-    - "Nap Hill Watch response time: eleven minutes. Small Gods Watch response time: four days. No paper mentions both."
-    - "Lord Rust demands personal Watch escort after carriage incident; two officers reassigned; Small Gods loses its patrol"
-    - "Nap Hill Watch officers found moonlighting as private household security; disciplinary action 'under review'"
-    - "Nap Hill burglary investigated within the hour; Shades burglary from same night still open six months later"
-
 - id: dept_silent_stability
   name: "Department of Silent Stability"
   type: intelligence_service
@@ -738,21 +446,9 @@
   position: [650, 325]
   status: operational
   detection_time_modifier_override: 0.2  # they monitor themselves as rigorously as everything else; the Quiet Room never sleeps
-  narrative_hooks:
-    - "Quiet Room anomaly report lands on Patrician's desk; Vetinari reads it, says nothing, and does three things"
-    - "Department detects pattern across Small Gods, Shades, and Isle of Gods outages; conclusion classified; action unannounced"
-    - "DSS intervenes in clacks infrastructure issue before it becomes news; Times reporter notices only the absence of a story"
-    - "Recruitment offer made to recently arrested individual; charge dropped; individual relocates and is unavailable for comment"
-    - "Department of Silent Stability has a difficult week; nobody knows; three things that were supposed to have been prevented quietly weren't"
-
 - id: the_tanty
   name: "The Tanty"
   type: security
   district: merchant_quarter
   position: [680, 360]
   status: operational
-  narrative_hooks:
-    - "The Tanty at 340% capacity; Patrician orders review; committee finds Tanty 'full' and recommends larger committee"
-    - "Prison break: seventeen escape, Watch rounds up nineteen; two were passing; nobody checks the numbers carefully"
-    - "Tanty food contract awarded to company with no kitchen; inmates unimpressed; guards worse affected"
-    - "Tanty roof collapses; prisoners refuse to leave citing better conditions than available alternative"

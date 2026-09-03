@@ -4,14 +4,14 @@ import customtkinter as ctk
 
 from src.engine.simulation import Simulation, TickResult
 from src.gui.dashboard import Dashboard
+from src.gui.info_popups import InfoPopup
+from src.gui.intro import IntroScreen
 from src.gui.map_canvas import MapCanvas
 from src.gui.news_ticker import NewsTicker
-from src.gui.info_popups import InfoPopup
-from src.gui.popups import ArticlePopup, HoverPopup, RemedyMenu, EventPopup
-from src.gui.intro import IntroScreen
-from src.gui.settings_popup import SettingsPopup
+from src.gui.popups import ArticlePopup, EventPopup, HoverPopup, RemedyMenu
 from src.gui.postgame import PostgameScreen
-from src.gui.theme import PAPER, PAPER_DARK, load_fonts, fonts
+from src.gui.settings_popup import SettingsPopup
+from src.gui.theme import PAPER, PAPER_DARK, fonts, load_fonts
 from src.gui.time_controls import TimeControls
 
 
@@ -29,7 +29,6 @@ class App(ctk.CTk):
         self.configure(fg_color=PAPER)
 
         self.sim = Simulation(config_dir)
-        self.sim.initialise()
 
         self._tick_interval_ms = int(self.sim.cfg.speed.seconds_per_game_hour * 1000)
 
@@ -65,19 +64,19 @@ class App(ctk.CTk):
         bottom_right = ctk.CTkFrame(self, fg_color=PAPER_DARK, border_width=1, border_color=PAPER_DARK)
         bottom_right.grid(row=1, column=1, padx=(5, 10), pady=(5, 10), sticky="ew")
 
-        self.time_controls = TimeControls(bottom_right)
+        self.time_controls = TimeControls(bottom_right, self.sim.cfg.speed)
         self.time_controls.on_pause = self._on_pause
         self.time_controls.on_play = self._on_play
         self.time_controls.on_speed = self._on_speed
         self.time_controls.on_exit = self._on_exit
 
-        self.info_popup = InfoPopup(self)
+        self.info_popup = InfoPopup(self, self.sim.cfg)
         self.info_popup.on_emergency_borrow = self._on_emergency_borrow
         self.dashboard.attach_popup(self.info_popup, self.sim.city)
         self.hover_popup = HoverPopup(self)
         self.remedy_menu = RemedyMenu(self, self.sim.cfg)
         self.remedy_menu.on_remedy_selected = self._on_remedy_selected
-        self.postgame_screen = PostgameScreen(self)
+        self.postgame_screen = PostgameScreen(self, self.sim.cfg)
         self.settings_popup = SettingsPopup(self)
         self.dashboard.on_settings_click = lambda: self.settings_popup.show(self.sim.cfg.settings)
         self.event_popup = EventPopup(self)

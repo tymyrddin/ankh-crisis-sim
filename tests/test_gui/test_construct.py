@@ -24,7 +24,7 @@ def test_postgame_screen_constructs(ctk_root, loaded_city):
     cfg, city = loaded_city
     from src.engine.end_check import EndResult
     from src.gui.postgame import PostgameScreen
-    screen = PostgameScreen(ctk_root)
+    screen = PostgameScreen(ctk_root, cfg)
     result = EndResult(
         triggered=True,
         condition_id="term_completion",
@@ -82,7 +82,7 @@ def test_article_popup_constructs(ctk_root):
 def test_info_popup_metric_constructs(ctk_root, loaded_city):
     cfg, city = loaded_city
     from src.gui.info_popups import InfoPopup
-    popup = InfoPopup(ctk_root)
+    popup = InfoPopup(ctk_root, cfg)
     for key in ("public_trust", "budget", "regulatory_pressure",
                 "political_stability", "legitimacy", "public_health", "crime_level"):
         popup.show_metric(city, key)
@@ -95,7 +95,7 @@ def test_info_popup_metric_constructs(ctk_root, loaded_city):
 def test_info_popup_district_constructs(ctk_root, loaded_city):
     cfg, city = loaded_city
     from src.gui.info_popups import InfoPopup
-    popup = InfoPopup(ctk_root)
+    popup = InfoPopup(ctk_root, cfg)
     for district_id in list(city.districts)[:3]:
         popup.show_district(city, district_id)
         ctk_root.update_idletasks()

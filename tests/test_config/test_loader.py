@@ -12,9 +12,8 @@ class TestLoadConfig:
 
     def test_has_time_settings(self):
         cfg = load_config(CONFIG_DIR)
-        assert cfg.time.tick_hours == 1
         assert cfg.time.ticks_per_day == 24
-        assert cfg.time.term_length_days == 1460
+        assert cfg.settings.game_duration_days == 1460
 
     def test_has_active_districts(self):
         cfg = load_config(CONFIG_DIR)

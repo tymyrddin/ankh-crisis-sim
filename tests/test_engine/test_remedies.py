@@ -1,6 +1,8 @@
 from pathlib import Path
 
-from src.config.loader import build_city, EventTemplate
+import pytest
+
+from src.config.loader import EventTemplate, build_city
 from src.engine.events import _find_target_building
 from src.engine.remedies import apply_remedy, process_remedy_completions
 from src.models.event import EventPhase, GameEvent
@@ -129,8 +131,8 @@ class TestCostModifiers:
     def test_worse_infrastructure_costs_more_to_patch(self):
         cfg, _ = build_city(CONFIG_DIR)
         base = cfg.remedies["technical_restoration"].base_cost
-        shades = self._cost_in("the_shades")       # infrastructure_quality 3.0
-        nap_hill = self._cost_in("nap_hill")       # infrastructure_quality 0.3
+        shades = self._cost_in("the_shades")  # failure multiplier 3.0
+        nap_hill = self._cost_in("nap_hill")  # 0.3
         assert shades > base > nap_hill
 
     def test_zero_downtime_resolves_immediately(self):
@@ -246,7 +248,7 @@ class TestRecurrenceRisk:
         buildings = list(district.buildings.values())
 
         if len(buildings) < 2:
-            return  # need at least 2 buildings for this test
+            pytest.skip("needs at least two buildings")
 
         high_risk_building = buildings[0]
         high_risk_building.recurrence_risk = 1.0

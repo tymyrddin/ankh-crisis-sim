@@ -1,6 +1,8 @@
 import random
 from pathlib import Path
 
+import pytest
+
 from src.config.loader import build_city
 from src.engine.dependencies import _find_dependent_buildings, propagate_cascades
 from src.models.event import EventPhase, GameEvent
@@ -151,7 +153,7 @@ class TestPropagateCascades:
                 break
 
         if source_id is None:
-            return  # no energy-dependent building found; skip
+            pytest.skip("no energy-dependent building in this config")
 
         district = city.districts[source_district_id]
         src = district.buildings[source_id]

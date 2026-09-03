@@ -29,25 +29,25 @@ class TestPendingTrustBoostFlush:
     def test_due_boost_applied_and_removed(self):
         cfg, city = build_city(CONFIG_DIR)
         district = city.districts["the_shades"]
-        district.pending_trust_boosts.append((100, 5.0, "Test deferred boost"))
+        district.scheduled_trust_changes.append((100, 5.0, "Test deferred boost"))
         trust_before = district.local_trust.value
 
         # daily boundary past apply_at=100
         apply_passive_dynamics(city, tick=120, ticks_per_day=24, cfg=cfg)
 
         assert district.local_trust.value > trust_before
-        assert district.pending_trust_boosts == []
+        assert district.scheduled_trust_changes == []
 
     def test_future_boost_not_yet_applied(self):
         cfg, city = build_city(CONFIG_DIR)
         district = city.districts["the_shades"]
-        district.pending_trust_boosts.append((500, 5.0, "Future boost"))
+        district.scheduled_trust_changes.append((500, 5.0, "Future boost"))
         trust_before = district.local_trust.value
 
         apply_passive_dynamics(city, tick=120, ticks_per_day=24, cfg=cfg)
 
         assert district.local_trust.value == trust_before
-        assert len(district.pending_trust_boosts) == 1
+        assert len(district.scheduled_trust_changes) == 1
 
 
 class TestPressStatementScandalHalving:

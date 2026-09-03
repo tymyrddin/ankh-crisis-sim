@@ -3,16 +3,25 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from functools import partial
 
 import customtkinter as ctk
 
+from src.config.loader import GameConfig
 from src.gui.theme import (
-    ACCENT_BROWN, INK, INK_MUTED, PAPER, PAPER_DARK,
-    TRUST_BAD, TRUST_GOOD, TRUST_WARN, METRIC_COLOURS, fonts,
+    ACCENT_BROWN,
+    INK,
+    INK_MUTED,
+    METRIC_COLOURS,
+    PAPER,
+    PAPER_DARK,
+    TRUST_BAD,
+    TRUST_GOOD,
+    TRUST_WARN,
+    fonts,
 )
 from src.models.city import City
 from src.models.district import District
-
 
 _METRIC_INFO: dict[str, dict] = {
     "public_trust": {
@@ -21,82 +30,63 @@ _METRIC_INFO: dict[str, dict] = {
             "The population's pragmatic acceptance that Vetinari's system of organised stability "
             "is preferable to the alternative. This is not affection, it is the cold calculation "
             "of a city that knows what chaos looks like. Trust erodes with every visible, unresolved "
-            "failure and recovers slowly when things are seen to work."
+            "failure and recovers when things are seen to work."
         ),
         "drivers": [
-            "Infrastructure failures, especially visible ones, decay trust per day unresolved",
-            "Low trust (below 30) reduces tax collection efficiency, compressing budget further",
-            "District trust levels are averaged into the global figure; poor districts have less weight",
-            "Prompt remedies, accountability actions, and compensation all slow decay",
+            "Each detected incident hits its district's trust at once, then again every day it is left alone",
+            "An incident ignored for more than a day becomes a scandal: daily damage scaled by the district's "
+            "media attention, by organisational fragmentation, and by accumulated narrative pressure",
+            "The city figure is a weighted average of district trust: density and political influence "
+            "set the weights, so the Shades count for less than Nap Hill",
+            "Below the tax threshold, collection falters and the budget follows trust down",
         ],
         "actions": [
-            "Issue a press statement through the Ankh-Morpork Times: immediate small effect, "
-            "but the Times may ask questions",
-            "Commission Moist von Lipwig for a high-visibility restoration: fast trust recovery, "
-            "initial dip, politically complex",
-            "Apply technical restorations quickly: visible action is trusted action; "
-            "the longer a failure sits, the more trust it costs",
-            "Prioritise Cockbill Street and the Shades: Vimes's presence there has an "
-            "outsized trust effect far exceeding their political weight",
-            "Do nothing. Trust recovers at 2 points per month without new incidents. "
-            "Sometimes patience is the action.",
+            "Respond. A response in progress stops the daily penalty and the scandal; the completed "
+            "structural upgrade pays a delayed trust dividend",
+            "Compensation buys a visible boost that fades a month later; the problem stays",
+            "A press statement halves scandal damage for 48 hours. Follow it with a real response or "
+            "pay for the contradiction",
+            "Do nothing, and citizens notice immediately",
         ],
     },
 
     "budget": {
         "title": "Budget",
         "description": (
-            "The city treasury: the only constraint that is not political. Without budget, remedies "
-            "cannot be applied, compensation cannot be paid, and investment is impossible. Unlike trust, "
-            "budget does not recover by itself; it requires income. Monthly income arrives from taxes, "
-            "guild fees, trade tariffs, and UU's symbolic contribution."
+            "The city treasury: the only constraint that is not political. Income arrives monthly from "
+            "taxes, guild fees, trade tariffs, river duties, clacks licensing and UU's symbolic "
+            "contribution. Spending can run into the red down to the credit the guilds tolerate. "
+            "Stay below zero for a fortnight and the creditors stop tolerating."
         ),
-        "drivers": [
-            "Trust below 30 triggers a tax collection penalty: income falls by 40%",
-            "Transport and commerce disruptions reduce trade tariff income",
-            "Technical restoration costs 150 AM$ per event; resilience investment costs 400 AM$",
-            "Compensation and accountability actions are cheaper but do not fix the underlying problem",
-        ],
+        "drivers": [],  # filled from config at show time
         "actions": [
-            "Emergency borrowing from the Royal Bank of Ankh-Morpork: available up to 2,000 AM$, "
-            "but regulatory pressure increases by 15; Vetinari dislikes debt",
-            "Borrowing from the Überwald banking consortium: no domestic political cost, "
-            "but creates strategic exposure to foreign influence",
-            "Raise guild fees: immediate revenue, significant regulatory pressure spike; "
-            "the guilds will remember",
-            "Defer maintenance on low-priority buildings: saves spending in the short term, "
-            "increases infrastructure failure probability",
-            "Issue a special trade levy through the Guild of Merchants: contested, slow to collect",
-            "Recover public trust above 30: restores full tax collection efficiency; "
-            "the most sustainable budget fix",
+            "Borrow. Domestic credit costs regulatory pressure; foreign credit costs stability",
+            "Keep public trust above the tax threshold: the most sustainable budget fix",
+            "Keep transport, food supply and clacks towers standing: tariffs, river duties and "
+            "licensing fees scale with what still works",
+            "Choose the cheaper pathway where the threatmodel allows it, and accept the recurrence",
         ],
     },
 
     "regulatory_pressure": {
         "title": "Regulatory Pressure",
         "description": (
-            "The combined force of guilds, nobility, press, and concerned factions demanding that "
+            "The combined force of guilds, nobility, press and concerned factions demanding that "
             "something be done. At low levels it is background noise every Patrician learns to ignore. "
-            "Above 60, the Watch receives authorisation for extraordinary measures. "
-            "Above 80, Moist von Lipwig receives a polite note that he cannot decline."
+            "It does not end the game on its own; it colours every story the Times prints."
         ),
         "drivers": [
-            "Guild complaints add 8 points; noble outcry adds 12",
-            "Media campaigns and Watch requests add 5–8 points each",
-            "Repeated failures in the same district or on the same problem add 15 (cumulative)",
-            "Successful restorations and accountability actions reduce pressure",
-            "A new crisis elsewhere reduces pressure on the previous problem by 5, "
-            "the city's attention is finite",
+            "Every visible incident adds a point a day; one with a response under way adds a fifth of that",
+            "A full week with nothing visible releases two points",
+            "An inquiry lifts pressure by the amount set in its remedy entry, at the price of stability",
+            "A loan from the Royal Bank is noticed by the guilds",
         ],
         "actions": [
-            "Grant audience to guild representatives: releases pressure temporarily; "
-            "the guilds feel heard and reduce formal demands",
-            "Accountability actions: identify and publicly hold someone responsible; "
-            "reduces pressure by 12 if the target is correct; backfires if the target is popular",
-            "Successful technical restoration of a high-profile failure reduces pressure by 8",
-            "Guild negotiation: formal concessions in exchange for reduced formal complaints",
-            "Do nothing for a week without new incidents: pressure decreases 2 points per week "
-            "on its own; the city has a short memory",
+            "Respond to what is visible; responding incidents weigh five times less than ignored ones",
+            "Launch an inquiry where the domain allows it: pressure falls, stability dips, "
+            "and the scapegoat may fight back",
+            "Earn quiet weeks; the city has a short memory",
+            "Borrow from Überwald rather than the Royal Bank if pressure, not stability, is the constraint",
         ],
     },
 
@@ -104,27 +94,20 @@ _METRIC_INFO: dict[str, dict] = {
         "title": "Political Stability",
         "description": (
             "The absence of a credible alternative to the current arrangement. Vetinari's genius "
-            "is not popularity, it is making instability unthinkable. When this metric falls, "
-            "factions begin calculating whether the moment has arrived. Guild wars, noble conspiracies, "
-            "and food or water crises are the primary triggers."
+            "is not popularity, it is making instability unthinkable. Below five, the Assassins' Guild "
+            "accepts a contract."
         ),
         "drivers": [
-            "Trust collapse below 25 causes stability to decay 2 points per tick, the domino",
-            "Guild war: -30. Noble conspiracy: -20. Food or water shortage: -20",
-            "Succession rumours are the most acute trigger: -40 if activated",
-            "Successful crisis management, guild concessions, and time without incident all recover it",
+            "Public trust below 25 costs two points a day",
+            "An incident-free week restores one point",
+            "A completed structural upgrade returns a slice of its trust reward as stability",
+            "Inquiries are divisive and cost three; an Überwald loan costs eight",
         ],
         "actions": [
-            "Foster rivalry between the Assassins' and Thieves' Guilds: their attention "
-            "turns inward; the Palace recedes from their focus",
-            "Invite key noble families to dinner individually: the personal touch; "
-            "time-consuming but each dinner removes a potential conspirator from the calculation",
-            "Promote Carrot Ironfoundersson to a visible public role: his popularity provides "
-            "a stability shield; his loyalty to the city is unquestioned",
-            "Commission a visible public work: bridge repair, market improvement; "
-            "demonstrated competence is the most durable stabiliser",
-            "Concessions to guilds in exchange for a formal show of support: costly but buys time",
-            "Address succession rumours directly and decisively: publicly deny; privately arrange",
+            "Keep trust off the floor: the trust collapse penalty is the fastest route down",
+            "Complete structural upgrades; the stability gain lands the day the work finishes",
+            "Weigh the inquiry: it buys regulatory relief with stability",
+            "Borrow domestically when stability is the scarcer resource",
         ],
     },
 
@@ -132,57 +115,37 @@ _METRIC_INFO: dict[str, dict] = {
         "title": "Legitimacy",
         "description": (
             "The moral and historical right to rule, distinct from trust, which is pragmatic, "
-            "and stability, which is situational. Legitimacy changes slowly in either direction. "
-            "It survives crises that destroy trust. But certain events, charter violations, "
-            "guild withdrawal, failed coups, leave marks that time alone cannot erase."
+            "and stability, which is situational. Legitimacy moves slowly and mostly downwards. "
+            "Below ten, the districts declare the Patrician illegitimate and the Watch cannot hold the city."
         ),
         "drivers": [
-            "Long unbroken competent rule adds 2 points per year, the most reliable source",
-            "Guild endorsement adds 10; guild withdrawal subtracts 25",
-            "Charter violation: -40. This is not recoverable through normal means",
-            "A failed coup that Vetinari survives actually increases legitimacy by 5, "
-            "the city respects someone who cannot be removed",
-            "Carrot Ironfoundersson's public endorsement: +50. Effectively immediate maximum.",
+            "Half a point returns each month that stability stays above fifty",
+            "Some failures cost legitimacy outright, and nothing in the treasury buys it back",
         ],
         "actions": [
-            "Negotiate formal Guild Council endorsement: expensive in concessions; "
-            "the guilds will use the negotiation itself as leverage",
-            "Commission and complete public works, slow, permanent, uncontestable",
-            "Demonstrate competent crisis management consistently, "
-            "the accumulated record matters more than any single event",
-            "Maintain Carrot's loyalty and public presence: he does not seek power; "
-            "that is precisely why his support is so valuable",
-            "Do not violate the charter. Under any circumstances. "
-            "The city has forgotten many things. Not that.",
+            "Keep stability above fifty for months at a stretch; that is the only source of recovery",
+            "Treat public-service failures with care: those are the incidents that reach legitimacy",
+            "Do not violate the charter. The city has forgotten many things. Not that.",
         ],
     },
 
     "public_health": {
         "title": "Public Health",
         "description": (
-            "A leading indicator: the first signal that water contamination, food shortage, "
-            "or healthcare failure is compounding into something harder to fix. When public health "
-            "falls below 50, disease cascades become possible and legitimacy follows. "
+            "A leading indicator: the first signal that water contamination, food shortage or "
+            "healthcare failure is compounding into something harder to fix. "
             "The poor districts feel it first; by the time Nap Hill notices, it is already serious."
         ),
         "drivers": [
-            "Water pump failures: -5 delayed (contamination and disease risk accumulates)",
-            "Food supply disruption: -6 delayed (malnutrition; low-wealth districts cannot buy alternatives)",
-            "Hospital outage: -15 immediate, -5 delayed (untreated conditions compound rapidly)",
-            "Workshop fires: -3 immediate (injuries, smoke, displacement)",
+            "Water, food and healthcare incidents carry health impacts, some immediate and some "
+            "arriving days later",
+            "Just-in-time logistics shortens the grace period before the second blow lands",
+            "Health is lost to incidents and regained only by their absence",
         ],
         "actions": [
-            "Fund emergency capacity at Lady Sybil Free Hospital. This is the most direct intervention",
-            "Dispatch water safety advisories via the clacks network: "
-            "cheap, immediate, and the Times will print it",
-            "Organise food distribution through the Guild of Merchants and Shambles: "
-            "the guild handles logistics; the Patrician provides authorisation and cover",
-            "Request Omnian Medical Mission expansion to under-served districts: "
-            "they ask only for the right to preach; the trade is acceptable",
-            "Deploy Watch officers to enforce quarantine if disease is suspected: "
-            "Vimes will object; he is probably right; do it anyway",
-            "Commission UU to investigate unusual outbreaks: unreliable; "
-            "occasionally transformative; always interesting",
+            "Prioritise water sources, food supply and healthcare buildings when several incidents compete",
+            "Respond before the second blow is due; a resolved failure never delivers it",
+            "Structural upgrades ease the just-in-time pressure that shortens the grace period",
         ],
     },
 
@@ -191,29 +154,17 @@ _METRIC_INFO: dict[str, dict] = {
         "description": (
             "Unlicensed criminal activity: crime that the Thieves' Guild has not sanctioned "
             "and cannot control. The Guild's quota system normally keeps crime at a manageable, "
-            "taxable level that everyone pretends not to notice. When this metric rises, "
-            "someone is operating outside the arrangement, which concerns both the Watch and the Guild."
+            "taxable level that everyone pretends not to notice."
         ),
         "drivers": [
-            "Watch post closures: +8 immediately because unlicensed actors fill the vacuum",
-            "Food supply disruption: +3 delayed because economic desperation drives informal economies",
-            "Workshop closures (unemployment): +6 because the employment-crime relationship is reliable",
-            "Guild extortion events: +4 when organised crime is testing the boundaries of the arrangement",
-            "Trust collapse: +10. When the social contract fails, so does social order",
+            "Watch coverage below half raises crime a little every day, more the lower it falls",
+            "Watch coverage at or above eighty percent lowers it slowly",
+            "Incidents with a crime impact, guild extortion above all, add to it directly",
         ],
         "actions": [
-            "Negotiate with the Thieves' Guild to reassert control over unlicensed actors: "
-            "fastest and cheapest; the Guild finds unlicensed competition as offensive as the Watch does",
-            "Deploy additional Watch patrols to high-crime districts: "
-            "visible and direct; resource-intensive",
-            "Fund Vimes's overtime budget: his focused attention collapses crime in targeted areas; "
-            "he is expensive in political capital but effective in results",
-            "Activate Dept. of Silent Stability intelligence on criminal network structure: "
-            "they already know; the question is whether they will share",
-            "Offer limited amnesty for minor offenders: reduces immediate pressure; "
-            "politically complex; Commander Vimes will have opinions",
-            "Make a high-profile accountability example: visible deterrent; "
-            "effective if the target is genuinely guilty; corrosive if they are not",
+            "Keep Watch posts standing; coverage is the lever that moves this every day",
+            "Respond to security incidents first when coverage is slipping",
+            "Accept that the Guild's own quota is not something the Patrician's office adjusts",
         ],
     },
 }
@@ -224,27 +175,19 @@ _STATUS_INFO: dict[str, dict] = {
         "description": (
             "The percentage of city buildings currently operational across all districts. "
             "This is the strategic picture: not which districts are angry, but what capacity "
-            "the city actually has. Below 70%, cascades accelerate: failing buildings depend "
-            "on other failing buildings, and the dependency chains begin to close."
+            "the city actually has."
         ),
         "drivers": [
             "Every unresolved building failure reduces this percentage",
-            "Remedy completion restores buildings: technical restoration is fastest",
-            "Cascade events create secondary failures from a single root cause",
-            "Poor infrastructure districts (Shades, Cockbill) have higher baseline failure rates",
+            "Remedy completion restores buildings; the emergency patch is fastest",
+            "An ignored failure rolls for cascades once a day and can take its dependants with it",
+            "The Shades, Cockbill Street and the river fail more often; Nap Hill and the University hardly ever",
         ],
         "actions": [
-            "Prioritise technical restoration on critical infrastructure: "
-            "water sources, power stations, and healthcare first; "
-            "everything else depends on these",
-            "Resilience investment prevents recurrence. This is more expensive, "
-            "but each upgraded building reduces future failure probability",
-            "Triage by dependency: fix the building that everything else depends on first; "
-            "a restored water source stabilises brewery, fire service, and healthcare simultaneously",
-            "Emergency engineering corps via Guild of Engineers gives rapid deployment; "
-            "they will charge accordingly",
-            "Request UU Artificers for unusual structural problems. The "
-            "success rates vary; enthusiasm is consistent",
+            "Prioritise water sources, power and healthcare: everything else depends on these",
+            "Structural upgrades cut a district's failure multiplier toward baseline, permanently",
+            "Triage by dependency: the building everything else relies on comes first",
+            "A response in progress shields dependents from cascading",
         ],
     },
 
@@ -253,57 +196,39 @@ _STATUS_INFO: dict[str, dict] = {
         "description": (
             "The number of detected failures currently awaiting a response. Hidden failures "
             "are not counted here, this is what has surfaced. Each unaddressed incident decays "
-            "trust and may cascade. Above five simultaneous incidents, the Watch begins to struggle "
-            "to prioritise; above ten, the city feels like it is in genuine crisis."
+            "trust and may cascade. The dashboard turns red above three."
         ),
         "drivers": [
-            "Event generation rolls each tick: stressors amplify probability",
-            "Remedy application resolves events and removes them from this count",
-            "Detection speed affects how quickly hidden events surface: "
-            "more Watch patrols and clacks redundancy accelerate discovery",
-            "Some incidents resolve through cascades: fixing the root cause resolves dependents",
+            "Failures roll every hour in every district; the city's stressors load the dice",
+            "Remedy completion resolves events and removes them from this count",
+            "How fast a failure surfaces depends on the district, the building, and how hard anyone is looking",
+            "Cascades appear here immediately; they are never hidden",
         ],
         "actions": [
-            "Apply remedies through building interactions, the primary response mechanism",
-            "Prioritise by dependency chain, one upstream fix may resolve several downstream events",
-            "Prioritise by district political influence if budget is constrained, "
-            "cynical, but Nap Hill will escalate faster than the Shades",
-            "Issue a press statement to manage narrative while the actual work proceeds. This "
-            "buys hours of tolerance",
-            "Accept some incidents as tolerable losses (do nothing). "
-            "This produces a trust cost, but preserves budget for what matters",
-            "Invest in detection improvement: find hidden failures before they cascade; "
-            "more Watch patrols reduce discovery time across all districts",
+            "Apply remedies through the building on the map: the primary response mechanism",
+            "Prioritise by dependency chain: one upstream fix prevents several downstream cascades",
+            "Issue a press statement to halve scandal damage while the actual work is chosen",
+            "Accept some incidents as tolerable losses; do nothing costs trust and invites cascades, "
+            "but saves the budget",
         ],
     },
 
     "watch_coverage": {
         "title": "Watch Coverage",
         "description": (
-            "The percentage of Watch posts currently staffed and operational. The Watch is "
-            "the city's immune system, not just for crime, but for detection. Officers on patrol "
-            "find failures before citizens do. When coverage falls, discovery times increase "
-            "and crime fills the gap. The Thieves' Guild watches coverage numbers closely."
+            "The percentage of Watch posts currently staffed and operational. When coverage falls "
+            "below half, crime rises a little every day; at eighty percent and above it falls. "
+            "The Thieves' Guild watches these numbers closely."
         ),
         "drivers": [
-            "Watch understaffing events reduce coverage, caused by budget shortfall and underinvestment",
-            "Technical restoration of Watch posts restores coverage",
-            "Low coverage increases crime_level immediately, unlicensed activity tests the gaps",
-            "Low coverage increases discovery times across all affected districts",
+            "Watch understaffing events take posts out of service",
+            "Restoring a post restores its share of coverage",
+            "Coverage feeds the crime level every day",
         ],
         "actions": [
-            "Emergency officer recruitment via the Guild of Watchmen. This is "
-            "not fast, but the only sustainable path",
-            "Redeploy officers from low-crime, well-covered districts to high-crime areas: "
-            "resource-neutral; politically sensitive in the districts losing coverage",
-            "Request Vimes to personally walk the beat in the most critical district. "
-            "His effect on discovery time and crime is large; his patience for bureaucracy is not",
-            "Fund Watch overtime budget: short-term coverage while understaffing is resolved; "
-            "effective and resented in equal measure",
-            "Temporarily deputise trusted civilians in Cockbill Street and the Shades: "
-            "legally ambiguous; Vimes will object; the community will accept what they know",
-            "Negotiate with the Thieves' Guild for informal neighbourhood Watch to find out "
-            "they already do this; the negotiation is about acknowledgement, not activation",
+            "Respond to Watch post incidents before crime compounds",
+            "Structural upgrades on Watch posts make the next outage less likely",
+            "Accept a short lapse if the budget demands it; the crime effect is gradual",
         ],
     },
 }
@@ -312,8 +237,9 @@ _STATUS_INFO: dict[str, dict] = {
 class InfoPopup:
     """One window, torn down and rebuilt on every show."""
 
-    def __init__(self, root: ctk.CTk):
+    def __init__(self, root: ctk.CTk, cfg: GameConfig):
         self.root = root
+        self.cfg = cfg
         self._window: ctk.CTkToplevel | None = None
         self.on_emergency_borrow: Callable[[str], None] | None = None
 
@@ -322,27 +248,53 @@ class InfoPopup:
         if not info:
             return
         metric = city.get_metric(key)
+        if metric is None:
+            return
         value_str = f"{metric.value:,.0f} AM$" if key == "budget" else f"{metric.value:.0f} / 100"
         colour = METRIC_COLOURS.get(key, INK)
 
+        drivers = info["drivers"]
         action_buttons = None
-        if key == "budget" and self.on_emergency_borrow:
-            action_buttons = [
-                (
-                    "Royal Bank of Ankh-Morpork  +2,000 AM$",
-                    "Domestic loan. Regulatory pressure +15. The guilds notice.",
-                    lambda: self._do_borrow("royal_bank"),
-                ),
-                (
-                    "Überwald Banking Consortium  +3,000 AM$",
-                    "Foreign loan. No domestic political cost, but political stability −8. "
-                    "The Patrician dislikes foreign creditors.",
-                    lambda: self._do_borrow("ueberwald"),
-                ),
-            ]
+        if key == "budget":
+            drivers = self._budget_drivers(city)
+            if self.on_emergency_borrow:
+                action_buttons = self._borrow_buttons()
 
         self._show(info["title"], value_str, colour, info["description"],
-                   info["drivers"], info["actions"], action_buttons=action_buttons)
+                   drivers, info["actions"], action_buttons=action_buttons)
+
+    def _budget_drivers(self, city: City) -> list[str]:
+        income = sum(float(v) for v in self.cfg.budget_income.values())
+        taxes = self.cfg.metrics_global_raw.get("budget", {}).get("income_sources", {}).get("taxes", {})
+        threshold = taxes.get("trust_threshold", 30)
+        penalty = 1.0 - float(taxes.get("penalty_multiplier", 0.6))
+        costs = ", ".join(
+            f"{r.label} {r.base_cost}" for r in self.cfg.remedies.values() if r.base_cost
+        )
+        return [
+            f"Monthly income at full capacity: {income:,.0f} AM$; "
+            "fees, tariffs and duties fall with each failed building",
+            f"Public trust below {threshold} cuts tax income by {penalty:.0%}",
+            f"Base remedy costs: {costs}. Repairs cost more in fragile districts, upgrades more in rich ones",
+            f"Credit runs to {abs(city.budget.min_value):,.0f} AM$ below zero; a fortnight in the red is bankruptcy",
+        ]
+
+    def _borrow_buttons(self) -> list[tuple[str, str, Callable[[], None]]]:
+        buttons: list[tuple[str, str, Callable[[], None]]] = []
+        for lender_id, lender in self.cfg.budget_raw.get("emergency_borrowing", {}).items():
+            if not lender.get("available", False):
+                continue
+            costs = []
+            if lender.get("regulatory_pressure_cost"):
+                costs.append(f"regulatory pressure +{lender['regulatory_pressure_cost']}")
+            if lender.get("stability_cost"):
+                costs.append(f"political stability −{lender['stability_cost']}")
+            buttons.append((
+                f"{lender.get('label', lender_id)}  +{float(lender.get('max_amount', 0)):,.0f} AM$",
+                "; ".join(costs).capitalize() + "." if costs else "No immediate political cost.",
+                partial(self._do_borrow, lender_id),
+            ))
+        return buttons
 
     def _do_borrow(self, lender_id: str) -> None:
         if self.on_emergency_borrow:
@@ -604,9 +556,11 @@ def _district_drivers(district: District) -> list[str]:
         f"Wealth archetype {district.wealth_archetype.replace('_', ' ')}: "
         "affects shock absorption, recovery rate, and remedy effectiveness",
         f"Infrastructure quality modifier {district.infrastructure_quality:.1f}x: "
-        f"{'below average, higher failure rate' if district.infrastructure_quality > 1.0 else 'above average, lower failure rate'}",
+        + ("below average, higher failure rate" if district.infrastructure_quality > 1.0
+           else "above average, lower failure rate"),
         f"Political influence {district.political_influence:.1f}x: "
-        f"{'failures here amplify regulatory pressure significantly' if district.political_influence >= 1.5 else 'failures here generate limited regulatory pressure'}",
+        + ("failures here amplify regulatory pressure significantly" if district.political_influence >= 1.5
+           else "failures here generate limited regulatory pressure"),
         f"Discovery time {district.discovery_time_hours[0]:.0f}–{district.discovery_time_hours[1]:.0f} hours base: "
         "building type modifiers and stressors apply on top",
     ]

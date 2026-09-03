@@ -44,8 +44,10 @@ def generate_story(
     event: GameEvent,
     tick: int,
 ) -> str:
-    domain = event.domain or "general"
-    story_entries = cfg.stories_raw.get(domain, [])
+    template_cfg = cfg.template(event.template_id)
+    story_entries = template_cfg.stories if template_cfg and template_cfg.stories else None
+    if not story_entries:
+        story_entries = cfg.stories_raw.get(event.domain or "general", [])
     if not story_entries:
         return ""
 

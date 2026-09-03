@@ -4,12 +4,13 @@ from collections.abc import Callable
 
 import customtkinter as ctk
 
+from src.config.loader import SpeedConfig
 from src.engine.clock import ClockState, GameClock
 from src.gui.theme import ACCENT_BROWN, INK, INK_MUTED, PAPER, STATUS_GREEN, fonts
 
 
 class TimeControls:
-    def __init__(self, parent: ctk.CTkFrame):
+    def __init__(self, parent: ctk.CTkFrame, speed: SpeedConfig):
         self.parent = parent
         self.on_pause: Callable[[], None] | None = None
         self.on_play: Callable[[], None] | None = None
@@ -40,13 +41,13 @@ class TimeControls:
 
         self._slow_btn = ctk.CTkButton(
             controls, text="Slower",
-            command=lambda: self._on_speed(1.0), **btn_kwargs,
+            command=lambda: self._on_speed(speed.default_multiplier), **btn_kwargs,
         )
         self._slow_btn.pack(side="left", padx=3)
 
         self._fast_btn = ctk.CTkButton(
             controls, text="Faster",
-            command=lambda: self._on_speed(10.0), **btn_kwargs,
+            command=lambda: self._on_speed(speed.fast_multiplier), **btn_kwargs,
         )
         self._fast_btn.pack(side="left", padx=3)
 

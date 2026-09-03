@@ -8,7 +8,6 @@ from src.models.building import Building
 from src.models.city import City
 from src.models.event import DelayedEffect, EventPhase, GameEvent, MetricEffect
 
-
 # district stressor label to probability multiplier
 _DISTRICT_STRESSOR_LABEL_MODS: dict[str, float] = {
     "amplifier": 1.5,
@@ -25,7 +24,7 @@ def _calculate_probability(
     template: EventTemplate,
     city: City,
     district_failure_mod: float,
-    district_stressors: dict | None = None,
+    district_stressors: dict[str, str] | None = None,
 ) -> float:
     prob = template.probability_base * district_failure_mod
 
@@ -116,7 +115,8 @@ def generate_events(
             prob = _calculate_probability(
                 template, city, district.failure_probability_modifier, district.stressors
             )
-            prob *= cfg.settings.event_rate_multiplier
+            # probability_base is a per-day figure; the roll happens every tick
+            prob *= cfg.settings.event_rate_multiplier / cfg.time.ticks_per_day
 
             if random.random() >= prob:
                 continue

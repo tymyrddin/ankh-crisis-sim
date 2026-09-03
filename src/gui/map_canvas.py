@@ -6,7 +6,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageTk
 
-from src.gui.theme import STATUS_GREEN, STATUS_RED, STATUS_RESPONDING, STATUS_YELLOW, PAPER, INK
+from src.gui.theme import INK, PAPER, STATUS_GREEN, STATUS_RED, STATUS_RESPONDING, STATUS_YELLOW
 from src.models.building import BuildingStatus
 from src.models.city import City
 
@@ -44,7 +44,7 @@ class MapCanvas:
     def _load_base_map(self, path: str | Path) -> None:
         path = Path(path)
         if path.exists():
-            img = Image.open(path).resize((self.width, self.height), Image.LANCZOS)
+            img = Image.open(path).resize((self.width, self.height), Image.Resampling.LANCZOS)
         else:
             img = Image.new("RGB", (self.width, self.height), PAPER)
             draw = ImageDraw.Draw(img)

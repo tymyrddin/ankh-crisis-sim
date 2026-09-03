@@ -17,10 +17,3 @@ stressors:
   social_inequality: moderate      # sees Nap Hill across the river
   organisational_fragmentation: high  # hundreds of small businesses, no leader
   just_in_time: amplifier          # thin margins, week without power = bankruptcy
-
-protest_threshold: 18
-
-narrative_hooks:
-  - "Small Gods tanners pollute river downstream of Isle of Gods; diplomatic incident"
-  - "Workshop fire spreads through three streets before inadequate pump located"
-  - "Local hero prevents robbery of pie shop; rewarded with free pies for life"

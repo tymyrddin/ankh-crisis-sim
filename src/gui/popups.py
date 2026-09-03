@@ -3,21 +3,27 @@
 from __future__ import annotations
 
 import tkinter as tk
+from collections.abc import Callable
 
 import customtkinter as ctk
-
-from collections.abc import Callable
 
 from src.config.loader import GameConfig
 from src.engine.remedies import get_available_remedies
 from src.gui.theme import (
-    ACCENT_BROWN, INK, INK_MUTED, PAPER, PAPER_DARK,
-    STATUS_GREEN, STATUS_RED, STATUS_YELLOW, STATUS_RESPONDING, fonts,
+    ACCENT_BROWN,
+    INK,
+    INK_MUTED,
+    PAPER,
+    PAPER_DARK,
+    STATUS_GREEN,
+    STATUS_RED,
+    STATUS_RESPONDING,
+    STATUS_YELLOW,
+    fonts,
 )
 from src.models.building import Building, BuildingStatus
 from src.models.city import City
 from src.models.event import EventPhase, GameEvent
-
 
 _TYPE_DESCRIPTIONS: dict[str, str] = {
     "guild_hq": (
@@ -624,7 +630,8 @@ _REMEDY_LABELS: dict[str, dict[str, tuple[str, str]]] = {
         ),
         "press_statement": (
             "Issue Conciliatory Statement",
-            "Signal willingness to negotiate without committing to anything. Buys time; backfires if no action follows.",
+            "Signal willingness to negotiate without committing to anything. "
+            "Buys time; backfires if no action follows.",
         ),
         "do_nothing": (
             "Wait It Out",
@@ -928,9 +935,20 @@ class RemedyMenu:
                     wraplength=575, justify="left",
                 ).pack(anchor="w", padx=20, pady=(0, 6))
 
+            if event.statement_remedy and event.statement_tick is not None:
+                statement = self.cfg.remedies.get(event.statement_remedy)
+                window = statement.raw.get("trust_effect", {}).get("duration_hours", 48) if statement else 48
+                left = max(0, window - (current_tick - event.statement_tick))
+                ctk.CTkLabel(
+                    scroll,
+                    text=f"Statement issued: {statement.label if statement else event.statement_remedy}"
+                         f"  ·  {left}h to follow it with action",
+                    font=f.small_bold, text_color=STATUS_YELLOW,
+                ).pack(anchor="w", padx=20, pady=(0, 8))
+
             if event.phase == EventPhase.RESPONDING:
-                remedy_cfg = self.cfg.remedies.get(event.remedy_applied, None)
-                label_text = remedy_cfg.label if remedy_cfg else event.remedy_applied
+                remedy_cfg = self.cfg.remedies.get(event.remedy_applied or "")
+                label_text = remedy_cfg.label if remedy_cfg else (event.remedy_applied or "")
                 total_h = event.effective_downtime_hours or 0.0
                 if total_h > 0 and event.remedy_applied_tick is not None:
                     elapsed_h = current_tick - event.remedy_applied_tick
@@ -1137,7 +1155,8 @@ class EventPopup:
                     if vendor_mono >= 0.5:
                         ctk.CTkLabel(
                             scroll,
-                            text=f"⚠  Vendor monoculture is high ({vendor_mono:.0%}): the cascade may spread city-wide.",
+                            text=f"⚠  Vendor monoculture is high ({vendor_mono:.0%}): "
+                                 "the cascade may spread city-wide.",
                             font=f.small, text_color=STATUS_YELLOW,
                             wraplength=555, justify="left",
                         ).pack(anchor="w", padx=20, pady=(4, 0))

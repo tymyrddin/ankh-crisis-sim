@@ -16,8 +16,3 @@ discovery_time_hours: [0, 0]       # immediate if visible, otherwise ignored
 stressors:
   underinvestment: extreme         # dredging? pollution control? costs money
   interdependence: high            # every district depends on it
-
-narrative_hooks:
-  - "River Ankh catches fire again; insurance companies refuse to pay"
-  - "Barge collision blocks main channel; goods pile up at docks"
-  - "Mysterious object found floating in river turns out to be stolen museum exhibit"

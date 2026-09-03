@@ -30,10 +30,6 @@ class Metric:
         self.history.append(MetricSnapshot(tick=tick, value=self.value, cause=cause))
 
     @property
-    def is_critical(self) -> bool:
-        return self.value <= self.min_value + (self.max_value - self.min_value) * 0.1
-
-    @property
     def recent_trend(self) -> float:
         """Average change per snapshot over the last five; 0.0 with fewer than two."""
         if len(self.history) < 2:

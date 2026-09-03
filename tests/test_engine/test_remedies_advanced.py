@@ -5,7 +5,7 @@ from pathlib import Path
 
 from src.config.loader import build_city
 from src.engine.metrics import apply_passive_dynamics
-from src.engine.remedies import apply_remedy, process_remedy_completions
+from src.engine.remedies import apply_remedy, expire_statements, process_remedy_completions
 from src.models.event import EventPhase, GameEvent
 
 CONFIG_DIR = Path(__file__).parent.parent.parent / "config"
@@ -45,29 +45,44 @@ def _setup_event_in_district(district_id: str = "the_shades"):
 
 
 class TestPressStatementWindow:
-    def test_window_in_progress_keeps_responding(self):
+    def test_statement_leaves_event_open_for_a_real_response(self):
         cfg, city, event, district, _ = _setup_event_in_district()
         trust_before = district.local_trust.value
 
         apply_remedy(cfg, city, event, "press_statement", tick=10)
-        assert event.phase == EventPhase.RESPONDING
+        assert event.phase == EventPhase.DETECTED
+        assert event.statement_remedy == "press_statement"
 
         # 24 hours later: still inside the 48h window, no penalty yet
-        process_remedy_completions(cfg, city, tick=34)
-        assert event.phase == EventPhase.RESPONDING
-        assert event.remedy_applied == "press_statement"
+        expire_statements(cfg, city, tick=34)
+        assert event.statement_remedy == "press_statement"
         assert district.local_trust.value == trust_before
 
-    def test_window_expiry_reverts_to_detected_and_applies_penalty(self):
+    def test_real_response_within_window_honours_the_statement(self):
+        cfg, city, event, district, _ = _setup_event_in_district()
+
+        apply_remedy(cfg, city, event, "press_statement", tick=10)
+        result = apply_remedy(cfg, city, event, "technical_restoration", tick=20)
+        assert result.success
+        assert event.phase == EventPhase.RESPONDING
+        assert event.statement_remedy is None
+
+        trust_after_response = district.local_trust.value
+        expired = expire_statements(cfg, city, tick=100)
+        assert expired == []
+        assert district.local_trust.value == trust_after_response
+
+    def test_window_expiry_applies_penalty_and_clears_statement(self):
         cfg, city, event, district, _ = _setup_event_in_district()
         trust_before = district.local_trust.value
 
         apply_remedy(cfg, city, event, "press_statement", tick=10)
         # 49 hours after application: window closed, penalty fires
-        completed = process_remedy_completions(cfg, city, tick=59)
+        expired = expire_statements(cfg, city, tick=59)
 
-        assert any("press statement" in msg.lower() for msg, _ in completed)
+        assert any("press statement" in msg.lower() for msg, _ in expired)
         assert event.phase == EventPhase.DETECTED
+        assert event.statement_remedy is None
         assert event.remedy_applied is None
         assert event.remedy_applied_tick is None
         # the -10 penalty passes through media_attention and the inequality modifier, so check direction only
@@ -145,20 +160,23 @@ class TestOperationalWorkaroundRiskTransfer:
 
 
 class TestPublicCompensationReversal:
-    def test_duration_reversal_scheduled_as_delayed_effect(self):
+    def test_boost_fades_after_duration_even_though_event_is_resolved(self):
         cfg, city, event, district, _ = _setup_event_in_district()
+        district.scheduled_trust_changes.clear()
+        trust_before = district.local_trust.value
 
         apply_remedy(cfg, city, event, "public_compensation", tick=10)
+        assert event.phase == EventPhase.RESOLVED
+        boosted = district.local_trust.value
+        assert boosted > trust_before
 
-        # public_compensation queues a DelayedEffect with delta=-immediate (i.e. -10)
-        reversals = [
-            de for de in event.delayed_effects
-            for eff in de.effects
-            if eff.metric == "local_trust" and eff.delta < 0 and eff.district_id == district.id
-        ]
-        assert len(reversals) == 1
-        # delay_hours = duration_days*24 + (tick - created_tick) = 720 + 9 = 729
-        assert reversals[0].delay_hours == 30 * 24 + (10 - 1)
+        # duration_days=30, so the reversal is due at tick 730; next daily boundary is 744
+        assert district.scheduled_trust_changes == [(730, -10.0, "Public Compensation faded")]
+        apply_passive_dynamics(city, tick=720, ticks_per_day=24, cfg=cfg)
+        assert district.local_trust.value == boosted
+        apply_passive_dynamics(city, tick=744, ticks_per_day=24, cfg=cfg)
+        assert district.local_trust.value < boosted
+        assert district.scheduled_trust_changes == []
 
 
 class TestResilienceInvestmentInfrastructureBoost:
@@ -181,14 +199,14 @@ class TestResilienceInvestmentInfrastructureBoost:
 class TestResilienceInvestmentDelayedTrust:
     def test_pending_trust_boost_queued_on_completion(self):
         cfg, city, event, district, _ = _setup_event_in_district("the_shades")
-        district.pending_trust_boosts.clear()
+        district.scheduled_trust_changes.clear()
 
         apply_remedy(cfg, city, event, "resilience_investment", tick=10)
         process_remedy_completions(cfg, city, tick=82)
 
         # delayed_days=14, scheduled at tick 82 + 336 = 418
-        assert len(district.pending_trust_boosts) == 1
-        scheduled_tick, amount, _ = district.pending_trust_boosts[0]
+        assert len(district.scheduled_trust_changes) == 1
+        scheduled_tick, amount, _ = district.scheduled_trust_changes[0]
         assert scheduled_tick == 418
         assert amount == 8
 
@@ -203,7 +221,7 @@ class TestResilienceInvestmentDelayedTrust:
         apply_passive_dynamics(city, tick=432, ticks_per_day=24, cfg=cfg)
 
         assert district.local_trust.value > trust_before_flush
-        assert district.pending_trust_boosts == []
+        assert district.scheduled_trust_changes == []
 
 
 class TestSocialInequalityShift:

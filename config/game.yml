@@ -1,9 +1,7 @@
 # Global simulation settings
 
 time:
-  tick_hours: 1                    # 1 tick = 1 game-hour
   ticks_per_day: 24
-  term_length_days: 1460           # ~4 simulated years
   starting_day: 1
   starting_hour: 0
 
@@ -11,7 +9,6 @@ speed:
   seconds_per_game_hour: 1.0       # 1 real second = 1 game hour (a full day takes 24s at 1x)
   default_multiplier: 1.0
   fast_multiplier: 10.0
-  max_multiplier: 50.0
 
 starting_values:
   budget: 15000

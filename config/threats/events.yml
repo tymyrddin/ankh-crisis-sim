@@ -1,4 +1,6 @@
 # Event templates: concrete incidents that can occur
+# probability_base is the chance per day, per eligible district, before the district
+# failure multiplier, stressor amplifiers and the event-rate setting are applied.
 
 # --- Degradation and Neglect ---
 - id: pump_failure
@@ -164,7 +166,6 @@
   probability_base: 0.008
   stressor_amplifiers:
     underinvestment: 1.8
-    criminal_target: 1.5
   impact:
     immediate:
       - metric: local_trust
@@ -257,12 +258,12 @@
 - id: workshop_fire
   name: "Workshop industrial fire"
   category: operational_error
+  discovery_hours: [0, 2]          # immediate if visible, an hour or two if interior
   target_building_types: [workshop]
   domain: public_services
   probability_base: 0.006
   stressor_amplifiers:
     underinvestment: 1.8
-    criminal_target: 1.2
   impact:
     immediate:
       - metric: local_trust
@@ -361,8 +362,6 @@
   target_building_types: [tavern, workshop, food_supply, guild_hq]
   domain: commercial
   probability_base: 0.005
-  stressor_amplifiers:
-    criminal_target: 2.0
   impact:
     immediate:
       - metric: local_trust

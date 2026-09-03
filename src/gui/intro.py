@@ -5,10 +5,17 @@ from collections.abc import Callable
 import customtkinter as ctk
 
 from src.gui.theme import (
-    ACCENT_BROWN, INK, INK_MUTED, PAPER, PAPER_DARK,
-    STATUS_GREEN, STATUS_YELLOW, STATUS_RED, STATUS_RESPONDING, fonts,
+    ACCENT_BROWN,
+    INK,
+    INK_MUTED,
+    PAPER,
+    PAPER_DARK,
+    STATUS_GREEN,
+    STATUS_RED,
+    STATUS_RESPONDING,
+    STATUS_YELLOW,
+    fonts,
 )
-
 
 # in the voice of the Patrician's Office
 _SECTIONS: list[tuple[str, str]] = [

@@ -16,10 +16,3 @@ stressors:
   just_in_time: high               # minimal stock, immediate failure on disruption
   organisational_fragmentation: moderate  # competing guilds
   criminal_target: high            # high value, maximum opportunity
-
-protest_threshold: 28
-
-narrative_hooks:
-  - "Filigree Street bank run after rumour of insolvency"
-  - "Thieves' Guild 'quota day' causes merchant strike"
-  - "Mended Drum brawl spills into street, breaks new fountain"

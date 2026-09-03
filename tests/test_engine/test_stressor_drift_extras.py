@@ -55,6 +55,7 @@ class TestJustInTimeBuffer:
         for seed in range(20):
             random.seed(seed)
             cfg2, city2 = build_city(CONFIG_DIR)
+            cfg2.settings.event_rate_multiplier = 48.0  # per-day cap of 0.5 becomes a certain roll per tick
             city2.stressors["just_in_time"] = 1.0
             for t in cfg2.event_templates:
                 t.probability_base = 0.0
@@ -120,6 +121,7 @@ class TestVendorMonoculture:
         for seed in range(50):
             random.seed(seed)
             cfg2, city2 = build_city(CONFIG_DIR)
+            cfg2.settings.event_rate_multiplier = 48.0  # per-day cap of 0.5 becomes a certain roll per tick
             city2.stressors["vendor_monoculture"] = 1.0
             for t in cfg2.event_templates:
                 t.probability_base = 0.0

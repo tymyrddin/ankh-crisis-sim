@@ -16,10 +16,3 @@ stressors:
   vendor_monoculture: high         # businesses rely on UU custom
   narrative_effects: high_visibility
   organisational_fragmentation: internal  # faculty politics
-
-protest_threshold: 25
-
-narrative_hooks:
-  - "Wizard experiment causes three days of perpetual twilight over Precinct"
-  - "Local scroll shop owner demands UU pay outstanding bills"
-  - "Students pelt Watch with custard pies during annual Rite of AshkEnte"

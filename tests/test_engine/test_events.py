@@ -1,6 +1,8 @@
 import random
 from pathlib import Path
 
+import pytest
+
 from src.config.loader import EventTemplate, build_city
 from src.engine.events import _calculate_probability, _find_target_building, generate_events
 from src.models.event import EventPhase
@@ -105,7 +107,7 @@ class TestFindTargetBuilding:
         buildings = list(district.buildings.values())
 
         if len(buildings) < 2:
-            return  # need at least 2 buildings
+            pytest.skip("needs at least two buildings")
 
         for b in buildings[:-1]:
             b.active_event_id = "occupied"
@@ -159,7 +161,7 @@ class TestGenerateEvents:
                 break
 
         if not events:
-            return  # extremely unlikely at multiplier=100, not a test failure
+            pytest.skip("no event rolled even at multiplier 100")
 
         event = events[0]
         building = city.get_building(event.target_building_id)

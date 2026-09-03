@@ -32,16 +32,16 @@ def test_communications_event_offers_only_filtered_remedies(
 
     button_blob = " ".join(_collect_button_texts(menu._window))
 
-    # present
-    assert "Restore Signal" in button_blob          # technical_restoration
-    assert "Network Upgrade" in button_blob          # resilience_investment
-    assert "Reroute Traffic" in button_blob          # operational_workaround (meta)
-    assert "Issue Network Bulletin" in button_blob   # press_statement (meta)
-    assert "No Comment" in button_blob               # do_nothing (meta)
+    # the labels are the communications-category overrides of the remedy ids
+    assert "Restore Signal" in button_blob
+    assert "Network Upgrade" in button_blob
+    assert "Reroute Traffic" in button_blob
+    assert "Issue Network Bulletin" in button_blob
+    assert "No Comment" in button_blob
 
-    # filtered out by the communications domain
-    assert "Refund Subscribers" not in button_blob   # public_compensation
-    assert "Suspend Tower Operator" not in button_blob  # accountability_actions
+    # public_compensation and accountability_actions are not valid for communications
+    assert "Refund Subscribers" not in button_blob
+    assert "Suspend Tower Operator" not in button_blob
 
     if menu._window:
         menu._window.destroy()
@@ -58,10 +58,10 @@ def test_water_event_offers_all_pathways(ctk_root, loaded_city, detected_event_w
 
     button_blob = " ".join(_collect_button_texts(menu._window))
 
-    assert "Emergency Repair" in button_blob                # technical_restoration
-    assert "Infrastructure Overhaul" in button_blob          # resilience_investment
-    assert "Public Notice & Compensation" in button_blob    # public_compensation
-    assert "Commission Technical Inquiry" in button_blob    # accountability_actions
+    assert "Emergency Repair" in button_blob
+    assert "Infrastructure Overhaul" in button_blob
+    assert "Public Notice & Compensation" in button_blob
+    assert "Commission Technical Inquiry" in button_blob
 
     if menu._window:
         menu._window.destroy()
